@@ -1,0 +1,93 @@
+import 'dart:convert';
+
+import 'package:fluent_reader_lite/models/global_model.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+abstract class StoreKeys {
+  static const GROUPS = "groups";
+ 
+  // General
+  static const THEME = "theme";
+  static const LOCALE = "locale";
+  static const KEEP_ITEMS_DAYS = "keepItemsD";
+  static const SYNC_ON_START = "syncOnStart";
+
+  // Feed preferences
+  static const FEED_FILTER_ALL = "feedFilterA";
+  static const FEED_FILTER_SOURCE = "feedFilterS";
+  static const SHOW_THUMB = "showThumb";
+  static const SHOW_SNIPPET = "showSnippet";
+  static const DIM_READ = "dimRead";
+  static const FEED_SWIPE_R = "feedSwipeR";
+  static const FEED_SWIPE_L = "feedSwipeL";
+
+  // Reading preferences
+  static const ARTICLE_FONT_SIZE = "articleFontSize";
+
+  // Syncing
+  static const SYNC_SERVICE = "syncService";
+  static const LAST_SYNCED = "lastSynced";
+  static const LAST_SYNC_SUCCESS = "lastSyncSuccess";
+  static const LAST_ID = "lastId";
+  static const ENDPOINT = "endpoint";
+  static const USERNAME = "username";
+  static const PASSWORD = "password";
+  static const API_KEY = "apiKey";
+  static const FETCH_LIMIT = "fetchLimit";
+  static const FEVER_INT_32 = "feverInt32";
+}
+
+class Store {
+  // Initialized in main.dart
+  static SharedPreferences sp;
+
+  static Locale getLocale() {
+    if (!sp.containsKey(StoreKeys.LOCALE)) return null;
+    var localeString = sp.getString(StoreKeys.LOCALE);
+    var splitted = localeString.split('_');
+    if (splitted.length > 1) {
+      return Locale(splitted[0], splitted[1]);
+    } else {
+      return Locale(localeString);
+    }
+  }
+
+  static void setLocale(Locale locale) {
+    if (locale == null) sp.remove(StoreKeys.LOCALE);
+    else sp.setString(StoreKeys.LOCALE, locale.toString());
+  }
+
+  static ThemeSetting getTheme() {
+    return sp.containsKey(StoreKeys.THEME) 
+    ? ThemeSetting.values[sp.getInt(StoreKeys.THEME)]
+    : ThemeSetting.Default;
+  }
+
+  static void setTheme(ThemeSetting theme) {
+    sp.setInt(StoreKeys.THEME, theme.index);
+  }
+
+  static Map<String, List<String>> getGroups() {
+    var groups = sp.getString(StoreKeys.GROUPS);
+    if (groups == null) return Map();
+    Map<String, List<String>> result = Map();
+    var parsed = jsonDecode(groups);
+    for (var key in parsed.keys) {
+      result[key] = List.castFrom(parsed[key]);
+    }
+    return result;
+  }
+
+  static void setGroups(Map<String, List<String>> groups) {
+    sp.setString(StoreKeys.GROUPS, jsonEncode(groups));
+  }
+
+  static int getArticleFontSize() {
+    return sp.getInt(StoreKeys.ARTICLE_FONT_SIZE) ?? 16;
+  }
+  
+  static void setArticleFontSize(int value) {
+    sp.setInt(StoreKeys.ARTICLE_FONT_SIZE, value);
+  }
+}
