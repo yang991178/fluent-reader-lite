@@ -132,6 +132,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.1.0"
+  flutter_inappwebview:
+    dependency: "direct main"
+    description:
+      name: flutter_inappwebview
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "4.0.0+4"
   flutter_localizations:
     dependency: "direct main"
     description: flutter
@@ -530,20 +537,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.1.0-nullsafety.5"
-  webview_flutter:
-    dependency: transitive
-    description:
-      name: webview_flutter
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "1.0.7"
-  webview_flutter_plus:
-    dependency: "direct main"
-    description:
-      name: webview_flutter_plus
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "0.1.1+10"
   win32:
     dependency: transitive
     description:
