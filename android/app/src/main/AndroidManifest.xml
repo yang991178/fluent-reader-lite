@@ -10,7 +10,7 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <application
         android:name="io.flutter.app.FlutterApplication"
-        android:label="fluent_reader_lite"
+        android:label="Fluent Reader"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true">
         <activity

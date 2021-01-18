@@ -66,7 +66,7 @@ class ArticlePageState extends State<ArticlePage> {
   }
 
   Future<ShouldOverrideUrlLoadingAction> _onNavigate(_, ShouldOverrideUrlLoadingRequest request) async {
-    if (loaded && request.isForMainFrame) {
+    if (navigated && request.isForMainFrame) {
       await launch(request.url);
       return ShouldOverrideUrlLoadingAction.CANCEL;
     }
@@ -105,8 +105,11 @@ class ArticlePageState extends State<ArticlePage> {
 
   void _onPageReady(_, String url) async {
     if (url != "about:blank") {
-      _controller.evaluateJavascript(source: 'r("$localParams")');
-      setState(() { loaded = true; });
+      if (localParams != null) {
+        _controller.evaluateJavascript(source: 'r("$localParams")');
+        setState(() { loaded = true; });
+      }
+      navigated = true;
     }
   }
 
@@ -133,6 +136,7 @@ class ArticlePageState extends State<ArticlePage> {
       case SourceOpenTarget.External:
         localParams = null;
         _controller.loadUrl(url: item.link);
+        setState(() { loaded = true; });
         break;
     }
   }

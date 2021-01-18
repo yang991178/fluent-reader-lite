@@ -12,6 +12,7 @@ import 'package:fluent_reader_lite/utils/global.dart';
 import 'package:fluent_reader_lite/utils/store.dart';
 import 'package:fluent_reader_lite/utils/utils.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:overlay_dialog/overlay_dialog.dart';
 import 'package:provider/provider.dart';
 
 class FeverPage extends StatefulWidget {
@@ -75,6 +76,10 @@ class _FeverPageState extends State<FeverPage> {
       _fetchLimit
     );
     setState(() { _validating = true; });
+    DialogHelper().show(
+      context,
+      DialogWidget.progress(style: DialogStyle.cupertino),
+    );
     final isValid = await handler.validate();
     if (!mounted) return;
     if (isValid) {
@@ -85,6 +90,7 @@ class _FeverPageState extends State<FeverPage> {
       if (mounted) Navigator.of(context).pop();
     } else {
       setState(() { _validating = false; });
+      DialogHelper().hide(context);
       Utils.showServiceFailureDialog(context);
     }
   }
@@ -114,8 +120,11 @@ class _FeverPageState extends State<FeverPage> {
     );
     if (confirmed != null) {
       setState(() { _validating = true; });
+      DialogHelper().show(
+        context,
+        DialogWidget.progress(style: DialogStyle.cupertino),
+      );
       await Global.syncModel.removeService();
-      setState(() { _validating = false; });
       final navigator = Navigator.of(context);
       while (navigator.canPop()) navigator.pop();
     }
@@ -178,12 +187,10 @@ class _FeverPageState extends State<FeverPage> {
         return ListTileGroup([
           MyListTile(
             title: Expanded(child: Center(
-              child: _validating
-                ? CupertinoActivityIndicator()
-                : Text(
-                  S.of(context).save,
-                  style: saveStyle,
-                )
+              child: Text(
+                S.of(context).save,
+                style: saveStyle,
+              )
             )),
             onTap: canSave ? _save : null,
             trailingChevron: false,
@@ -214,7 +221,7 @@ class _FeverPageState extends State<FeverPage> {
         ], title: "");
       },
     );
-    final page = CupertinoPageScaffold(
+    return CupertinoPageScaffold(
       backgroundColor: MyColors.background,
       navigationBar: CupertinoNavigationBar(
         middle: Text("Fever API"),
@@ -225,10 +232,6 @@ class _FeverPageState extends State<FeverPage> {
         saveButton,
         if (Global.service != null) logOutButton,
       ]),
-    );
-    return WillPopScope(
-      child: page,
-      onWillPop: () async => !_validating,
     );
   }
 }

@@ -42,6 +42,7 @@ dependencies:
   cached_network_image: ^2.5.0
   flutter_cache_manager: ^2.1.0
   modal_bottom_sheet: ^1.0.0+1
+  overlay_dialog: ^0.0.3
 
 
   # The following adds the Cupertino Icons font to your application.
