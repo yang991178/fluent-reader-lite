@@ -25,7 +25,7 @@ class Favicon extends StatelessWidget {
       return Container(
         width: size,
         height: size,
-        color: CupertinoColors.systemGrey2,
+        color: CupertinoColors.systemGrey.resolveFrom(context),
         child: Center(child: Text(
           source.name.length > 0 ? source.name[0] : "?",
           style: _textStyle,

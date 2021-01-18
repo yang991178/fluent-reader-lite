@@ -214,6 +214,7 @@ class FeedbinServiceHandler extends ServiceHandler {
     return _lastSynced;
   }
 
+  @override
   Future<void> markAllRead(Set<String> sids, DateTime date, bool before) async {
     List<String> predicates = ["hasRead = 0"];
     if (sids.length > 0) {
@@ -232,18 +233,22 @@ class FeedbinServiceHandler extends ServiceHandler {
     await _markItems("unread", "DELETE", List.from(iids));
   }
 
+  @override
   Future<void> markRead(RSSItem item) async{
     await _markItems("unread", "DELETE", [item.id]);
   }
 
-  Future<void> markUnead(RSSItem item) async {
+  @override
+  Future<void> markUnread(RSSItem item) async {
     await _markItems("unread", "POST", [item.id]);
   }
 
+  @override
   Future<void> star(RSSItem item) async {
     await _markItems("starred", "POST", [item.id]);
   }
 
+  @override
   Future<void> unstar(RSSItem item) async {
     await _markItems("starred", "DELETE", [item.id]);
   }

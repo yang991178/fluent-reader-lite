@@ -218,7 +218,7 @@ class FeverServiceHandler extends ServiceHandler {
   }
 
   @override
-  Future<void> markUnead(RSSItem item) async {
+  Future<void> markUnread(RSSItem item) async {
     await _markItem(item, "unread");
   }
 

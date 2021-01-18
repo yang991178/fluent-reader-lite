@@ -35,9 +35,14 @@ abstract class StoreKeys {
   static const ENDPOINT = "endpoint";
   static const USERNAME = "username";
   static const PASSWORD = "password";
+  static const API_ID = "apiId";
   static const API_KEY = "apiKey";
   static const FETCH_LIMIT = "fetchLimit";
   static const FEVER_INT_32 = "feverInt32";
+  static const LAST_FETCHED = "lastFetched";
+  static const AUTH = "auth";
+  static const USE_INT_64 = "useInt64";
+  static const INOREADER_REMOVE_AD = "inoRemoveAd";
 }
 
 class Store {

@@ -26,7 +26,7 @@ class ItemsModel with ChangeNotifier {
         item.hasRead = read;
         if (!local) {
           if (read) Global.service.markRead(item);
-          else Global.service.markUnead(item);
+          else Global.service.markUnread(item);
         }
         Global.sourcesModel.updateUnreadCount(item.source, read ? -1 : 1);
       }

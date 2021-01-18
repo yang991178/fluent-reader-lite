@@ -5,6 +5,7 @@ import 'package:fluent_reader_lite/models/items_model.dart';
 import 'package:fluent_reader_lite/models/service.dart';
 import 'package:fluent_reader_lite/models/services/feedbin.dart';
 import 'package:fluent_reader_lite/models/services/fever.dart';
+import 'package:fluent_reader_lite/models/services/greader.dart';
 import 'package:fluent_reader_lite/models/sources_model.dart';
 import 'package:fluent_reader_lite/models/sync_model.dart';
 import 'package:fluent_reader_lite/utils/db.dart';
@@ -46,10 +47,8 @@ abstract class Global {
         service = FeedbinServiceHandler();
         break;
       case SyncService.GReader:
-        // TODO: Handle this case.
-        break;
       case SyncService.Inoreader:
-        // TODO: Handle this case.
+        service = GReaderServiceHandler();
         break;
     }
     syncModel = SyncModel();

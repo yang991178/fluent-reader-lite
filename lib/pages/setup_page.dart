@@ -38,6 +38,7 @@ class SetupPage extends StatelessWidget {
       ),
       MyListTile(
         title: Text("Inoreader"),
+        onTap: () { _configure(context, "/settings/service/inoreader"); },
       ),
       MyListTile(
         title: Text("Feedbin"),
