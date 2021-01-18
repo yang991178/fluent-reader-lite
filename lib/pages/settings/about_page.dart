@@ -2,6 +2,7 @@ import 'package:fluent_reader_lite/components/list_tile_group.dart';
 import 'package:fluent_reader_lite/components/my_list_tile.dart';
 import 'package:fluent_reader_lite/generated/l10n.dart';
 import 'package:fluent_reader_lite/utils/colors.dart';
+import 'package:fluent_reader_lite/utils/utils.dart';
 import 'package:flutter/cupertino.dart';
 
 class AboutPage extends StatelessWidget {
@@ -45,9 +46,11 @@ class AboutPage extends StatelessWidget {
           ListTileGroup([
             MyListTile(
               title: Text(S.of(context).openSource),
+              onTap: () { Utils.openExternal("https://github.com/yang991178/fluent-reader-lite"); },
             ),
             MyListTile(
               title: Text(S.of(context).feedback),
+              onTap: () { Utils.openExternal("https://github.com/yang991178/fluent-reader-lite/issues"); },
               withDivider: false,
             ),
           ]),

@@ -13,8 +13,10 @@ class _SyncControlState extends State<SyncControl> {
     var completer = Completer();
     Function listener;
     listener = () {
-      completer.complete();
-      Global.syncModel.removeListener(listener);
+      if (!Global.syncModel.syncing) {
+        completer.complete();
+        Global.syncModel.removeListener(listener);
+      }
     };
     Global.syncModel.addListener(listener);
     Global.syncModel.syncWithService();

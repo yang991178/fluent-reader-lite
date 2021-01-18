@@ -51,7 +51,7 @@ class ItemsModel with ChangeNotifier {
 
   Future<void> markAllRead(Set<String> sids, {DateTime date, before = true}) async {
     Global.service.markAllRead(sids, date, before);
-    List<String> predicates = [];
+    List<String> predicates = ["hasRead = 0"];
     if (sids.length > 0) {
       predicates.add("source IN (${List.filled(sids.length, "?").join(" , ")})");
     }

@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:fluent_reader_lite/models/item.dart';
 import 'package:fluent_reader_lite/utils/global.dart';
 import 'package:fluent_reader_lite/utils/store.dart';
+import 'package:fluent_reader_lite/utils/utils.dart';
 import 'package:html/parser.dart';
 import 'package:http/http.dart' as http;
 import 'package:fluent_reader_lite/models/source.dart';
@@ -117,14 +118,14 @@ class FeverServiceHandler extends ServiceHandler {
 
   @override
   Future<List<RSSItem>> fetchItems() async {
-    var minId = useInt32 ? 2147483647 : 2^50;
+    var minId = useInt32 ? 2147483647 : Utils.syncMaxId;
     List<dynamic> response;
     List<dynamic> items = [];
     do {
       response = (await _fetchAPI(params: "&items&max_id=$minId"))["items"];
       if (response == null) throw Error();
       items.addAll(response.where((i) => i["id"] > lastId));
-      if (response.length == 0 && minId == 2^50) {
+      if (response.length == 0 && minId == Utils.syncMaxId) {
         useInt32 = true;
         minId = 2147483647;
         response = null;
@@ -161,7 +162,7 @@ class FeverServiceHandler extends ServiceHandler {
         var a = dom.querySelector("body>ul>li:first-child>a");
         if (a != null && a.text.endsWith(", image\/generic") && a.attributes["href"] != null)
           item.thumb = a.attributes["href"];
-        }
+      }
       return item;
     });
     lastId = items.fold(lastId, (m, n) => max(m, n["id"]));

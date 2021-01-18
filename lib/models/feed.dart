@@ -29,7 +29,7 @@ class RSSFeed {
     : StoreKeys.FEED_FILTER_SOURCE;
 
   Tuple2<String, List<String>> _getPredicates() {
-    List<String> where = ["TRUE"];
+    List<String> where = ["1 = 1"];
     List<String> whereArgs = [];
     if (sids.length > 0) {
       var placeholders = List.filled(sids.length, "?").join(" , ");

@@ -29,6 +29,10 @@ class ScrollTopNotifier with ChangeNotifier {
 
 class _HomePageState extends State<HomePage> {
   final _scrollTopNotifier = ScrollTopNotifier();
+  final _controller = CupertinoTabController();
+  final List<GlobalKey<NavigatorState>> _tabNavigatorKeys = [
+    GlobalKey(), GlobalKey(),
+  ];
 
   Widget _constructPage(Widget page, bool isMobile) {
     return isMobile
@@ -49,7 +53,8 @@ class _HomePageState extends State<HomePage> {
       builder: (context, hasService, child) {
         if (!hasService) return SetupPage();
         var isMobile = true;
-        var left = CupertinoTabScaffold(
+        final leftTabs = CupertinoTabScaffold(
+          controller: _controller,
           backgroundColor: CupertinoColors.systemBackground,
           tabBar: CupertinoTabBar(
             backgroundColor: CupertinoColors.systemBackground,
@@ -67,6 +72,7 @@ class _HomePageState extends State<HomePage> {
           ),
           tabBuilder: (context, index) {
             return CupertinoTabView(
+              navigatorKey: _tabNavigatorKeys[index],
               routes: {
                 '/feed': (context) {
                   Widget page = ItemListPage(_scrollTopNotifier);
@@ -80,6 +86,12 @@ class _HomePageState extends State<HomePage> {
                 return _constructPage(page, isMobile);
               },
             );
+          },
+        );
+        final left = WillPopScope(
+          child: leftTabs,
+          onWillPop: () async {
+            return !(await _tabNavigatorKeys[_controller.index].currentState.maybePop());
           },
         );
         return ScreenTypeLayout.builder(

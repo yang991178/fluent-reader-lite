@@ -42,7 +42,7 @@ html.light {
 }
 
 h1, h2, h3, h4, h5, h6, b, strong {
-    font-weight: 600;
+    font-weight: 800;
 }
 a, a:hover, a:active {
     color: var(--primary);
@@ -80,7 +80,7 @@ a, a:hover, a:active {
 #main > p#title {
     font-size: 1.375rem;
     line-height: 1.75rem;
-    font-weight: 600;
+    font-weight: 800;
     margin: 0;
 }
 #main > p#date {

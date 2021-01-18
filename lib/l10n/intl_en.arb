@@ -76,5 +76,6 @@
     "serviceFailureHint": "Please check the service configuration or network status.",
     "logOut": "Log out",
     "logOutWarning": "All local data will be deleted. Are you sure?",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "allLoaded": "All loaded"
   }

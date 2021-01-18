@@ -3,6 +3,7 @@ import 'package:fluent_reader_lite/models/global_model.dart';
 import 'package:fluent_reader_lite/models/groups_model.dart';
 import 'package:fluent_reader_lite/models/items_model.dart';
 import 'package:fluent_reader_lite/models/service.dart';
+import 'package:fluent_reader_lite/models/services/feedbin.dart';
 import 'package:fluent_reader_lite/models/services/fever.dart';
 import 'package:fluent_reader_lite/models/sources_model.dart';
 import 'package:fluent_reader_lite/models/sync_model.dart';
@@ -39,7 +40,7 @@ abstract class Global {
         service = FeverServiceHandler();
         break;
       case SyncService.Feedbin:
-        // TODO: Handle this case.
+        service = FeedbinServiceHandler();
         break;
       case SyncService.GReader:
         // TODO: Handle this case.

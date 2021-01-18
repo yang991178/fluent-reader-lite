@@ -41,6 +41,7 @@ class SetupPage extends StatelessWidget {
       ),
       MyListTile(
         title: Text("Feedbin"),
+        onTap: () { _configure(context, "/settings/service/feedbin"); },
       ),
     ], title: S.of(context).service);
     final page = CupertinoPageScaffold(

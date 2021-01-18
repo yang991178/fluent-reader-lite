@@ -76,5 +76,6 @@
     "serviceFailureHint": "请检查服务配置或网络连接",
     "logOut": "登出",
     "logOutWarning": "这将移除所有本地数据，是否继续？",
-    "confirm": "确定"
+    "confirm": "确定",
+    "allLoaded": "已全部加载"
   }

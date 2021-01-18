@@ -352,8 +352,8 @@ class _ItemListPageState extends State<ItemListPage> {
           padding: EdgeInsets.symmetric(vertical: 20),
           child: Center(
             child: feed.allLoaded
-              ? Text("All loaded", style: TextStyle(
-                  color: CupertinoColors.secondaryLabel.resolveFrom(context),
+              ? Text(S.of(context).allLoaded, style: TextStyle(
+                  color: CupertinoColors.tertiaryLabel.resolveFrom(context),
                 ))
               : CupertinoActivityIndicator()
           ),

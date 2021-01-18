@@ -1,9 +1,18 @@
+import 'dart:math';
+
 import 'package:fluent_reader_lite/generated/l10n.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
 
 abstract class Utils {
+  static final syncMaxId = pow(2, 50);
+
+  static void openExternal(String url) {
+    launch(url, forceSafariVC: false, forceWebView: false);
+  }
+
   static int binarySearch<T>(List<T> sortedList, T value, 
     int Function(T, T) compare) {
     var min = 0;
