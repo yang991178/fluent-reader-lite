@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:crypto/crypto.dart';
 import 'package:fluent_reader_lite/components/list_tile_group.dart';
@@ -126,6 +127,7 @@ class _FeverPageState extends State<FeverPage> {
         DialogWidget.progress(style: DialogStyle.cupertino),
       );
       await Global.syncModel.removeService();
+      _validating = false;
       DialogHelper().hide(context);
       final navigator = Navigator.of(context);
       while (navigator.canPop()) navigator.pop();
@@ -223,7 +225,7 @@ class _FeverPageState extends State<FeverPage> {
         ], title: "");
       },
     );
-    return CupertinoPageScaffold(
+    final page = CupertinoPageScaffold(
       backgroundColor: MyColors.background,
       navigationBar: CupertinoNavigationBar(
         middle: Text("Fever API"),
@@ -235,5 +237,10 @@ class _FeverPageState extends State<FeverPage> {
         if (Global.service != null) logOutButton,
       ]),
     );
+    if (Platform.isAndroid) {
+      return WillPopScope(child: page, onWillPop: () async => !_validating);
+    } else {
+      return page;
+    }
   }
 }

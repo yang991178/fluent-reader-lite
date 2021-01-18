@@ -53,7 +53,8 @@ class ArticlePageState extends State<ArticlePage> {
 
   Future<NavigationDecision> _onNavigate(NavigationRequest request) async {
     if (navigated && request.isForMainFrame) {
-      await launch(request.url);
+      final internal = Global.globalModel.inAppBrowser;
+      await launch(request.url, forceSafariVC: internal, forceWebView: internal);
       return NavigationDecision.prevent;
     } else {
       return NavigationDecision.navigate;

@@ -12,6 +12,8 @@ abstract class StoreKeys {
   static const LOCALE = "locale";
   static const KEEP_ITEMS_DAYS = "keepItemsD";
   static const SYNC_ON_START = "syncOnStart";
+  static const IN_APP_BROWSER = "inAppBrowser";
+  static const TEXT_SCALE = "textScale";
 
   // Feed preferences
   static const FEED_FILTER_ALL = "feedFilterA";

@@ -43,7 +43,7 @@ class _GroupListPageState extends State<GroupListPage> {
         return SliverToBoxAdapter(child: MyListTile(
           title: Text(S.of(context).allSubscriptions),
           trailing: count > 0 ? Badge(count) : null,
-          onTap: () { Navigator.of(context).pop(List<String>()); },
+          onTap: () { Navigator.of(context).pop(List<String>.empty()); },
           background: CupertinoColors.systemBackground,
         ));
       },

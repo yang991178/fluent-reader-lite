@@ -19,7 +19,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
-import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -39,9 +38,11 @@ void main() async {
   runApp(MyApp());
   SystemChannels.lifecycle.setMessageHandler((msg) {
     if (msg == AppLifecycleState.resumed.toString()) {
+      if (Global.server != null) Global.server.restart();
       if (Global.globalModel.syncOnStart
-        && DateTime.now().difference(Global.syncModel.lastSynced).inMinutes >= 10)
-      Global.syncModel.syncWithService();
+        && DateTime.now().difference(Global.syncModel.lastSynced).inMinutes >= 10) {
+        Global.syncModel.syncWithService();
+      }
     }
     return null;
   });
@@ -118,6 +119,14 @@ class MyApp extends StatelessWidget {
           routes: {
             "/": (context) => CupertinoScaffold(body: HomePage()),
             ...baseRoutes,
+          },
+          builder: (context, child) {
+            final mediaQueryData = MediaQuery.of(context);
+            if (Global.globalModel.textScale == null) return child;
+            return MediaQuery(
+              data: mediaQueryData.copyWith(textScaleFactor: Global.globalModel.textScale),
+              child: child
+            );
           },
         ),
       ),

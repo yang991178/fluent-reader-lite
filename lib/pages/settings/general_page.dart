@@ -16,6 +16,7 @@ class GeneralPage extends StatefulWidget {
 
 class _GeneralPageState extends State<GeneralPage> {
   bool _clearingCache = false;
+  double textScale;
 
   void _clearCache() async {
     setState(() { _clearingCache = true; });
@@ -32,9 +33,41 @@ class _GeneralPageState extends State<GeneralPage> {
     ),
     child: Consumer<GlobalModel>(
       builder: (context, globalModel, child) {
+        final useSystemTextScale = globalModel.textScale == null;
+        final textScaleItems = ListTileGroup([
+          MyListTile(
+            title: Text(S.of(context).followSystem),
+            trailing: CupertinoSwitch(
+              value: useSystemTextScale,
+              onChanged: (v) {
+                textScale = null;
+                globalModel.textScale = v ? null : 1;
+              },
+            ),
+            trailingChevron: false,
+            withDivider: !useSystemTextScale,
+          ),
+          if (!useSystemTextScale) MyListTile(
+            title: Expanded(child: CupertinoSlider(
+              min: 0.5,
+              max: 1.5,
+              divisions: 8,
+              value: textScale ?? globalModel.textScale,
+              onChanged: (v) {
+                setState(() { textScale = v; });
+              },
+              onChangeEnd: (v) {
+                textScale = null;
+                globalModel.textScale = v;
+              },
+            )),
+            trailingChevron: false,
+            withDivider: false,
+          ),
+        ], title: S.of(context).fontSize);
         final syncItems = ListTileGroup([
           MyListTile(
-            title: Text(S.of(context).onStart),
+            title: Text(S.of(context).syncOnStart),
             trailing: CupertinoSwitch(
               value: globalModel.syncOnStart,
               onChanged: (v) {
@@ -43,9 +76,20 @@ class _GeneralPageState extends State<GeneralPage> {
               },
             ),
             trailingChevron: false,
+          ),
+          MyListTile(
+            title: Text(S.of(context).inAppBrowser),
+            trailing: CupertinoSwitch(
+              value: globalModel.inAppBrowser,
+              onChanged: (v) {
+                globalModel.inAppBrowser = v;
+                setState(() {});
+              },
+            ),
+            trailingChevron: false,
             withDivider: false,
           ),
-        ], title: S.of(context).sync);
+        ], title: S.of(context).preferences);
         final storageItems = ListTileGroup([
           MyListTile(
             title: Text(S.of(context).clearCache),
@@ -97,6 +141,7 @@ class _GeneralPageState extends State<GeneralPage> {
         return ListView(
           children: [
             syncItems,
+            textScaleItems,
             storageItems,
             themeItems,
             localeItems,
