@@ -11,7 +11,6 @@ import 'package:fluent_reader_lite/utils/global.dart';
 import 'package:fluent_reader_lite/utils/store.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -19,6 +18,7 @@ import 'package:tuple/tuple.dart';
 import 'package:share/share.dart';
 import 'package:fluent_reader_lite/components/cupertino_toolbar.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class ArticlePage extends StatefulWidget {
   static final GlobalKey<ArticlePageState> state = GlobalKey();
@@ -30,22 +30,13 @@ class ArticlePage extends StatefulWidget {
 }
 
 class ArticlePageState extends State<ArticlePage> {
-  InAppWebViewController _controller;
+  WebViewController _controller;
   int requestId = 0;
   bool loaded = false;
   bool navigated = false;
   SourceOpenTarget _target;
   String iid;
   bool isSourceFeed;
-  String localParams;
-
-  static final _webViewOptions = InAppWebViewGroupOptions(
-    crossPlatform: InAppWebViewOptions(
-      useShouldOverrideUrlLoading: true,
-      debuggingEnabled: true,
-      transparentBackground: true,
-    ),
-  );
 
   void loadNewItem(String id, {bool isSource}) {
     if (!Global.itemsModel.getItem(id).hasRead) {
@@ -60,21 +51,17 @@ class ArticlePageState extends State<ArticlePage> {
     });
   }
 
-  Future<bool> _onNewWindow(_, CreateWindowRequest request) async {
-    await launch(request.url);
-    return false;
-  }
-
-  Future<ShouldOverrideUrlLoadingAction> _onNavigate(_, ShouldOverrideUrlLoadingRequest request) async {
+  Future<NavigationDecision> _onNavigate(NavigationRequest request) async {
     if (navigated && request.isForMainFrame) {
       await launch(request.url);
-      return ShouldOverrideUrlLoadingAction.CANCEL;
+      return NavigationDecision.prevent;
+    } else {
+      return NavigationDecision.navigate;
     }
-    return ShouldOverrideUrlLoadingAction.ALLOW;
   }
 
   void _loadHtml(RSSItem item, RSSSource source, {loadFull: false}) async {
-    var localUrl = "assets/article/article.html";
+    var localUrl = "http://127.0.0.1:9000/article/article.html";
     var currId = requestId;
     String a;
     if (loadFull) {
@@ -94,23 +81,22 @@ class ArticlePageState extends State<ArticlePage> {
     h += '<article></article>';
     h = Uri.encodeComponent(h);
     var s = Store.getArticleFontSize();
-    localParams = "?a=$a&h=$h&s=$s&u=${item.link}&m=${loadFull ? 1 : 0}";
+    localUrl += "?a=$a&h=$h&s=$s&u=${item.link}&m=${loadFull ? 1 : 0}";
     if (Platform.isAndroid || Global.globalModel.getBrightness() != null) {
       var brightness = Global.currentBrightness(context);
-      localParams += "&t=${brightness.index}";
+      localUrl += "&t=${brightness.index}";
     }
-    if (currId == requestId) _controller.loadFile(assetFilePath: localUrl);
-    
+    if (currId == requestId) _controller.loadUrl(localUrl);
   }
 
-  void _onPageReady(_, String url) async {
-    if (url != "about:blank") {
-      if (localParams != null) {
-        _controller.evaluateJavascript(source: 'r("$localParams")');
-        setState(() { loaded = true; });
-      }
-      navigated = true;
+  void _onPageReady(_) async {
+    if (Platform.isAndroid || Global.globalModel.getBrightness() != null) {
+      await Future.delayed(Duration(milliseconds: 300));
     }
+    setState(() { loaded = true; });
+  }
+  void _onWebpageReady(_) {
+    if (loaded) navigated = true;
   }
 
   void _setOpenTarget(RSSSource source, {SourceOpenTarget target}) {
@@ -134,9 +120,7 @@ class ArticlePageState extends State<ArticlePage> {
         break;
       case SourceOpenTarget.Webpage:
       case SourceOpenTarget.External:
-        localParams = null;
-        _controller.loadUrl(url: item.link);
-        setState(() { loaded = true; });
+        _controller.loadUrl(item.link);
         break;
     }
   }
@@ -168,16 +152,16 @@ class ArticlePageState extends State<ArticlePage> {
             Center(
               child: CupertinoActivityIndicator()
             ),
-            InAppWebView(
+            WebView(
               key: Key("a-$iid-${_target.index}"),
-              onWebViewCreated: (InAppWebViewController webViewController) {
+              javascriptMode: JavascriptMode.unrestricted,
+              onWebViewCreated: (WebViewController webViewController) {
                 _controller = webViewController;
                 _loadOpenTarget(item, source);
               },
-              onLoadStop: _onPageReady,
-              onCreateWindow: _onNewWindow,
-              shouldOverrideUrlLoading: _onNavigate,
-              initialOptions: _webViewOptions,
+              onPageStarted: _onPageReady,
+              onPageFinished: _onWebpageReady,
+              navigationDelegate: _onNavigate,
             ),
           ],
         ), bottom: false,);

@@ -84,6 +84,7 @@ class _FeedbinPageState extends State<FeedbinPage> {
       await Global.syncModel.syncWithService();
       Global.syncModel.checkHasService();
       _validating = false;
+      DialogHelper().hide(context);
       if (mounted) Navigator.of(context).pop();
     } else {
       setState(() { _validating = false; });
@@ -122,6 +123,7 @@ class _FeedbinPageState extends State<FeedbinPage> {
         DialogWidget.progress(style: DialogStyle.cupertino),
       );
       await Global.syncModel.removeService();
+      DialogHelper().hide(context);
       final navigator = Navigator.of(context);
       while (navigator.canPop()) navigator.pop();
     }

@@ -87,6 +87,7 @@ class _FeverPageState extends State<FeverPage> {
       await Global.syncModel.syncWithService();
       Global.syncModel.checkHasService();
       _validating = false;
+      DialogHelper().hide(context);
       if (mounted) Navigator.of(context).pop();
     } else {
       setState(() { _validating = false; });
@@ -125,6 +126,7 @@ class _FeverPageState extends State<FeverPage> {
         DialogWidget.progress(style: DialogStyle.cupertino),
       );
       await Global.syncModel.removeService();
+      DialogHelper().hide(context);
       final navigator = Navigator.of(context);
       while (navigator.canPop()) navigator.pop();
     }

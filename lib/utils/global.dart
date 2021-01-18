@@ -10,6 +10,8 @@ import 'package:fluent_reader_lite/models/sync_model.dart';
 import 'package:fluent_reader_lite/utils/db.dart';
 import 'package:fluent_reader_lite/utils/store.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:jaguar/serve/server.dart';
+import 'package:jaguar_flutter_asset/jaguar_flutter_asset.dart';
 import 'package:sqflite/sqflite.dart';
 
 abstract class Global {
@@ -22,6 +24,7 @@ abstract class Global {
   static SyncModel syncModel;
   static ServiceHandler service;
   static Database db;
+  static Jaguar server;
   static final GlobalKey<NavigatorState> tabletPanel = GlobalKey();
 
   static void init() {
@@ -64,6 +67,9 @@ abstract class Global {
           .millisecondsSinceEpoch,
       ],
     );
+    server = Jaguar(address: "127.0.0.1",port: 9000);
+    server.addRoute(serveFlutterAssets());
+    await server.serve();
     await sourcesModel.init();
     await feedsModel.all.init();
     if (globalModel.syncOnStart) await syncModel.syncWithService();

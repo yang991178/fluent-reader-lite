@@ -22,6 +22,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.5.0-nullsafety.3"
+  auth_header:
+    dependency: transitive
+    description:
+      name: auth_header
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "2.1.4"
   boolean_selector:
     dependency: transitive
     description:
@@ -132,13 +139,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.1.0"
-  flutter_inappwebview:
-    dependency: "direct main"
-    description:
-      name: flutter_inappwebview
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "4.0.0+4"
   flutter_localizations:
     dependency: "direct main"
     description: flutter
@@ -175,6 +175,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "3.1.4"
+  http_server:
+    dependency: transitive
+    description:
+      name: http_server
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.9.8+3"
   image:
     dependency: transitive
     description:
@@ -189,6 +196,34 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "0.17.0-nullsafety.2"
+  jaguar:
+    dependency: "direct main"
+    description:
+      name: jaguar
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "2.4.46"
+  jaguar_common:
+    dependency: transitive
+    description:
+      name: jaguar_common
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "2.1.4"
+  jaguar_flutter_asset:
+    dependency: "direct main"
+    description:
+      name: jaguar_flutter_asset
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "2.2.0"
+  jaguar_serializer:
+    dependency: transitive
+    description:
+      name: jaguar_serializer
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "2.2.12"
   js:
     dependency: transitive
     description:
@@ -196,6 +231,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "0.6.3-nullsafety.3"
+  logging:
+    dependency: transitive
+    description:
+      name: logging
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.11.4"
   matcher:
     dependency: transitive
     description:
@@ -294,6 +336,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "0.0.4+3"
+  path_tree:
+    dependency: transitive
+    description:
+      name: path_tree
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "2.2.4"
   pedantic:
     dependency: transitive
     description:
@@ -544,6 +593,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.1.0-nullsafety.5"
+  webview_flutter:
+    dependency: "direct main"
+    description:
+      name: webview_flutter
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "2.0.0-nullsafety.3"
   win32:
     dependency: transitive
     description:
