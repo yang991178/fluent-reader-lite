@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math';
 
 import 'package:fluent_reader_lite/models/item.dart';
@@ -61,7 +60,10 @@ class GReaderServiceHandler extends ServiceHandler {
   }
 
   void persist() {
-    Store.sp.setInt(StoreKeys.SYNC_SERVICE, SyncService.Inoreader.index);
+    Store.sp.setInt(
+      StoreKeys.SYNC_SERVICE,
+      inoreaderId != null ? SyncService.Inoreader.index : SyncService.GReader.index
+    );
     Store.sp.setString(StoreKeys.ENDPOINT, endpoint);
     Store.sp.setString(StoreKeys.USERNAME, username);
     Store.sp.setString(StoreKeys.PASSWORD, password);
@@ -240,7 +242,7 @@ class GReaderServiceHandler extends ServiceHandler {
     }
     final parsedItems = items.map<RSSItem>((i) {
       final dom = parse(i["summary"]["content"]);
-      if (removeInoreaderAd) {
+      if (removeInoreaderAd == true) {
         if (dom.documentElement.text.trim().startsWith("Ads from Inoreader")) {
           dom.body.firstChild.remove();
         }
@@ -321,6 +323,8 @@ class GReaderServiceHandler extends ServiceHandler {
       }
       if (refs.length > 0)  _editTag(refs.join("&i="), _READ_TAG);
     } else {
+      if (sids.length == 0)
+        sids = Set.from(Global.sourcesModel.getSources().map((s) => s.id));
       for (var sid in sids) {
         final body = { "s": sid };
         _fetchAPI("/reader/api/0/mark-all-as-read", body: body);

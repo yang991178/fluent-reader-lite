@@ -49,6 +49,7 @@ class SyncModel with ChangeNotifier {
     syncing = true;
     notifyListeners();
     try {
+      await Global.service.reauthenticate();
       await Global.sourcesModel.updateSources();
       await Global.itemsModel.syncItems();
       await Global.itemsModel.fetchItems();

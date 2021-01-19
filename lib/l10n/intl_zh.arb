@@ -79,5 +79,6 @@
     "logOutWarning": "这将移除所有本地数据，是否继续？",
     "confirm": "确定",
     "allLoaded": "已全部加载",
-    "removeAd": "移除广告"
+    "removeAd": "移除广告",
+    "getApiKey": "获取 API ID & KEY"
   }

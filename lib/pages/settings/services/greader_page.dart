@@ -13,30 +13,31 @@ import 'package:fluent_reader_lite/utils/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:overlay_dialog/overlay_dialog.dart';
 import 'package:provider/provider.dart';
-import 'package:tuple/tuple.dart';
-import 'package:url_launcher/url_launcher.dart';
 
-class InoreaderPage extends StatefulWidget {
+class GReaderPage extends StatefulWidget {
   @override
-  _InoreaderPageState createState() => _InoreaderPageState();
+  _GReaderPageState createState() => _GReaderPageState();
 }
 
-class _InoreaderPageState extends State<InoreaderPage> {
-  static const _endpointOptions = [
-    "https://www.inoreader.com",
-    "https://www.innoreader.com",
-    "https://jp.inoreader.com"
-];
-
-  String _endpoint = Store.sp.getString(StoreKeys.ENDPOINT) ?? _endpointOptions[0];
+class _GReaderPageState extends State<GReaderPage> {
+  String _endpoint = Store.sp.getString(StoreKeys.ENDPOINT) ?? "";
   String _username = Store.sp.getString(StoreKeys.USERNAME) ?? "";
   String _password = Store.sp.getString(StoreKeys.PASSWORD) ?? "";
-  String _apiId = Store.sp.getString(StoreKeys.API_ID) ?? "";
-  String _apiKey = Store.sp.getString(StoreKeys.API_KEY) ?? "";
   int _fetchLimit = Store.sp.getInt(StoreKeys.FETCH_LIMIT) ?? 250;
-  bool _removeAd = Store.sp.getBool(StoreKeys.INOREADER_REMOVE_AD) ?? true;
 
   bool _validating = false;
+
+  void _editEndpoint() async {
+    final String endpoint = await Navigator.of(context).push(CupertinoPageRoute(
+      builder: (context) => TextEditorPage(
+        S.of(context).endpoint, 
+        Utils.testUrl,
+        initialValue: _endpoint,
+      ),
+    ));
+    if (endpoint == null) return;
+    setState(() { _endpoint = endpoint; });
+  }
 
   void _editUsername() async {
     final String username = await Navigator.of(context).push(CupertinoPageRoute(
@@ -62,34 +63,9 @@ class _InoreaderPageState extends State<InoreaderPage> {
     setState(() { _password = password; });
   }
 
-  void _editAPIId() async {
-    final String apiId = await Navigator.of(context).push(CupertinoPageRoute(
-      builder: (context) => TextEditorPage(
-        "API ID", 
-        Utils.notEmpty,
-        initialValue: _apiId,
-      ),
-    ));
-    if (apiId == null) return;
-    setState(() { _apiId = apiId; });
-  }
-
-  void _editAPIKey() async {
-    final String apiKey = await Navigator.of(context).push(CupertinoPageRoute(
-      builder: (context) => TextEditorPage(
-        "API Key", 
-        Utils.notEmpty,
-        initialValue: _apiKey,
-      ),
-    ));
-    if (apiKey == null) return;
-    setState(() { _apiKey = apiKey; });
-  }
-
   bool _canSave() {
     if (_validating) return false;
-    return _endpoint.length > 0 && _username.length > 0 && _password.length > 0
-      && _apiId.length > 0 && _apiKey.length > 0;
+    return _endpoint.length > 0 && _username.length > 0 && _password.length > 0;
   }
 
   void _save() async {
@@ -98,9 +74,6 @@ class _InoreaderPageState extends State<InoreaderPage> {
       _username,
       _password,
       _fetchLimit,
-      inoreaderId: _apiId,
-      inoreaderKey: _apiKey,
-      removeInoreaderAd: _removeAd,
     );
     setState(() { _validating = true; });
     DialogHelper().show(
@@ -163,19 +136,16 @@ class _InoreaderPageState extends State<InoreaderPage> {
     }
   }
 
-  void _getKey() {
-    launch(_endpoint + "/all_articles#preferences-developer", forceSafariVC: false, forceWebView: false);
-  }
-
   @override
   Widget build(BuildContext context) {
-    final endpointItems = ListTileGroup.fromOptions(
-      _endpointOptions.map((e) => Tuple2(e, e)).toList(),
-      _endpoint,
-      (e) { setState(() { _endpoint = e; } ); },
-      title: S.of(context).endpoint,
-    );
     final inputs = ListTileGroup([
+      MyListTile(
+        title: Text(S.of(context).endpoint),
+        trailing: Text(_endpoint.length == 0
+          ? S.of(context).enter
+          : S.of(context).entered),
+        onTap: _editEndpoint,
+      ),
       MyListTile(
         title: Text(S.of(context).username),
         trailing: Text(_username.length == 0
@@ -190,35 +160,8 @@ class _InoreaderPageState extends State<InoreaderPage> {
           : S.of(context).entered),
         onTap: _editPassword,
       ),
-      MyListTile(
-        title: Text("API ID"),
-        trailing: Text(_apiId.length == 0
-          ? S.of(context).enter
-          : S.of(context).entered),
-        onTap: _editAPIId,
-      ),
-      MyListTile(
-        title: Text("API Key"),
-        trailing: Text(_apiKey.length == 0
-          ? S.of(context).enter
-          : S.of(context).entered),
-        onTap: _editAPIKey,
-      ),
-      MyListTile(
-        title: Text(S.of(context).getApiKey),
-        onTap: _getKey,
-        withDivider: false,
-      ),
     ], title: S.of(context).credentials);
     final syncItems = ListTileGroup([
-      MyListTile(
-        title: Text(S.of(context).removeAd),
-        trailing: CupertinoSwitch(
-          value: _removeAd,
-          onChanged: (v) { setState(() { _removeAd = v; }); },
-        ),
-        trailingChevron: false,
-      ),
       MyListTile(
         title: Text(S.of(context).fetchLimit),
         trailing: Text(_fetchLimit.toString()),
@@ -286,10 +229,9 @@ class _InoreaderPageState extends State<InoreaderPage> {
     final page = CupertinoPageScaffold(
       backgroundColor: MyColors.background,
       navigationBar: CupertinoNavigationBar(
-        middle: Text("Inoreader"),
+        middle: Text("Google Reader API"),
       ),
       child: ListView(children: [
-        endpointItems,
         inputs,
         syncItems,
         saveButton,

@@ -79,5 +79,6 @@
     "logOutWarning": "All local data will be deleted. Are you sure?",
     "confirm": "Confirm",
     "allLoaded": "All loaded",
-    "removeAd": "Remove Ad"
+    "removeAd": "Remove Ad",
+    "getApiKey": "Get API ID & Key"
   }

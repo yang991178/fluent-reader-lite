@@ -35,6 +35,7 @@ class SetupPage extends StatelessWidget {
       ),
       MyListTile(
         title: Text("Google Reader API"),
+        onTap: () { _configure(context, "/settings/service/greader"); },
       ),
       MyListTile(
         title: Text("Inoreader"),

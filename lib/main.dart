@@ -9,6 +9,7 @@ import 'package:fluent_reader_lite/pages/settings/general_page.dart';
 import 'package:fluent_reader_lite/pages/settings/reading_page.dart';
 import 'package:fluent_reader_lite/pages/settings/services/feedbin_page.dart';
 import 'package:fluent_reader_lite/pages/settings/services/fever_page.dart';
+import 'package:fluent_reader_lite/pages/settings/services/greader_page.dart';
 import 'package:fluent_reader_lite/pages/settings/services/inoreader_page.dart';
 import 'package:fluent_reader_lite/pages/settings/source_edit_page.dart';
 import 'package:fluent_reader_lite/pages/settings/sources_page.dart';
@@ -62,6 +63,7 @@ class MyApp extends StatelessWidget {
     "/settings/service/fever": (context) => FeverPage(),
     "/settings/service/feedbin": (context) => FeedbinPage(),
     "/settings/service/inoreader": (context) => InoreaderPage(),
+    "/settings/service/greader": (context) => GReaderPage(),
     "/settings/service": (context) {
       var serviceType = SyncService.values[Store.sp.getInt(StoreKeys.SYNC_SERVICE) ?? 0];
       switch (serviceType) {
@@ -72,7 +74,7 @@ class MyApp extends StatelessWidget {
         case SyncService.Feedbin:
           return FeedbinPage();
         case SyncService.GReader:
-          // TODO: Handle this case.
+          return GReaderPage();
           break;
         case SyncService.Inoreader:
           return InoreaderPage();
