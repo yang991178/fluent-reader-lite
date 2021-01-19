@@ -95,6 +95,9 @@ class ArticlePageState extends State<ArticlePage> {
       await Future.delayed(Duration(milliseconds: 300));
     }
     setState(() { loaded = true; });
+    if (_target == SourceOpenTarget.Local || _target == SourceOpenTarget.FullContent) {
+      navigated = true;
+    }
   }
   void _onWebpageReady(_) {
     if (loaded) navigated = true;

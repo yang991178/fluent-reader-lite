@@ -11,7 +11,7 @@ class TextEditorPage extends StatefulWidget {
   final String initialValue;
   final Color navigationBarColor;
   final FutureOr<bool> Function(String) validate;
-  final bool isPassword;
+  final TextInputType inputType;
 
   TextEditorPage(
     this.title,
@@ -20,7 +20,7 @@ class TextEditorPage extends StatefulWidget {
       this.navigationBarColor,
       this.saveText,
       this.initialValue: "",
-      this.isPassword: false,
+      this.inputType,
       Key key,
     })
     : super(key: key);
@@ -88,8 +88,8 @@ class _TextEditorPage extends State<TextEditorPage> {
             clearButtonMode: OverlayVisibilityMode.editing,
             readOnly: _validating,
             autofocus: true,
-            obscureText: widget.isPassword,
-            keyboardType: widget.isPassword ? TextInputType.visiblePassword : null,
+            obscureText: widget.inputType == TextInputType.visiblePassword,
+            keyboardType: widget.inputType,
             onSubmitted: (v) { _onSave(); },
           ),
         ]),

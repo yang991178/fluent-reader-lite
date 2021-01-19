@@ -55,7 +55,7 @@ class _InoreaderPageState extends State<InoreaderPage> {
       builder: (context) => TextEditorPage(
         S.of(context).password, 
         Utils.notEmpty,
-        isPassword: true,
+        inputType: TextInputType.visiblePassword,
       ),
     ));
     if (password == null) return;
@@ -68,6 +68,7 @@ class _InoreaderPageState extends State<InoreaderPage> {
         "API ID", 
         Utils.notEmpty,
         initialValue: _apiId,
+        inputType: TextInputType.number,
       ),
     ));
     if (apiId == null) return;

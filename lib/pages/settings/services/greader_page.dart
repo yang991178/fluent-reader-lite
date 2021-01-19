@@ -33,6 +33,7 @@ class _GReaderPageState extends State<GReaderPage> {
         S.of(context).endpoint, 
         Utils.testUrl,
         initialValue: _endpoint,
+        inputType: TextInputType.url,
       ),
     ));
     if (endpoint == null) return;
@@ -56,7 +57,7 @@ class _GReaderPageState extends State<GReaderPage> {
       builder: (context) => TextEditorPage(
         S.of(context).password, 
         Utils.notEmpty,
-        isPassword: true,
+        inputType: TextInputType.visiblePassword,
       ),
     ));
     if (password == null) return;

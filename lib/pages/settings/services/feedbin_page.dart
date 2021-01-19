@@ -32,6 +32,7 @@ class _FeedbinPageState extends State<FeedbinPage> {
         S.of(context).endpoint, 
         Utils.testUrl,
         initialValue: _endpoint,
+        inputType: TextInputType.url,
       ),
     ));
     if (endpoint == null) return;
@@ -55,7 +56,7 @@ class _FeedbinPageState extends State<FeedbinPage> {
       builder: (context) => TextEditorPage(
         S.of(context).password, 
         Utils.notEmpty,
-        isPassword: true,
+        inputType: TextInputType.visiblePassword,
       ),
     ));
     if (password == null) return;
