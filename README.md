@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="120" height="120" src="https://github.com/yang991178/rss-reader/raw/master/build/icon.png">
+  <img width="120" height="120" src="https://github.com/yang991178/fluent-reader/raw/master/build/icon.png">
 </p>
 <h3 align="center">Fluent Reader Lite</h3>
 <p align="center">A simplistic mobile RSS client</p>
@@ -7,10 +7,24 @@
 
 ## Download
 
-Fluent Reader Lite will first be available through TestFlight on iOS and as an APK download through GitHub Releases on Android. 
-Eventually, the app will be released on App Store and Google Play Store.
+### Stable Version
+
+The stable version of the app will be released on App Store and Google Play Store when it is ready.
+
+### Beta Version
+
+- iOS: [Download from TestFlight](https://testflight.apple.com/join/9fwRtH8C)
+- Android: [Download from GitHub Releases](https://github.com/yang991178/fluent-reader-lite/releases)
+
+### Desktop App
+
+The repo of the full-featured desktop app [can be found here](https://github.com/yang991178/fluent-reader).
 
 ## Features
+
+<p align="center">
+  <img src="https://github.com/yang991178/fluent-reader-lite/raw/master/assets/demo/demo.png">
+</p>
 
 Fluent Reader Lite is a simplistic, cross-platform, and open-source RSS client.
 
