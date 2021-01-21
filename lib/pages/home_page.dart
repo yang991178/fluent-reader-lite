@@ -46,59 +46,61 @@ class _HomePageState extends State<HomePage> {
       );
   }
 
+  Widget buildLeft(BuildContext context, {isMobile: true}) {
+    final leftTabs = CupertinoTabScaffold(
+      controller: _controller,
+      backgroundColor: CupertinoColors.systemBackground,
+      tabBar: CupertinoTabBar(
+        backgroundColor: CupertinoColors.systemBackground,
+        onTap: _scrollTopNotifier.onTap,
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.timeline),
+            label: S.of(context).feed,
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.list),
+            label: S.of(context).subscriptions,
+          ),
+        ],
+      ),
+      tabBuilder: (context, index) {
+        return CupertinoTabView(
+          navigatorKey: _tabNavigatorKeys[index],
+          routes: {
+            '/feed': (context) {
+              Widget page = ItemListPage(_scrollTopNotifier);
+              return _constructPage(page, isMobile);
+            },
+          },
+          builder: (context) {
+            Widget page = index == 0
+              ? ItemListPage(_scrollTopNotifier)
+              : SubscriptionListPage(_scrollTopNotifier);
+            return _constructPage(page, isMobile);
+          },
+        );
+      },
+    );
+    return WillPopScope(
+      child: leftTabs,
+      onWillPop: () async {
+        return !(await _tabNavigatorKeys[_controller.index].currentState.maybePop());
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Selector<SyncModel, bool>(
       selector: (context, syncModel) => syncModel.hasService,
       builder: (context, hasService, child) {
         if (!hasService) return SetupPage();
-        var isMobile = true;
-        final leftTabs = CupertinoTabScaffold(
-          controller: _controller,
-          backgroundColor: CupertinoColors.systemBackground,
-          tabBar: CupertinoTabBar(
-            backgroundColor: CupertinoColors.systemBackground,
-            onTap: _scrollTopNotifier.onTap,
-            items: [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.timeline),
-                label: S.of(context).feed,
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.list),
-                label: S.of(context).subscriptions,
-              ),
-            ],
-          ),
-          tabBuilder: (context, index) {
-            return CupertinoTabView(
-              navigatorKey: _tabNavigatorKeys[index],
-              routes: {
-                '/feed': (context) {
-                  Widget page = ItemListPage(_scrollTopNotifier);
-                  return _constructPage(page, isMobile);
-                },
-              },
-              builder: (context) {
-                Widget page = index == 0
-                  ? ItemListPage(_scrollTopNotifier)
-                  : SubscriptionListPage(_scrollTopNotifier);
-                return _constructPage(page, isMobile);
-              },
-            );
-          },
-        );
-        final left = WillPopScope(
-          child: leftTabs,
-          onWillPop: () async {
-            return !(await _tabNavigatorKeys[_controller.index].currentState.maybePop());
-          },
-        );
         return ScreenTypeLayout.builder(
-          mobile: (context) => left,
+          mobile: (context) => buildLeft(context),
           tablet: (context) {
-            isMobile = false;
-            var right = Container(
+            final left = buildLeft(context, isMobile: false);
+            final right = Container(
               decoration: BoxDecoration(),
               clipBehavior: Clip.hardEdge,
               child: CupertinoTabView(

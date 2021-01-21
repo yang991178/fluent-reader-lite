@@ -5,6 +5,7 @@
  */
 
 import 'package:fluent_reader_lite/utils/colors.dart';
+import 'package:fluent_reader_lite/utils/global.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/widgets.dart';
 
@@ -78,7 +79,7 @@ class CupertinoToolbar extends StatelessWidget {
           child: SafeArea(
             top: false,
             child: SizedBox(
-              height: 44.0,
+              height: Global.isTablet ? 50.0 : 44.0,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: _createButtons()
