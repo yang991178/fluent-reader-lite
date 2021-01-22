@@ -1,0 +1,149 @@
+html, body {
+    background-color: #f3f2f1;
+    font-family: sans-serif;
+    margin: 0;
+    line-height: 1.5;
+    height: 100%;
+}
+html {
+    overflow: scroll hidden;
+    width: 100%;
+}
+body {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: nowrap;
+    flex-shrink: 0;
+    width: max-content;
+}
+
+a {
+    color: #0078d4;
+    text-decoration: none;
+}
+a:hover, a:active {
+    color: #004578;
+    text-decoration: underline;
+}
+
+div#header {
+    padding: 0 25vw 0 25vw;
+}
+div#header img {
+    width: 100px;
+    height: 100px;
+    background-color: #fff;
+    padding: 4px;
+    border-radius: 25px;
+    border:1px solid #e0e0e0;
+}
+div#header h1 span {
+    font-weight: 300;
+}
+
+div.device {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    margin-right: 150px;
+}
+div.device img {
+    max-height: 60vh;
+    max-width: 90vw;
+}
+div.device h3 {
+    padding-left: 12px;
+}
+
+div#info {
+    margin: 0 100px 0 -100px;
+    padding-bottom: 80px;
+    display: flex;
+    flex-direction: column;
+}
+div#info h4 {
+    margin: 0;
+}
+div#info ul {
+    padding: 0;
+    font-size: .875rem;
+    line-height: 1.75;
+    list-style-position: inside;
+    list-style-type: disc;
+}
+div#info ul ul {
+    color: #808080;
+    padding-left: 32px;
+    list-style-type: none;
+}
+
+div#downloads {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    margin: 64px 30vw 64px 100px;
+    font-size: .875rem;
+}
+div#downloads img {
+    width: 160px;
+}
+div#downloads a {
+    margin: 7px 0;
+}
+div#downloads .links {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    margin-top: 40px;
+}
+div#downloads .links a { 
+    display: inline-block;
+    margin: 0 12px 0 0;
+}
+div#downloads .links a:last-child {
+    margin: 0;
+}
+div#downloads .links a,
+div#downloads .links a:hover,
+div#downloads .links a:active {
+    color: #808080;
+}
+
+@media (max-width: 600px) {
+    html {
+        overflow: hidden scroll;
+        font-size: 14px;
+    }
+    body {
+        width: 100%;
+        height: unset;
+        flex-direction: column;
+        text-align: center;
+    }
+    h1 {
+        font-size: 1.5rem;
+    }
+    div#header {
+        padding: 72px 0;
+    }
+    div.device {
+        align-items: center;
+        margin: 0;
+        margin-bottom: 30px;
+    }
+    div#info {
+        margin: -30px 0 30px 0;
+        padding-bottom: 0;
+    }
+    div#info ul {
+        list-style-type: none;
+        line-height: 1.75;
+    }
+    div#info ul ul {
+        padding-left: 0;
+    }
+    div#downloads {
+        align-items: center;
+    }
+}
