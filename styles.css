@@ -132,6 +132,9 @@ div#downloads .links a:active {
         margin: 0;
         margin-bottom: 30px;
     }
+    div.device h3 {
+        padding-left: 0;
+    }
     div#info {
         margin: -30px 0 30px 0;
         padding-bottom: 0;
