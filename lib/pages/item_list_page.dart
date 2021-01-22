@@ -175,6 +175,7 @@ class _ItemListPageState extends State<ItemListPage> {
         saveText: S.of(context).search,
         initialValue: getFeed().search,
         navigationBarColor: CupertinoColors.systemBackground,
+        enableSuggestions: true,
       ),
     ));
     if (keyword == null) return;

@@ -12,6 +12,7 @@ class TextEditorPage extends StatefulWidget {
   final Color navigationBarColor;
   final FutureOr<bool> Function(String) validate;
   final TextInputType inputType;
+  final bool enableSuggestions;
 
   TextEditorPage(
     this.title,
@@ -21,6 +22,7 @@ class TextEditorPage extends StatefulWidget {
       this.saveText,
       this.initialValue: "",
       this.inputType,
+      this.enableSuggestions: false,
       Key key,
     })
     : super(key: key);
@@ -91,6 +93,8 @@ class _TextEditorPage extends State<TextEditorPage> {
             obscureText: widget.inputType == TextInputType.visiblePassword,
             keyboardType: widget.inputType,
             onSubmitted: (v) { _onSave(); },
+            autocorrect: widget.enableSuggestions,
+            enableSuggestions: widget.enableSuggestions,
           ),
         ]),
       ]),

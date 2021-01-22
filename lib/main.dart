@@ -98,6 +98,7 @@ class MyApp extends StatelessWidget {
       child: Consumer<GlobalModel>(
         builder: (context, globalModel, child) => CupertinoApp(
           title: "Fluent Reader",
+          debugShowCheckedModeBanner: false,
           localizationsDelegates: [
             // ... app-specific localization delegate[s] here
             S.delegate,
