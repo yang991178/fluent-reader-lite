@@ -5,6 +5,7 @@ import 'package:fluent_reader_lite/utils/colors.dart';
 import 'package:fluent_reader_lite/utils/global.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:package_info/package_info.dart';
 
 class SetupPage extends StatelessWidget {
   void _configure(BuildContext context, String route) {
@@ -44,13 +45,29 @@ class SetupPage extends StatelessWidget {
       MyListTile(
         title: Text("Feedbin"),
         onTap: () { _configure(context, "/settings/service/feedbin"); },
+        withDivider: false,
       ),
     ], title: S.of(context).service);
+    final settings = ListTileGroup([
+      MyListTile(
+        title: Text(S.of(context).general),
+        onTap: () { _configure(context, "/settings/general"); },
+      ),
+      MyListTile(
+        title: Text(S.of(context).about),
+        onTap: () async {
+          var infos = await PackageInfo.fromPlatform();
+          Navigator.of(context).pushNamed("/settings/about", arguments: infos.version);
+        },
+        withDivider: false,
+      ),
+    ], title: S.of(context).settings);
     final page = CupertinoPageScaffold(
       backgroundColor: MyColors.background,
       child: ListView(children: [
         top,
         services,
+        settings,
       ]),
     );
     final b = Global.currentBrightness(context) == Brightness.light;

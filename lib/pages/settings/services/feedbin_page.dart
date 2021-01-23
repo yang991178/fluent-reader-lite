@@ -33,6 +33,10 @@ class _FeedbinPageState extends State<FeedbinPage> {
         Utils.testUrl,
         initialValue: _endpoint,
         inputType: TextInputType.url,
+        suggestions: [
+          "https://api.feedbin.com/v2/",
+          "https://api.feedbin.me/v2/",
+        ],
       ),
     ));
     if (endpoint == null) return;

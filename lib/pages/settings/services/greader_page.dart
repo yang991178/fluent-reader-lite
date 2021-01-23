@@ -34,6 +34,10 @@ class _GReaderPageState extends State<GReaderPage> {
         Utils.testUrl,
         initialValue: _endpoint,
         inputType: TextInputType.url,
+        suggestions: [
+          "https://bazqux.com",
+          "https://theoldreader.com",
+        ],
       ),
     ));
     if (endpoint == null) return;

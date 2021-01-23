@@ -204,13 +204,23 @@ class _InoreaderPageState extends State<InoreaderPage> {
           ? S.of(context).enter
           : S.of(context).entered),
         onTap: _editAPIKey,
-      ),
-      MyListTile(
-        title: Text(S.of(context).getApiKey),
-        onTap: _getKey,
         withDivider: false,
       ),
     ], title: S.of(context).credentials);
+    final getKeyItems = ListTileGroup([
+      MyListTile(
+        title: Text(S.of(context).getApiKey),
+        onTap: _getKey,
+      ),
+      MyListTile(
+        title: Text(
+          S.of(context).getApiKeyHint,
+          style: TextStyle(color: CupertinoColors.secondaryLabel.resolveFrom(context)),
+        ),
+        trailingChevron: false,
+        withDivider: false,
+      ),
+    ]);
     final syncItems = ListTileGroup([
       MyListTile(
         title: Text(S.of(context).removeAd),
@@ -292,6 +302,7 @@ class _InoreaderPageState extends State<InoreaderPage> {
       child: ListView(children: [
         endpointItems,
         inputs,
+        getKeyItems,
         syncItems,
         saveButton,
         if (Global.service != null) logOutButton,

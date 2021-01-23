@@ -80,5 +80,6 @@
     "confirm": "Confirm",
     "allLoaded": "All loaded",
     "removeAd": "Remove Ad",
-    "getApiKey": "Get API ID & Key"
+    "getApiKey": "Get API ID & Key",
+    "getApiKeyHint": "In \"Preferences\" > \"Developer\""
   }
