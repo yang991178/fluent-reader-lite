@@ -136,9 +136,24 @@ class ArticlePageState extends State<ArticlePage> {
     if (isSourceFeed == null) isSourceFeed = arguments.item2;
     final resolvedDarkGrey = MyColors.dynamicDarkGrey.resolveFrom(context);
     final viewOptions = {
-      0: Padding(child: Icon(Icons.rss_feed, color: resolvedDarkGrey), padding: EdgeInsets.symmetric(horizontal: 8)),
-      1: Icon(Icons.article_outlined, color: resolvedDarkGrey),
-      2: Icon(Icons.language, color: resolvedDarkGrey),
+      0: Padding(
+        child: Icon(
+          Icons.rss_feed,
+          color: resolvedDarkGrey,
+          semanticLabel: S.of(context).rssText,
+        ),
+        padding: EdgeInsets.symmetric(horizontal: 8),
+      ),
+      1: Icon(
+        Icons.article_outlined,
+        color: resolvedDarkGrey,
+        semanticLabel: S.of(context).loadFull,
+      ),
+      2: Icon(
+        Icons.language,
+        color: resolvedDarkGrey,
+        semanticLabel: S.of(context).loadWebpage,
+      ),
     };
     return Selector2<ItemsModel, SourcesModel, Tuple2<RSSItem, RSSSource>>(
       selector: (context, itemsModel, sourcesModel) {
@@ -186,29 +201,42 @@ class ArticlePageState extends State<ArticlePage> {
               return CupertinoToolbar(
                 items: [
                   CupertinoToolbarItem(
-                    icon: item.hasRead ? CupertinoIcons.circle : CupertinoIcons.smallcircle_fill_circle,
+                    icon: item.hasRead
+                      ? CupertinoIcons.circle
+                      : CupertinoIcons.smallcircle_fill_circle,
+                    semanticLabel: item.hasRead
+                      ? S.of(context).markUnread
+                      : S.of(context).markRead,
                     onPressed: () {
                       Global.itemsModel.updateItem(item.id, read: !item.hasRead);
                     },
                   ),
                   CupertinoToolbarItem(
-                    icon: item.starred ? CupertinoIcons.star_fill : CupertinoIcons.star,
+                    icon: item.starred
+                      ? CupertinoIcons.star_fill
+                      : CupertinoIcons.star,
+                    semanticLabel: item.starred
+                      ? S.of(context).star
+                      : S.of(context).unstar,
                     onPressed: () {
                       Global.itemsModel.updateItem(item.id, starred: !item.starred);
                     },
                   ),
                   CupertinoToolbarItem(
                     icon: CupertinoIcons.share,
+                    semanticLabel: S.of(context).share,
                     onPressed: () { Share.share(item.link); },
                   ),
                   CupertinoToolbarItem(
                     icon: CupertinoIcons.chevron_up,
+                    semanticLabel: S.of(context).prev,
                     onPressed: idx <= 0 ? null : () {
                       loadNewItem(feed.iids[idx - 1]);
                     },
                   ),
                   CupertinoToolbarItem(
                     icon: CupertinoIcons.chevron_down,
+                    semanticLabel: S.of(context).next,
                     onPressed: (idx == -1 || (idx == feed.iids.length - 1 && feed.allLoaded))
                       ? null
                       : () async {

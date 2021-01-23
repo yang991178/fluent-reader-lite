@@ -79,6 +79,7 @@ class ItemsModel with ChangeNotifier {
     final items = await Global.service.fetchItems();
     final batch = Global.db.batch();
     for (var item in items) {
+      if (!Global.sourcesModel.has(item.source)) continue;
       _items[item.id] = item;
       batch.insert(
         "items",

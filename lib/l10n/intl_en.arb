@@ -81,5 +81,7 @@
     "allLoaded": "All loaded",
     "removeAd": "Remove Ad",
     "getApiKey": "Get API ID & Key",
-    "getApiKeyHint": "In \"Preferences\" > \"Developer\""
+    "getApiKeyHint": "In \"Preferences\" > \"Developer\"",
+    "prev": "Previous",
+    "next": "Next"
   }

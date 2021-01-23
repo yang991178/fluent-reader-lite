@@ -97,6 +97,11 @@ class _HomePageState extends State<HomePage> {
       builder: (context, hasService, child) {
         if (!hasService) return SetupPage();
         return ScreenTypeLayout.builder(
+          breakpoints: ScreenBreakpoints(
+            tablet: 640,
+            watch: 0,
+            desktop: 1600,
+          ),
           mobile: (context) => buildLeft(context),
           tablet: (context) {
             final left = buildLeft(context, isMobile: false);

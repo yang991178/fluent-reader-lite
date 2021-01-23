@@ -81,5 +81,7 @@
     "allLoaded": "已全部加载",
     "removeAd": "移除广告",
     "getApiKey": "获取 API ID & KEY",
-    "getApiKeyHint": "在 “偏好设置” > “开发者” 下"
+    "getApiKeyHint": "在 “偏好设置” > “开发者” 下",
+    "prev": "前一项",
+    "next": "后一项"
   }

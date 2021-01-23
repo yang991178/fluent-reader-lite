@@ -118,12 +118,18 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
           children: [
             CupertinoButton(
               padding: EdgeInsets.zero,
-              child: Icon(CupertinoIcons.checkmark_circle),
+              child: Icon(
+                CupertinoIcons.checkmark_circle,
+                semanticLabel: S.of(context).markAll,
+              ),
               onPressed: _openMarkAllModal,
             ),
             CupertinoButton(
               padding: EdgeInsets.zero,
-              child: Icon(CupertinoIcons.settings),
+              child: Icon(
+                CupertinoIcons.settings,
+                semanticLabel: S.of(context).settings,
+              ),
               onPressed: _openSettings,
             ),
           ],

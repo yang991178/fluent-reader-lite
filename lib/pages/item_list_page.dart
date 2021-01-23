@@ -306,7 +306,10 @@ class _ItemListPageState extends State<ItemListPage> {
           children: [
             CupertinoButton(
               padding: EdgeInsets.zero,
-              child: Icon(CupertinoIcons.checkmark_circle),
+              child: Icon(
+                CupertinoIcons.checkmark_circle,
+                semanticLabel: S.of(context).markAll,
+              ),
               onPressed: _openMarkAllModal,
             ),
             Consumer<FeedsModel>(
@@ -316,7 +319,8 @@ class _ItemListPageState extends State<ItemListPage> {
                   padding: EdgeInsets.zero,
                   child: Icon((feed.filterType != FilterType.All || feed.search.length > 0)
                     ? CupertinoIcons.line_horizontal_3_decrease_circle_fill
-                    : CupertinoIcons.line_horizontal_3_decrease_circle
+                    : CupertinoIcons.line_horizontal_3_decrease_circle,
+                    semanticLabel: S.of(context).filter,
                   ),
                   onPressed: _openFilterModal,
                 );
