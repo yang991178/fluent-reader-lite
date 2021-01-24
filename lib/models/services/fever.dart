@@ -67,7 +67,8 @@ class FeverServiceHandler extends ServiceHandler {
       headers: { "content-type": "application/x-www-form-urlencoded" },
       body: "api_key=$apiKey$postparams",
     );
-    return jsonDecode(response.body);
+    final body = Utf8Decoder().convert(response.bodyBytes);
+    return jsonDecode(body);
   }
 
   int get lastId => _lastId;
@@ -124,7 +125,10 @@ class FeverServiceHandler extends ServiceHandler {
     do {
       response = (await _fetchAPI(params: "&items&max_id=$minId"))["items"];
       if (response == null) throw Error();
-      items.addAll(response.where((i) => i["id"] > lastId));
+      for (var i in response) {
+        if (i["id"] is String)  i["id"] = int.parse(i["id"]);
+        if (i["id"] > lastId) items.add(i);
+      }
       if (response.length == 0 && minId == Utils.syncMaxId) {
         useInt32 = true;
         minId = 2147483647;
