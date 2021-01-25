@@ -58,7 +58,10 @@ class SourceEditPage extends StatelessWidget {
         final urlTile = ListTileGroup([
           MyListTile(
             title: Flexible(child: Text(source.url, style: urlStyle, overflow: TextOverflow.ellipsis)),
-            trailing: Icon(CupertinoIcons.doc_on_clipboard),
+            trailing: Icon(
+              CupertinoIcons.doc_on_clipboard,
+              semanticLabel: S.of(context).copy,
+            ),
             onTap: () { Clipboard.setData(ClipboardData(text: source.url)); },
             trailingChevron: false,
             withDivider: false,

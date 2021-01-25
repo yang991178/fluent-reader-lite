@@ -241,7 +241,13 @@ class _ItemListPageState extends State<ItemListPage> {
               ], mainAxisAlignment: MainAxisAlignment.spaceBetween),
               onPressed: () { 
                 Navigator.of(context, rootNavigator: true).pop();
-                Share.share(item.link);
+                final media = MediaQuery.of(context);
+                Share.share(
+                  item.link,
+                  sharePositionOrigin: Rect.fromLTWH(
+                    160, media.size.height - media.padding.bottom, 0, 0
+                  ),
+                );
               },
             ),
           ],

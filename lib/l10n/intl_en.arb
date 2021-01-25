@@ -83,5 +83,9 @@
     "getApiKey": "Get API ID & Key",
     "getApiKeyHint": "In \"Preferences\" > \"Developer\"",
     "prev": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "wentWrong": "Something went wrong.",
+    "retry": "Retry",
+    "copy": "Copy",
+    "errorLog": "Error log"
   }

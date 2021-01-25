@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:fluent_reader_lite/models/service.dart';
 import 'package:fluent_reader_lite/pages/article_page.dart';
+import 'package:fluent_reader_lite/pages/error_log_page.dart';
 import 'package:fluent_reader_lite/pages/settings/about_page.dart';
 import 'package:fluent_reader_lite/pages/home_page.dart';
 import 'package:fluent_reader_lite/pages/settings/feed_page.dart';
@@ -53,6 +54,7 @@ void main() async {
 class MyApp extends StatelessWidget {
   static final Map<String, Widget Function(BuildContext)> baseRoutes = {
     "/article": (context) => ArticlePage(),
+    "/error-log": (context) => ErrorLogPage(),
     "/settings": (context) => SettingsPage(),
     "/settings/sources": (context) => SourcesPage(),
     "/settings/sources/edit": (context) => SourceEditPage(),

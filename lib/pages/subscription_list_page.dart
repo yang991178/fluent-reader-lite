@@ -13,6 +13,7 @@ import 'package:fluent_reader_lite/utils/colors.dart';
 import 'package:fluent_reader_lite/utils/global.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:provider/provider.dart';
@@ -98,6 +99,13 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
     Navigator.of(context, rootNavigator: true).pushNamed("/settings");
   }
 
+  void _openErrorLog() {
+    if (!Global.syncModel.lastSyncSuccess) {
+      HapticFeedback.mediumImpact();
+      Navigator.of(context, rootNavigator: true).pushNamed("/error-log");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final navigationBar = CupertinoSliverNavigationBar(
@@ -166,23 +174,26 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
     final syncInfo = Consumer<SyncModel>(
       builder: (context, syncModel, child) {
         return SliverToBoxAdapter(
-          child: Container(
-            padding: EdgeInsets.all(12),
-            child: Column(
-              children: [
-                Text(
-                  syncModel.lastSyncSuccess
-                    ? S.of(context).lastSyncSuccess
-                    : S.of(context).lastSyncFailure,
-                  style: syncStyle,
-                ),
-                Text(
-                  DateFormat
-                    .Md(Localizations.localeOf(context).toString())
-                    .add_Hm().format(syncModel.lastSynced),
-                  style: syncStyle,
-                ),
-              ],
+          child: GestureDetector(
+            onLongPress: _openErrorLog,
+            child: Container(
+              padding: EdgeInsets.all(12),
+              child: Column(
+                children: [
+                  Text(
+                    syncModel.lastSyncSuccess
+                      ? S.of(context).lastSyncSuccess
+                      : S.of(context).lastSyncFailure,
+                    style: syncStyle,
+                  ),
+                  Text(
+                    DateFormat
+                      .Md(Localizations.localeOf(context).toString())
+                      .add_Hm().format(syncModel.lastSynced),
+                    style: syncStyle,
+                  ),
+                ],
+              ),
             ),
           ),
         );

@@ -56,6 +56,7 @@ class SyncModel with ChangeNotifier {
       lastSyncSuccess = true;
     } catch(exp) {
       lastSyncSuccess = false;
+      Store.setErrorLog(exp.toString());
       print(exp);
     }
     lastSynced = DateTime.now();

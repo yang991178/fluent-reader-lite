@@ -83,5 +83,9 @@
     "getApiKey": "获取 API ID & KEY",
     "getApiKeyHint": "在 “偏好设置” > “开发者” 下",
     "prev": "前一项",
-    "next": "后一项"
+    "next": "后一项",
+    "wentWrong": "发生错误",
+    "retry": "重试",
+    "copy": "复制",
+    "errorLog": "错误日志"
   }

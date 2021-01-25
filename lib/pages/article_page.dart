@@ -11,6 +11,7 @@ import 'package:fluent_reader_lite/utils/global.dart';
 import 'package:fluent_reader_lite/utils/store.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -29,10 +30,14 @@ class ArticlePage extends StatefulWidget {
   ArticlePageState createState() => ArticlePageState();
 }
 
+enum _ArticleLoadState {
+  Loading, Success, Failure
+}
+
 class ArticlePageState extends State<ArticlePage> {
   WebViewController _controller;
   int requestId = 0;
-  bool loaded = false;
+  _ArticleLoadState loaded = _ArticleLoadState.Loading;
   bool navigated = false;
   SourceOpenTarget _target;
   String iid;
@@ -44,7 +49,7 @@ class ArticlePageState extends State<ArticlePage> {
     }
     setState(() {
       iid = id;
-      loaded = false;
+      loaded = _ArticleLoadState.Loading;
       navigated = false;
       _target = null;
       if (isSource != null) isSourceFeed = isSource;
@@ -70,12 +75,15 @@ class ArticlePageState extends State<ArticlePage> {
         var html = (await http.get(item.link)).body;
         a = Uri.encodeComponent(html);
       } catch(exp) {
-        setState(() { loaded = true; });
+        if (mounted && currId == requestId) {
+          setState(() { loaded = _ArticleLoadState.Failure; });
+        }
         return;
       }
     } else {
       a = Uri.encodeComponent(item.content);
     }
+    if (!mounted || currId != requestId) return;
     var h = '<p id="source">${source.name}${(item.creator!=null&&item.creator.length>0)?' / '+item.creator:''}</p>';
     h += '<p id="title">${item.title}</p>';
     h += '<p id="date">${DateFormat.yMd(Localizations.localeOf(context).toString()).add_Hm().format(item.date)}</p>';
@@ -87,20 +95,20 @@ class ArticlePageState extends State<ArticlePage> {
       var brightness = Global.currentBrightness(context);
       localUrl += "&t=${brightness.index}";
     }
-    if (currId == requestId) _controller.loadUrl(localUrl);
+    _controller.loadUrl(localUrl);
   }
 
   void _onPageReady(_) async {
     if (Platform.isAndroid || Global.globalModel.getBrightness() != null) {
       await Future.delayed(Duration(milliseconds: 300));
     }
-    setState(() { loaded = true; });
+    setState(() { loaded = _ArticleLoadState.Success; });
     if (_target == SourceOpenTarget.Local || _target == SourceOpenTarget.FullContent) {
       navigated = true;
     }
   }
   void _onWebpageReady(_) {
-    if (loaded) navigated = true;
+    if (loaded == _ArticleLoadState.Success) navigated = true;
   }
 
   void _setOpenTarget(RSSSource source, {SourceOpenTarget target}) {
@@ -112,7 +120,7 @@ class ArticlePageState extends State<ArticlePage> {
   void _loadOpenTarget(RSSItem item, RSSSource source) {
     setState(() {
       requestId += 1;
-      loaded = false;
+      loaded = _ArticleLoadState.Loading;
       navigated = false;
     });
     switch (_target) {
@@ -166,7 +174,7 @@ class ArticlePageState extends State<ArticlePage> {
         var source = tuple.item2;
         if (_target == null) _target = source.openTarget;
         final body = SafeArea(child: IndexedStack(
-          index: !loaded ? 0 : 1,
+          index: loaded.index,
           children: [
             Center(
               child: CupertinoActivityIndicator()
@@ -182,6 +190,21 @@ class ArticlePageState extends State<ArticlePage> {
               onPageFinished: _onWebpageReady,
               navigationDelegate: _onNavigate,
             ),
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    S.of(context).wentWrong,
+                    style: TextStyle(color: CupertinoColors.label.resolveFrom(context)),
+                  ),
+                  CupertinoButton(
+                    child: Text(S.of(context).retry),
+                    onPressed: () { _loadOpenTarget(item, source); },
+                  ),
+                ],
+              ),
+            )
           ],
         ), bottom: false,);
         return CupertinoPageScaffold(
@@ -208,6 +231,7 @@ class ArticlePageState extends State<ArticlePage> {
                       ? S.of(context).markUnread
                       : S.of(context).markRead,
                     onPressed: () {
+                      HapticFeedback.mediumImpact();
                       Global.itemsModel.updateItem(item.id, read: !item.hasRead);
                     },
                   ),
@@ -219,13 +243,25 @@ class ArticlePageState extends State<ArticlePage> {
                       ? S.of(context).star
                       : S.of(context).unstar,
                     onPressed: () {
+                      HapticFeedback.mediumImpact();
                       Global.itemsModel.updateItem(item.id, starred: !item.starred);
                     },
                   ),
                   CupertinoToolbarItem(
                     icon: CupertinoIcons.share,
                     semanticLabel: S.of(context).share,
-                    onPressed: () { Share.share(item.link); },
+                    onPressed: () {
+                      final media = MediaQuery.of(context);
+                      Share.share(
+                        item.link,
+                        sharePositionOrigin: Rect.fromLTWH(
+                          media.size.width - ArticlePage.state.currentContext.size.width / 2,
+                          media.size.height - media.padding.bottom - 54,
+                          0,
+                          0
+                        )
+                      );
+                    },
                   ),
                   CupertinoToolbarItem(
                     icon: CupertinoIcons.chevron_up,

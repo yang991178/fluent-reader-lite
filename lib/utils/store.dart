@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 abstract class StoreKeys {
   static const GROUPS = "groups";
+  static const ERROR_LOG = "errorLog";
  
   // General
   static const THEME = "theme";
@@ -96,5 +97,13 @@ class Store {
   
   static void setArticleFontSize(int value) {
     sp.setInt(StoreKeys.ARTICLE_FONT_SIZE, value);
+  }
+
+  static String getErrorLog() {
+    return sp.getString(StoreKeys.ERROR_LOG) ?? "";
+  }
+
+  static void setErrorLog(String value) {
+    sp.setString(StoreKeys.ERROR_LOG, value);
   }
 }
