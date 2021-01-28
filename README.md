@@ -7,14 +7,14 @@
 
 ## Download
 
-### Stable Version
+### iOS
 
-The stable version of the app will be released on App Store and Google Play Store when it is ready.
+- [Download from App Store](https://apps.apple.com/app/id1549611796) (Paid, to support development and cover the $99 annual fee.)
+- [Download from TestFlight](https://testflight.apple.com/join/9fwRtH8C) (Free. Inactive testers may be removed due to TestFlight restrictions.)
 
-### Beta Version
+### Android
 
-- iOS: [Download from TestFlight](https://testflight.apple.com/join/9fwRtH8C)
-- Android: [Download from GitHub Releases](https://github.com/yang991178/fluent-reader-lite/releases)
+- [Download APK from GitHub Releases](https://github.com/yang991178/fluent-reader-lite/releases)
 
 ### Desktop App
 
