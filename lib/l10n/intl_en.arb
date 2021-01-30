@@ -87,5 +87,6 @@
     "wentWrong": "Something went wrong.",
     "retry": "Retry",
     "copy": "Copy",
-    "errorLog": "Error log"
+    "errorLog": "Error log",
+    "unreadSourceTip": "You can long press on the title of this page to toggle between all and unread subscriptions."
   }

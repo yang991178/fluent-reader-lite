@@ -24,6 +24,7 @@ abstract class StoreKeys {
   static const DIM_READ = "dimRead";
   static const FEED_SWIPE_R = "feedSwipeR";
   static const FEED_SWIPE_L = "feedSwipeL";
+  static const UNREAD_SOURCE_TIP = "unreadSourceTip";
 
   // Reading preferences
   static const ARTICLE_FONT_SIZE = "articleFontSize";
