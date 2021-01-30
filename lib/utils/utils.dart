@@ -2,6 +2,7 @@ import 'package:fluent_reader_lite/generated/l10n.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:lpinyin/lpinyin.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 abstract class Utils {
@@ -64,5 +65,17 @@ abstract class Utils {
         ],
       ),
     );
+  }
+
+  static int localStringCompare(String a, String b) {
+    a = a.toLowerCase();
+    b = b.toLowerCase();
+    try {
+      String ap = PinyinHelper.getShortPinyin(a);
+      String bp = PinyinHelper.getShortPinyin(b);
+      return ap.compareTo(bp);
+    } catch(exp) {
+      return a.compareTo(b);
+    }
   }
 }

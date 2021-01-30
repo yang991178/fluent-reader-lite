@@ -4,6 +4,7 @@ import 'package:fluent_reader_lite/components/my_list_tile.dart';
 import 'package:fluent_reader_lite/generated/l10n.dart';
 import 'package:fluent_reader_lite/models/sources_model.dart';
 import 'package:fluent_reader_lite/utils/colors.dart';
+import 'package:fluent_reader_lite/utils/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 
@@ -19,6 +20,7 @@ class SourcesPage extends StatelessWidget {
         Consumer<SourcesModel>(
           builder: (context, sourcesModel, child) {
             var sources = sourcesModel.getSources().toList();
+            sources.sort((a, b) => Utils.localStringCompare(a.name, b.name));
             return ListTileGroup(sources.map((s) => MyListTile(
               title: Flexible(child: Text(s.name, overflow: TextOverflow.ellipsis)),
               leading: Favicon(s, size: 20),

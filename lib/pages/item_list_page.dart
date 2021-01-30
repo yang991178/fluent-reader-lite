@@ -342,7 +342,6 @@ class _ItemListPageState extends State<ItemListPage> {
         return SliverList(
           delegate: SliverChildBuilderDelegate((content, index) {
             return Selector2<ItemsModel, SourcesModel, Tuple2<RSSItem, RSSSource>>(
-              key: Key(feed.iids[index]),
               selector: (context, itemsModel, sourcesModel) {
                 var item = itemsModel.getItem(feed.iids[index]);
                 var source = sourcesModel.getSource(item.source);

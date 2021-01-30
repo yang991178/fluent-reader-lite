@@ -7,6 +7,7 @@ import 'package:fluent_reader_lite/models/groups_model.dart';
 import 'package:fluent_reader_lite/models/source.dart';
 import 'package:fluent_reader_lite/models/sources_model.dart';
 import 'package:fluent_reader_lite/utils/global.dart';
+import 'package:fluent_reader_lite/utils/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -32,6 +33,7 @@ class _GroupListPageState extends State<GroupListPage> {
       automaticallyImplyLeading: false,
       backgroundColor: Global.isTablet ? CupertinoColors.systemBackground : null,
       leading: CupertinoButton(
+        minSize: 36,
         padding: EdgeInsets.zero,
         child: Text(S.of(context).cancel),
         onPressed: () { Navigator.of(context).pop(); },
@@ -52,7 +54,7 @@ class _GroupListPageState extends State<GroupListPage> {
     final groupList = Consumer2<GroupsModel, SourcesModel>(
       builder: (context, groupsModel, sourcesModel, child) {
         final groupNames = groupsModel.groups.keys.toList();
-        groupNames.sort();
+        groupNames.sort(Utils.localStringCompare);
         return SliverList(
           delegate: SliverChildBuilderDelegate((context, index) {
             final groupName = groupNames[index];
