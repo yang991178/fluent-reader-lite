@@ -59,7 +59,7 @@ abstract class Global {
     db = await DatabaseHelper.getDatabase();
     await db.delete(
       "items",
-      where: "date < ?",
+      where: "date < ? AND starred = 0",
       whereArgs: [
         DateTime.now()
           .subtract(Duration(days: globalModel.keepItemsDays))

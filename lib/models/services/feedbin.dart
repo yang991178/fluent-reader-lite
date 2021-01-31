@@ -49,7 +49,7 @@ class FeedbinServiceHandler extends ServiceHandler {
 
   @override
   void remove() {
-    Store.sp.remove(StoreKeys.SYNC_SERVICE);
+    super.remove();
     Store.sp.remove(StoreKeys.ENDPOINT);
     Store.sp.remove(StoreKeys.USERNAME);
     Store.sp.remove(StoreKeys.PASSWORD);

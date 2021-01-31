@@ -9,6 +9,7 @@ class GroupsModel with ChangeNotifier {
   Map<String, List<String>> get groups => _groups;
   set groups(Map<String, List<String>> groups) {
     _groups = groups;
+    updateUncategorized();
     notifyListeners();
     Store.setGroups(groups);
   }
