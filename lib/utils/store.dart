@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 abstract class StoreKeys {
   static const GROUPS = "groups";
   static const ERROR_LOG = "errorLog";
+  static const UNCATEGORIZED = "uncategorized";
  
   // General
   static const THEME = "theme";
@@ -90,6 +91,21 @@ class Store {
 
   static void setGroups(Map<String, List<String>> groups) {
     sp.setString(StoreKeys.GROUPS, jsonEncode(groups));
+  }
+
+  static List<String> getUncategorized() {
+    final stored = sp.getString(StoreKeys.UNCATEGORIZED);
+    if (stored == null) return null;
+    final parsed = jsonDecode(stored);
+    return List.castFrom(parsed);
+  }
+
+  static void setUncategorized(List<String> value) {
+    if (value == null) {
+      sp.remove(StoreKeys.UNCATEGORIZED);
+    } else {
+      sp.setString(StoreKeys.UNCATEGORIZED, jsonEncode(value));
+    }
   }
 
   static int getArticleFontSize() {

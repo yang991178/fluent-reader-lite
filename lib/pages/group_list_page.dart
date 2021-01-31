@@ -18,6 +18,8 @@ class GroupListPage extends StatefulWidget {
 }
 
 class _GroupListPageState extends State<GroupListPage> {
+  static const List<String> _uncategorizedIndicator = [null, null];
+
   int _unreadCount(Iterable<RSSSource> sources) {
     return sources.fold(0, (c, s) => c + (s != null ? s.unreadCount : 0));
   }
@@ -55,27 +57,43 @@ class _GroupListPageState extends State<GroupListPage> {
       builder: (context, groupsModel, sourcesModel, child) {
         final groupNames = groupsModel.groups.keys.toList();
         groupNames.sort(Utils.localStringCompare);
+        if (groupsModel.uncategorized != null) {
+          groupNames.insert(0, null);
+        }
         return SliverList(
           delegate: SliverChildBuilderDelegate((context, index) {
-            final groupName = groupNames[index];
+            String groupName;
+            List<String> group;
+            final isUncategorized = groupsModel.showUncategorized && index == 0;
+            if (isUncategorized) {
+              groupName = S.of(context).uncategorized;
+              group = groupsModel.uncategorized;
+            } else {
+              groupName = groupNames[index];
+              group = groupsModel.groups[groupName];
+            }
             final count = _unreadCount(
-              groupsModel.groups[groupName].map((sid) => sourcesModel.getSource(sid))
+              group.map((sid) => sourcesModel.getSource(sid))
             );
             final tile = MyListTile(
               title: Flexible(child: Text(groupName, overflow: TextOverflow.ellipsis)),
               trailing: count > 0 ? Badge(count) : null,
-              onTap: () { Navigator.of(context).pop([groupName]); },
+              onTap: () { 
+                Navigator.of(context).pop(
+                  isUncategorized ? _uncategorizedIndicator : [groupName]
+                );
+              },
               background: CupertinoColors.systemBackground,
             );
             return Dismissible(
-              key: Key(groupName),
+              key: Key("$groupName$index"),
               child: tile,
               background: dismissBg,
               direction: DismissDirection.startToEnd,
               dismissThresholds: _dismissThresholds,
               confirmDismiss: (_) async {
                 HapticFeedback.mediumImpact();
-                Set<String> sids = Set.from(groupsModel.groups[groupName]);
+                Set<String> sids = Set.from(group);
                 showCupertinoModalPopup(
                   context: context,
                   builder: (context) => MarkAllActionSheet(sids),

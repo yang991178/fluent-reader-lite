@@ -88,5 +88,7 @@
     "retry": "重试",
     "copy": "复制",
     "errorLog": "错误日志",
-    "unreadSourceTip": "您可以长按此页面的标题来切换全部订阅源或仅未读订阅源。"
+    "unreadSourceTip": "您可以长按此页面的标题来切换全部订阅源或仅未读订阅源。",
+    "uncategorized": "未分组",
+    "showUncategorized": "显示“未分组”"
   }

@@ -2,6 +2,7 @@ import 'package:fluent_reader_lite/components/list_tile_group.dart';
 import 'package:fluent_reader_lite/components/my_list_tile.dart';
 import 'package:fluent_reader_lite/generated/l10n.dart';
 import 'package:fluent_reader_lite/models/feeds_model.dart';
+import 'package:fluent_reader_lite/models/groups_model.dart';
 import 'package:fluent_reader_lite/utils/colors.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
@@ -56,35 +57,52 @@ class FeedPage extends StatelessWidget {
             ItemSwipeOption.OpenExternal: S.of(context).openExternal,
             ItemSwipeOption.OpenMenu: S.of(context).openMenu,
           };
-          return ListView(
-            children: [
-              ListTileGroup([
-                MyListTile(
-                  title: Text(S.of(context).showThumb),
+          final preferences = ListTileGroup([
+            MyListTile(
+              title: Text(S.of(context).showThumb),
+              trailing: CupertinoSwitch(
+                value: feedsModel.showThumb,
+                onChanged: (v) { feedsModel.showThumb = v; },
+              ),
+              trailingChevron: false,
+            ),
+            MyListTile(
+              title: Text(S.of(context).showSnippet),
+              trailing: CupertinoSwitch(
+                value: feedsModel.showSnippet,
+                onChanged: (v) { feedsModel.showSnippet = v; },
+              ),
+              trailingChevron: false,
+            ),
+            MyListTile(
+              title: Text(S.of(context).dimRead),
+              trailing: CupertinoSwitch(
+                value: feedsModel.dimRead,
+                onChanged: (v) { feedsModel.dimRead = v; },
+              ),
+              trailingChevron: false,
+              withDivider: false,
+            ),
+          ], title: S.of(context).preferences);
+          final groups = ListTileGroup([
+            Consumer<GroupsModel>(
+              builder: (context, groupsModel, child) {
+                return MyListTile(
+                  title: Text(S.of(context).showUncategorized),
                   trailing: CupertinoSwitch(
-                    value: feedsModel.showThumb,
-                    onChanged: (v) { feedsModel.showThumb = v; },
-                  ),
-                  trailingChevron: false,
-                ),
-                MyListTile(
-                  title: Text(S.of(context).showSnippet),
-                  trailing: CupertinoSwitch(
-                    value: feedsModel.showSnippet,
-                    onChanged: (v) { feedsModel.showSnippet = v; },
-                  ),
-                  trailingChevron: false,
-                ),
-                MyListTile(
-                  title: Text(S.of(context).dimRead),
-                  trailing: CupertinoSwitch(
-                    value: feedsModel.dimRead,
-                    onChanged: (v) { feedsModel.dimRead = v; },
+                    value: groupsModel.showUncategorized,
+                    onChanged: (v) { groupsModel.showUncategorized = v; },
                   ),
                   trailingChevron: false,
                   withDivider: false,
-                ),
-              ], title: S.of(context).preferences),
+                );
+              },
+            ),
+          ], title: S.of(context).groups);
+          return ListView(
+            children: [
+              preferences,
+              groups,
               ListTileGroup([
                 MyListTile(
                   title: Text(S.of(context).swipeRight),

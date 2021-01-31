@@ -73,10 +73,16 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
     }
     if (!mounted) return;
     if (result != null) {
+      _onScrollTop();
       if (result.length == 0) {
         setState(() {
           title = null;
           sids = null;
+        });
+      } else if (result.length > 1) {
+        setState(() {
+          title = S.of(context).uncategorized;
+          sids = Global.groupsModel.uncategorized;
         });
       } else {
         setState(() {

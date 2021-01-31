@@ -88,5 +88,7 @@
     "retry": "Retry",
     "copy": "Copy",
     "errorLog": "Error log",
-    "unreadSourceTip": "You can long press on the title of this page to toggle between all and unread subscriptions."
+    "unreadSourceTip": "You can long press on the title of this page to toggle between all and unread subscriptions.",
+    "uncategorized": "Uncategorized",
+    "showUncategorized": "Show uncategorized"
   }
