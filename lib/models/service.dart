@@ -1,5 +1,7 @@
 import 'package:fluent_reader_lite/models/item.dart';
 import 'package:fluent_reader_lite/models/source.dart';
+import 'package:fluent_reader_lite/utils/global.dart';
+import 'package:fluent_reader_lite/utils/store.dart';
 import 'package:tuple/tuple.dart';
 
 enum SyncService {
@@ -7,7 +9,11 @@ enum SyncService {
 }
 
 abstract class ServiceHandler {
-  void remove();
+  void remove() {
+    Store.sp.remove(StoreKeys.SYNC_SERVICE);
+    Global.groupsModel.groups = Map();
+    Global.groupsModel.showUncategorized = false;
+  }
   Future<bool> validate();
   Future<void> reauthenticate() async { }
   Future<Tuple2<List<RSSSource>, Map<String, List<String>>>> getSources();

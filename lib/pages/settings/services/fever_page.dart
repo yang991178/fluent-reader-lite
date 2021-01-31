@@ -6,6 +6,7 @@ import 'package:fluent_reader_lite/components/list_tile_group.dart';
 import 'package:fluent_reader_lite/components/my_list_tile.dart';
 import 'package:fluent_reader_lite/generated/l10n.dart';
 import 'package:fluent_reader_lite/models/services/fever.dart';
+import 'package:fluent_reader_lite/models/services/service_import.dart';
 import 'package:fluent_reader_lite/models/sync_model.dart';
 import 'package:fluent_reader_lite/pages/settings/text_editor_page.dart';
 import 'package:fluent_reader_lite/utils/colors.dart';
@@ -24,9 +25,28 @@ class FeverPage extends StatefulWidget {
 class _FeverPageState extends State<FeverPage> {
   String _endpoint = Store.sp.getString(StoreKeys.ENDPOINT) ?? "";
   String _username = Store.sp.getString(StoreKeys.USERNAME) ?? "";
+  String _apiKey = Store.sp.getString(StoreKeys.API_KEY);
   String _password = Store.sp.getString(StoreKeys.PASSWORD) ?? "";
   int _fetchLimit = Store.sp.getInt(StoreKeys.FETCH_LIMIT) ?? 250;
   bool _validating = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(Duration.zero, () {
+      ServiceImport import = ModalRoute.of(context).settings.arguments;
+      if (import == null) return;
+      if (Utils.testUrl(import.endpoint)) {
+        setState(() { _endpoint = import.endpoint; });
+      }
+      if (Utils.notEmpty(import.username)) {
+        setState(() { _username = import.username; });
+      }
+      if (Utils.notEmpty(import.apiKey)) {
+        setState(() { _apiKey = import.apiKey; });
+      }
+    });
+  }
 
   void _editEndpoint() async {
     final String endpoint = await Navigator.of(context).push(CupertinoPageRoute(
@@ -50,7 +70,10 @@ class _FeverPageState extends State<FeverPage> {
       ),
     ));
     if (username == null) return;
-    setState(() { _username = username; });
+    setState(() {
+      _username = username;
+      _apiKey = null;
+    });
   }
 
   void _editPassword() async {
@@ -62,16 +85,21 @@ class _FeverPageState extends State<FeverPage> {
       ),
     ));
     if (password == null) return;
-    setState(() { _password = password; });
+    setState(() {
+      _password = password;
+      _apiKey = null;
+    });
   }
 
   bool _canSave() {
     if (_validating) return false;
-    return _endpoint.length > 0 && _username.length > 0 && _password.length > 0;
+    return _endpoint.length > 0 &&
+      ((_username.length > 0 && _password.length > 0) || _apiKey != null);
   }
 
   void _save() async {
-    final apiKey = md5.convert(utf8.encode("$_username:$_password")).toString();
+    final apiKey = _apiKey
+      ?? md5.convert(utf8.encode("$_username:$_password")).toString();
     final handler = FeverServiceHandler.fromValues(
       _endpoint,
       apiKey,
@@ -154,7 +182,7 @@ class _FeverPageState extends State<FeverPage> {
       ),
       MyListTile(
         title: Text(S.of(context).password),
-        trailing: Text(_password.length == 0
+        trailing: Text(_password.length == 0 && _apiKey == null
           ? S.of(context).enter
           : S.of(context).entered),
         onTap: _editPassword,

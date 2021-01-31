@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:fluent_reader_lite/generated/l10n.dart';
 import 'package:fluent_reader_lite/main.dart';
+import 'package:fluent_reader_lite/models/services/service_import.dart';
 import 'package:fluent_reader_lite/models/sync_model.dart';
 import 'package:fluent_reader_lite/pages/setup_page.dart';
 import 'package:fluent_reader_lite/pages/subscription_list_page.dart';
@@ -9,10 +12,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_builder/responsive_builder.dart';
+import 'package:uni_links/uni_links.dart';
 
 import 'item_list_page.dart';
 
 class HomePage extends StatefulWidget {
+  HomePage() : super(key: Key("home"));
+
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -33,6 +39,57 @@ class _HomePageState extends State<HomePage> {
   final List<GlobalKey<NavigatorState>> _tabNavigatorKeys = [
     GlobalKey(), GlobalKey(),
   ];
+  StreamSubscription _uriSub;
+
+  void _uriStreamListener(Uri uri) {
+    if (uri == null) return;
+    if (uri.host == "import") {
+      if (Global.syncModel.hasService) {
+        showCupertinoDialog(
+          context: context, 
+          builder: (context) => CupertinoAlertDialog(
+            title: Text(S.of(context).serviceExists),
+            actions: [
+              CupertinoDialogAction(
+                child: Text(S.of(context).confirm),
+                onPressed: () { Navigator.of(context).pop(); },
+              ),
+            ],
+          ),
+        );
+      } else if (!Global.syncModel.syncing) {
+        final import = ServiceImport(uri.queryParameters);
+        final route = ServiceImport.typeMap[uri.queryParameters["t"]];
+        if (route != null) {
+          final navigator = Navigator.of(context);
+          while (navigator.canPop()) navigator.pop();
+          navigator.pushNamed(route, arguments: import);
+        }
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _uriSub = getUriLinksStream().listen(_uriStreamListener);
+    Future.delayed(Duration.zero, () async {
+      try {
+        final uri = await getInitialUri();
+        if (uri != null) {
+          _uriStreamListener(uri);
+        }
+      } catch(exp) {
+        print(exp);
+      }
+    });
+  }
+
+  @override
+  dispose() {
+    _uriSub.cancel();
+    super.dispose();
+  }
 
   Widget _constructPage(Widget page, bool isMobile) {
     return isMobile

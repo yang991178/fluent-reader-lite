@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:fluent_reader_lite/components/list_tile_group.dart';
 import 'package:fluent_reader_lite/components/my_list_tile.dart';
 import 'package:fluent_reader_lite/generated/l10n.dart';
 import 'package:fluent_reader_lite/models/services/greader.dart';
+import 'package:fluent_reader_lite/models/services/service_import.dart';
 import 'package:fluent_reader_lite/models/sync_model.dart';
 import 'package:fluent_reader_lite/pages/settings/text_editor_page.dart';
 import 'package:fluent_reader_lite/utils/colors.dart';
@@ -26,6 +28,26 @@ class _GReaderPageState extends State<GReaderPage> {
   int _fetchLimit = Store.sp.getInt(StoreKeys.FETCH_LIMIT) ?? 250;
 
   bool _validating = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(Duration.zero, () {
+      ServiceImport import = ModalRoute.of(context).settings.arguments;
+      if (import == null) return;
+      if (Utils.testUrl(import.endpoint)) {
+        setState(() { _endpoint = import.endpoint; });
+      }
+      if (Utils.notEmpty(import.username)) {
+        setState(() { _username = import.username; });
+      }
+      if (Utils.notEmpty(import.password)) {
+        final bytes = base64.decode(import.password);
+        final password = utf8.decode(bytes);
+        setState(() { _password = password; });
+      }
+    });
+  }
 
   void _editEndpoint() async {
     final String endpoint = await Navigator.of(context).push(CupertinoPageRoute(

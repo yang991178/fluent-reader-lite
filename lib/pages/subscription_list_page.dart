@@ -33,6 +33,7 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
   List<String> sids;
   String title;
   bool transitioning = false;
+  bool unreadOnly = false;
 
   void _onScrollTop() {
     if (widget.scrollTopNotifier.index == 1 && !Navigator.of(context).canPop()) {
@@ -72,10 +73,16 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
     }
     if (!mounted) return;
     if (result != null) {
+      _onScrollTop();
       if (result.length == 0) {
         setState(() {
           title = null;
           sids = null;
+        });
+      } else if (result.length > 1) {
+        setState(() {
+          title = S.of(context).uncategorized;
+          sids = Global.groupsModel.uncategorized;
         });
       } else {
         setState(() {
@@ -106,15 +113,93 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
     }
   }
 
+  void _toggleUnreadOnly() {
+    HapticFeedback.mediumImpact();
+    setState(() { unreadOnly = !unreadOnly; });
+    _onScrollTop();
+  }
+
+  void _dismissTip() {
+    if (Global.sourcesModel.showUnreadTip) {
+      Global.sourcesModel.showUnreadTip = false;
+      setState(() {});
+    }
+  }
+
+  Widget _buildUnreadTip() {
+    return SliverToBoxAdapter(child: Container(
+      padding: EdgeInsets.all(16),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: EdgeInsets.all(12),
+          color: CupertinoColors.secondarySystemBackground.resolveFrom(context),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: EdgeInsets.only(right: 12),
+                child: Icon(Icons.radio_button_checked),
+              ),
+              Flexible(child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    S.of(context).unreadSourceTip,
+                    style: TextStyle(
+                      color: CupertinoColors.label.resolveFrom(context),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Padding(padding: EdgeInsets.only(bottom: 6)),
+                  CupertinoButton(
+                    minSize: 28,
+                    padding: EdgeInsets.zero,
+                    child: Text(S.of(context).confirm),
+                    onPressed: _dismissTip,
+                  ),
+                ],
+              )),
+            ],
+          ),
+        ),
+      ),
+    ));
+  }
+
   @override
   Widget build(BuildContext context) {
+    final titleWidget = GestureDetector(
+      onLongPress: _toggleUnreadOnly,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            constraints: BoxConstraints(
+              maxWidth: Global.isTablet
+                ? 260
+                : MediaQuery.of(context).size.width - 60,
+            ),
+            child: Text(
+              title ?? S.of(context).subscriptions, 
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          if (unreadOnly) Padding(
+            padding: EdgeInsets.only(left: 4),
+            child: Icon(Icons.radio_button_checked, size: 18),
+          ),
+        ],
+      ),
+    );
     final navigationBar = CupertinoSliverNavigationBar(
       stretch: false,
-      largeTitle: Text(title ?? S.of(context).subscriptions),
+      largeTitle: titleWidget,
       heroTag: "subscriptions",
       transitionBetweenRoutes: true,
       backgroundColor: transitioning ? MyColors.tileBackground : CupertinoColors.systemBackground,
       leading: CupertinoButton(
+        minSize: 36,
         padding: EdgeInsets.zero,
         child: Text(S.of(context).groups),
         onPressed: _openGroups,
@@ -149,10 +234,16 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
         List<RSSSource> sources;
         if (sids == null) {
           sources = Global.sourcesModel.getSources().toList();
+          if (unreadOnly) {
+            sources = sources.where((s) => s.unreadCount > 0).toList();
+          }
         } else {
           sources = [];
           for (var sid in sids) {
-            sources.add(Global.sourcesModel.getSource(sid));
+            final source = Global.sourcesModel.getSource(sid);
+            if (!unreadOnly || source.unreadCount > 0) {
+              sources.add(source);
+            }
           }
         }
         // Latest sources first
@@ -203,6 +294,7 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
       slivers: [
         navigationBar,
         SyncControl(),
+        if (Global.sourcesModel.showUnreadTip) _buildUnreadTip(),
         if (sids != null) Consumer<SourcesModel>(
           builder: (context, sourcesModel, child) {
             var count = sids

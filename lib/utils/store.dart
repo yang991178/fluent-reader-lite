@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 abstract class StoreKeys {
   static const GROUPS = "groups";
   static const ERROR_LOG = "errorLog";
+  static const UNCATEGORIZED = "uncategorized";
  
   // General
   static const THEME = "theme";
@@ -24,6 +25,7 @@ abstract class StoreKeys {
   static const DIM_READ = "dimRead";
   static const FEED_SWIPE_R = "feedSwipeR";
   static const FEED_SWIPE_L = "feedSwipeL";
+  static const UNREAD_SOURCE_TIP = "unreadSourceTip";
 
   // Reading preferences
   static const ARTICLE_FONT_SIZE = "articleFontSize";
@@ -89,6 +91,21 @@ class Store {
 
   static void setGroups(Map<String, List<String>> groups) {
     sp.setString(StoreKeys.GROUPS, jsonEncode(groups));
+  }
+
+  static List<String> getUncategorized() {
+    final stored = sp.getString(StoreKeys.UNCATEGORIZED);
+    if (stored == null) return null;
+    final parsed = jsonDecode(stored);
+    return List.castFrom(parsed);
+  }
+
+  static void setUncategorized(List<String> value) {
+    if (value == null) {
+      sp.remove(StoreKeys.UNCATEGORIZED);
+    } else {
+      sp.setString(StoreKeys.UNCATEGORIZED, jsonEncode(value));
+    }
   }
 
   static int getArticleFontSize() {

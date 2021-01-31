@@ -127,3 +127,7 @@ article ul, article menu, article dir {
 article li {
     overflow: visible;
 }
+article pre {
+    white-space: pre-wrap;
+    word-break: break-all;
+}

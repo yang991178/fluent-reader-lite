@@ -1,5 +1,8 @@
+import 'dart:collection';
+
 import 'package:fluent_reader_lite/models/source.dart';
 import 'package:fluent_reader_lite/utils/global.dart';
+import 'package:fluent_reader_lite/utils/store.dart';
 import 'package:fluent_reader_lite/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:html/parser.dart';
@@ -11,6 +14,15 @@ import 'item.dart';
 class SourcesModel with ChangeNotifier {
   Map<String, RSSSource> _sources = Map();
   Map<String, RSSSource> _deleted = Map();
+  bool _showUnreadTip = Store.sp.getBool(StoreKeys.UNREAD_SOURCE_TIP) ?? true;
+
+  bool get showUnreadTip => _showUnreadTip;
+  set showUnreadTip(bool value) {
+    if (_showUnreadTip != value) {
+      _showUnreadTip = value;
+      Store.sp.setBool(StoreKeys.UNREAD_SOURCE_TIP, value);
+    }
+  }
 
   bool has(String id) => _sources.containsKey(id);
 
