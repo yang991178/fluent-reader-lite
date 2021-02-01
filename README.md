@@ -9,12 +9,13 @@
 
 ### iOS
 
-- [Download from App Store](https://apps.apple.com/app/id1549611796) (Paid, to support development and cover the $99 annual fee.)
+- [Download from App Store](https://apps.apple.com/app/id1549611796) ($1.99. This will support development and help cover the $99 annual fee.)
 - [Download from TestFlight](https://testflight.apple.com/join/9fwRtH8C) (Free. Inactive testers may be removed due to TestFlight restrictions.)
 
 ### Android
 
-- [Download APK from GitHub Releases](https://github.com/yang991178/fluent-reader-lite/releases)
+- [Download from Google Play](https://play.google.com/store/apps/details?id=me.hyliu.fluent_reader_lite) ($1.99)
+- [Download APK from GitHub Releases](https://github.com/yang991178/fluent-reader-lite/releases) (Free)
 
 ### Desktop App
 
@@ -28,9 +29,9 @@ The repo of the full-featured desktop app [can be found here](https://github.com
 
 Fluent Reader Lite is a simplistic, cross-platform, and open-source RSS client.
 
-The following self-hosted or commercial RSS services are supported.
+The following self-hosted and commercial RSS services are supported.
 
-- Fever API (TT-RSS Fever plugin, Fresh RSS, Miniflux, etc.)
+- Fever API (TT-RSS Fever plugin, FreshRSS, Miniflux, etc.)
 - Google Reader API (Bazqux Reader, The Old Reader, etc.)
 - Inoreader
 - Feedbin (official or self-hosted)
@@ -42,7 +43,7 @@ Other key features include:
 - A dedicated subscriptions tab organized by latest updates with article titles.
 - Search for local articles or filter by read status.
 - Organize subscriptions with groups.
-- Support for two-pane view on iPad and Android tablets.
+- Support for two-pane view and multitasking on iPad and Android tablets.
 
 The following features from the desktop app are **NOT** present:
 
