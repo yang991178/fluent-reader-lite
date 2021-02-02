@@ -11,6 +11,7 @@ import 'package:fluent_reader_lite/pages/group_list_page.dart';
 import 'package:fluent_reader_lite/pages/home_page.dart';
 import 'package:fluent_reader_lite/utils/colors.dart';
 import 'package:fluent_reader_lite/utils/global.dart';
+import 'package:fluent_reader_lite/utils/store.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -33,7 +34,7 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
   List<String> sids;
   String title;
   bool transitioning = false;
-  bool unreadOnly = false;
+  bool unreadOnly = Store.sp.getBool(StoreKeys.UNREAD_SUBS_ONLY) ?? false;
 
   void _onScrollTop() {
     if (widget.scrollTopNotifier.index == 1 && !Navigator.of(context).canPop()) {
@@ -117,6 +118,7 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
     HapticFeedback.mediumImpact();
     setState(() { unreadOnly = !unreadOnly; });
     _onScrollTop();
+    Store.sp.setBool(StoreKeys.UNREAD_SUBS_ONLY, unreadOnly);
   }
 
   void _dismissTip() {
@@ -295,7 +297,7 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
         navigationBar,
         SyncControl(),
         if (Global.sourcesModel.showUnreadTip) _buildUnreadTip(),
-        if (sids != null) Consumer<SourcesModel>(
+        if (sids != null && sids.length > 0) Consumer<SourcesModel>(
           builder: (context, sourcesModel, child) {
             var count = sids
               .map((sid) => sourcesModel.getSource(sid))

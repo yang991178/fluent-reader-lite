@@ -263,6 +263,24 @@ class _ItemListPageState extends State<ItemListPage> {
     );
   }
 
+  Widget _titleFromFilter() => Consumer<FeedsModel>(
+    builder: (context, feedsModel, child) {
+      String text;
+      switch (getFeed().filterType) {
+        case FilterType.Unread:
+          text = S.of(context).unread;
+          break;
+        case FilterType.Starred:
+          text = S.of(context).starred;
+          break;
+        default:
+          text = S.of(context).all;
+          break;
+      }
+      return Text(text, overflow: TextOverflow.ellipsis);
+    },
+  );
+
   @override
   Widget build(BuildContext context) {
     final String title = ModalRoute.of(context).settings.arguments;
@@ -275,8 +293,8 @@ class _ItemListPageState extends State<ItemListPage> {
               ? 260
               : MediaQuery.of(context).size.width - 60,
           ),
-          child: Text(
-            title ?? S.of(context).allArticles, 
+          child: title == null ? _titleFromFilter() : Text(
+            title, 
             overflow: TextOverflow.ellipsis,
           ),
         ),

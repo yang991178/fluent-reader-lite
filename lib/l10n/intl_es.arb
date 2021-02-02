@@ -1,8 +1,11 @@
 {
+    "all": "Todos",
+    "unread": "Sin leídos",
+    "starred": "Favoritos",
     "allArticles": "Todos los artículos",
     "allSubscriptions": "Todas las suscripciones",
     "filter": "Filtrar",
-    "feed": "Alimentador",
+    "feed": "Artículos",
     "subscriptions": "Suscriptores",
     "groups": "Grupos",
     "settings": "Ajustes",

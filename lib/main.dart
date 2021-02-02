@@ -111,6 +111,7 @@ class MyApp extends StatelessWidget {
           locale: globalModel.locale,
           supportedLocales: [
             const Locale("en"),
+            const Locale("es"),
             const Locale("zh"),
           ],
           localeResolutionCallback: (_locale, supportedLocales) {

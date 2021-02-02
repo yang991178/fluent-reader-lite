@@ -1,4 +1,7 @@
 {
+    "all": "全部文章",
+    "unread": "未读文章",
+    "starred": "星标文章",
     "allArticles": "全部文章",
     "allSubscriptions": "全部订阅源",
     "filter": "筛选",

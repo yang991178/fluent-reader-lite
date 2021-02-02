@@ -8,6 +8,7 @@ abstract class StoreKeys {
   static const GROUPS = "groups";
   static const ERROR_LOG = "errorLog";
   static const UNCATEGORIZED = "uncategorized";
+  static const UNREAD_SUBS_ONLY = "unreadSubsOnly";
  
   // General
   static const THEME = "theme";

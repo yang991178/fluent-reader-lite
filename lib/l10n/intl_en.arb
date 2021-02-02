@@ -1,5 +1,8 @@
 {
-    "allArticles": "All Articles",
+    "all": "All Articles",
+    "unread": "Unread",
+    "starred": "Starred",
+    "allArticles": "All articles",
     "allSubscriptions": "All subscriptions",
     "filter": "Filter",
     "feed": "Feed",
