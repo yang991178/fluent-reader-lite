@@ -131,6 +131,7 @@ class _GeneralPageState extends State<GeneralPage> {
         final localeItems = ListTileGroup.fromOptions(
           [
             Tuple2(S.of(context).followSystem, null),
+            const Tuple2("Deutsch", Locale("de")),
             const Tuple2("English", Locale("en")),
             const Tuple2("Español", Locale("es")),
             const Tuple2("中文（简体）", Locale("zh")),

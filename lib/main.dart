@@ -110,6 +110,7 @@ class MyApp extends StatelessWidget {
           ],
           locale: globalModel.locale,
           supportedLocales: [
+            const Locale("de"),
             const Locale("en"),
             const Locale("es"),
             const Locale("zh"),
