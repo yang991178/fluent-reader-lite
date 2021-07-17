@@ -30,9 +30,7 @@ class ArticlePage extends StatefulWidget {
   ArticlePageState createState() => ArticlePageState();
 }
 
-enum _ArticleLoadState {
-  Loading, Success, Failure
-}
+enum _ArticleLoadState { Loading, Success, Failure }
 
 class ArticlePageState extends State<ArticlePage> {
   WebViewController _controller;
@@ -59,7 +57,8 @@ class ArticlePageState extends State<ArticlePage> {
   Future<NavigationDecision> _onNavigate(NavigationRequest request) async {
     if (navigated && request.isForMainFrame) {
       final internal = Global.globalModel.inAppBrowser;
-      await launch(request.url, forceSafariVC: internal, forceWebView: internal);
+      await launch(request.url,
+          forceSafariVC: internal, forceWebView: internal);
       return NavigationDecision.prevent;
     } else {
       return NavigationDecision.navigate;
@@ -72,11 +71,14 @@ class ArticlePageState extends State<ArticlePage> {
     String a;
     if (loadFull) {
       try {
-        var html = (await http.get(item.link)).body;
+        var uri = Uri.parse(item.link);
+        var html = (await http.get(uri)).body;
         a = Uri.encodeComponent(html);
-      } catch(exp) {
+      } catch (exp) {
         if (mounted && currId == requestId) {
-          setState(() { loaded = _ArticleLoadState.Failure; });
+          setState(() {
+            loaded = _ArticleLoadState.Failure;
+          });
         }
         return;
       }
@@ -84,9 +86,11 @@ class ArticlePageState extends State<ArticlePage> {
       a = Uri.encodeComponent(item.content);
     }
     if (!mounted || currId != requestId) return;
-    var h = '<p id="source">${source.name}${(item.creator!=null&&item.creator.length>0)?' / '+item.creator:''}</p>';
+    var h =
+        '<p id="source">${source.name}${(item.creator != null && item.creator.length > 0) ? ' / ' + item.creator : ''}</p>';
     h += '<p id="title">${item.title}</p>';
-    h += '<p id="date">${DateFormat.yMd(Localizations.localeOf(context).toString()).add_Hm().format(item.date)}</p>';
+    h +=
+        '<p id="date">${DateFormat.yMd(Localizations.localeOf(context).toString()).add_Hm().format(item.date)}</p>';
     h += '<article></article>';
     h = Uri.encodeComponent(h);
     var s = Store.getArticleFontSize();
@@ -102,11 +106,15 @@ class ArticlePageState extends State<ArticlePage> {
     if (Platform.isAndroid || Global.globalModel.getBrightness() != null) {
       await Future.delayed(Duration(milliseconds: 300));
     }
-    setState(() { loaded = _ArticleLoadState.Success; });
-    if (_target == SourceOpenTarget.Local || _target == SourceOpenTarget.FullContent) {
+    setState(() {
+      loaded = _ArticleLoadState.Success;
+    });
+    if (_target == SourceOpenTarget.Local ||
+        _target == SourceOpenTarget.FullContent) {
       navigated = true;
     }
   }
+
   void _onWebpageReady(_) {
     if (loaded == _ArticleLoadState.Success) navigated = true;
   }
@@ -139,7 +147,8 @@ class ArticlePageState extends State<ArticlePage> {
 
   @override
   Widget build(BuildContext context) {
-    final Tuple2<String, bool> arguments = ModalRoute.of(context).settings.arguments;
+    final Tuple2<String, bool> arguments =
+        ModalRoute.of(context).settings.arguments;
     if (iid == null) iid = arguments.item1;
     if (isSourceFeed == null) isSourceFeed = arguments.item2;
     final resolvedDarkGrey = MyColors.dynamicDarkGrey.resolveFrom(context);
@@ -173,46 +182,52 @@ class ArticlePageState extends State<ArticlePage> {
         var item = tuple.item1;
         var source = tuple.item2;
         if (_target == null) _target = source.openTarget;
-        final body = SafeArea(child: IndexedStack(
-          index: loaded.index,
-          children: [
-            Center(
-              child: CupertinoActivityIndicator()
-            ),
-            WebView(
-              key: Key("a-$iid-${_target.index}"),
-              javascriptMode: JavascriptMode.unrestricted,
-              onWebViewCreated: (WebViewController webViewController) {
-                _controller = webViewController;
-                _loadOpenTarget(item, source);
-              },
-              onPageStarted: _onPageReady,
-              onPageFinished: _onWebpageReady,
-              navigationDelegate: _onNavigate,
-            ),
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    S.of(context).wentWrong,
-                    style: TextStyle(color: CupertinoColors.label.resolveFrom(context)),
-                  ),
-                  CupertinoButton(
-                    child: Text(S.of(context).retry),
-                    onPressed: () { _loadOpenTarget(item, source); },
-                  ),
-                ],
+        final body = SafeArea(
+          child: IndexedStack(
+            index: loaded.index,
+            children: [
+              Center(child: CupertinoActivityIndicator()),
+              WebView(
+                key: Key("a-$iid-${_target.index}"),
+                javascriptMode: JavascriptMode.unrestricted,
+                onWebViewCreated: (WebViewController webViewController) {
+                  _controller = webViewController;
+                  _loadOpenTarget(item, source);
+                },
+                onPageStarted: _onPageReady,
+                onPageFinished: _onWebpageReady,
+                navigationDelegate: _onNavigate,
               ),
-            )
-          ],
-        ), bottom: false,);
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      S.of(context).wentWrong,
+                      style: TextStyle(
+                          color: CupertinoColors.label.resolveFrom(context)),
+                    ),
+                    CupertinoButton(
+                      child: Text(S.of(context).retry),
+                      onPressed: () {
+                        _loadOpenTarget(item, source);
+                      },
+                    ),
+                  ],
+                ),
+              )
+            ],
+          ),
+          bottom: false,
+        );
         return CupertinoPageScaffold(
           navigationBar: CupertinoNavigationBar(
             backgroundColor: CupertinoColors.systemBackground,
             middle: CupertinoSlidingSegmentedControl(
               children: viewOptions,
-              onValueChanged: (v) { _setOpenTarget(source, target: SourceOpenTarget.values[v]); },
+              onValueChanged: (v) {
+                _setOpenTarget(source, target: SourceOpenTarget.values[v]);
+              },
               groupValue: _target.index,
             ),
           ),
@@ -225,26 +240,28 @@ class ArticlePageState extends State<ArticlePage> {
                 items: [
                   CupertinoToolbarItem(
                     icon: item.hasRead
-                      ? CupertinoIcons.circle
-                      : CupertinoIcons.smallcircle_fill_circle,
+                        ? CupertinoIcons.circle
+                        : CupertinoIcons.smallcircle_fill_circle,
                     semanticLabel: item.hasRead
-                      ? S.of(context).markUnread
-                      : S.of(context).markRead,
+                        ? S.of(context).markUnread
+                        : S.of(context).markRead,
                     onPressed: () {
                       HapticFeedback.mediumImpact();
-                      Global.itemsModel.updateItem(item.id, read: !item.hasRead);
+                      Global.itemsModel
+                          .updateItem(item.id, read: !item.hasRead);
                     },
                   ),
                   CupertinoToolbarItem(
                     icon: item.starred
-                      ? CupertinoIcons.star_fill
-                      : CupertinoIcons.star,
+                        ? CupertinoIcons.star_fill
+                        : CupertinoIcons.star,
                     semanticLabel: item.starred
-                      ? S.of(context).star
-                      : S.of(context).unstar,
+                        ? S.of(context).star
+                        : S.of(context).unstar,
                     onPressed: () {
                       HapticFeedback.mediumImpact();
-                      Global.itemsModel.updateItem(item.id, starred: !item.starred);
+                      Global.itemsModel
+                          .updateItem(item.id, starred: !item.starred);
                     },
                   ),
                   CupertinoToolbarItem(
@@ -252,38 +269,40 @@ class ArticlePageState extends State<ArticlePage> {
                     semanticLabel: S.of(context).share,
                     onPressed: () {
                       final media = MediaQuery.of(context);
-                      Share.share(
-                        item.link,
-                        sharePositionOrigin: Rect.fromLTWH(
-                          media.size.width - ArticlePage.state.currentContext.size.width / 2,
-                          media.size.height - media.padding.bottom - 54,
-                          0,
-                          0
-                        )
-                      );
+                      Share.share(item.link,
+                          sharePositionOrigin: Rect.fromLTWH(
+                              media.size.width -
+                                  ArticlePage.state.currentContext.size.width /
+                                      2,
+                              media.size.height - media.padding.bottom - 54,
+                              0,
+                              0));
                     },
                   ),
                   CupertinoToolbarItem(
                     icon: CupertinoIcons.chevron_up,
                     semanticLabel: S.of(context).prev,
-                    onPressed: idx <= 0 ? null : () {
-                      loadNewItem(feed.iids[idx - 1]);
-                    },
+                    onPressed: idx <= 0
+                        ? null
+                        : () {
+                            loadNewItem(feed.iids[idx - 1]);
+                          },
                   ),
                   CupertinoToolbarItem(
                     icon: CupertinoIcons.chevron_down,
                     semanticLabel: S.of(context).next,
-                    onPressed: (idx == -1 || (idx == feed.iids.length - 1 && feed.allLoaded))
-                      ? null
-                      : () async {
-                        if (idx == feed.iids.length - 1) {
-                          await feed.loadMore();
-                        }
-                        idx = feed.iids.indexOf(iid);
-                        if (idx != feed.iids.length - 1) {
-                          loadNewItem(feed.iids[idx + 1]);
-                        }
-                      },
+                    onPressed: (idx == -1 ||
+                            (idx == feed.iids.length - 1 && feed.allLoaded))
+                        ? null
+                        : () async {
+                            if (idx == feed.iids.length - 1) {
+                              await feed.loadMore();
+                            }
+                            idx = feed.iids.indexOf(iid);
+                            if (idx != feed.iids.length - 1) {
+                              loadNewItem(feed.iids[idx + 1]);
+                            }
+                          },
                   ),
                 ],
                 body: child,

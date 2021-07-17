@@ -29,11 +29,7 @@ class FeedbinServiceHandler extends ServiceHandler {
   }
 
   FeedbinServiceHandler.fromValues(
-    this.endpoint,
-    this.username,
-    this.password,
-    this.fetchLimit
-  ) {
+      this.endpoint, this.username, this.password, this.fetchLimit) {
     _lastId = Store.sp.getInt(StoreKeys.LAST_ID) ?? 0;
   }
 
@@ -65,12 +61,10 @@ class FeedbinServiceHandler extends ServiceHandler {
   }
 
   Future<http.Response> _fetchAPI(String params) async {
-    return await http.get(
-      endpoint + params,
-      headers: {
-        "Authorization": "Basic ${_getApiKey()}",
-      }
-    );
+    var uri = Uri.parse(endpoint + params);
+    return await http.get(uri, headers: {
+      "Authorization": "Basic ${_getApiKey()}",
+    });
   }
 
   Future<void> _markItems(String type, String method, List<String> refs) async {
@@ -112,14 +106,15 @@ class FeedbinServiceHandler extends ServiceHandler {
     try {
       final response = await _fetchAPI("authentication.json");
       return response.statusCode == 200;
-    } catch(exp) {
+    } catch (exp) {
       print(exp);
       return false;
     }
   }
 
   @override
-  Future<Tuple2<List<RSSSource>, Map<String, List<String>>>> getSources() async {
+  Future<Tuple2<List<RSSSource>, Map<String, List<String>>>>
+      getSources() async {
     final response = await _fetchAPI("subscriptions.json");
     assert(response.statusCode == 200);
     final subscriptions = jsonDecode(response.body);
@@ -146,20 +141,21 @@ class FeedbinServiceHandler extends ServiceHandler {
     List lastFetched;
     do {
       try {
-        final response = await _fetchAPI("entries.json?mode=extended&per_page=125&page=$page");
+        final response = await _fetchAPI(
+            "entries.json?mode=extended&per_page=125&page=$page");
         assert(response.statusCode == 200);
         lastFetched = jsonDecode(response.body);
-        items.addAll(lastFetched.where((i) => i["id"] > lastId && i["id"] < minId));
+        items.addAll(
+            lastFetched.where((i) => i["id"] > lastId && i["id"] < minId));
         minId = lastFetched.fold(minId, (m, n) => min(m, n["id"]));
         page += 1;
-      } catch(exp) {
+      } catch (exp) {
         break;
       }
-    } while (
-      minId > lastId &&
-      lastFetched != null && lastFetched.length >= 125 &&
-      items.length < fetchLimit
-    );
+    } while (minId > lastId &&
+        lastFetched != null &&
+        lastFetched.length >= 125 &&
+        items.length < fetchLimit);
     lastId = items.fold(lastId, (m, n) => max(m, n["id"]));
     final parsedItems = List<RSSItem>.empty(growable: true);
     final unread = _lastSynced.item1;
@@ -184,7 +180,7 @@ class FeedbinServiceHandler extends ServiceHandler {
         item.thumb = i["images"]["original_url"];
       } else {
         var img = dom.querySelector("img");
-        if (img != null && img.attributes["src"] != null) { 
+        if (img != null && img.attributes["src"] != null) {
           var thumb = img.attributes["src"];
           if (thumb.startsWith("http")) {
             item.thumb = thumb;
@@ -218,10 +214,12 @@ class FeedbinServiceHandler extends ServiceHandler {
   Future<void> markAllRead(Set<String> sids, DateTime date, bool before) async {
     List<String> predicates = ["hasRead = 0"];
     if (sids.length > 0) {
-      predicates.add("source IN (${List.filled(sids.length, "?").join(" , ")})");
+      predicates
+          .add("source IN (${List.filled(sids.length, "?").join(" , ")})");
     }
     if (date != null) {
-      predicates.add("date ${before ? "<=" : ">="} ${date.millisecondsSinceEpoch}");
+      predicates
+          .add("date ${before ? "<=" : ">="} ${date.millisecondsSinceEpoch}");
     }
     final rows = await Global.db.query(
       "items",
@@ -234,7 +232,7 @@ class FeedbinServiceHandler extends ServiceHandler {
   }
 
   @override
-  Future<void> markRead(RSSItem item) async{
+  Future<void> markRead(RSSItem item) async {
     await _markItems("unread", "DELETE", [item.id]);
   }
 

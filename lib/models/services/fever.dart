@@ -62,9 +62,10 @@ class FeverServiceHandler extends ServiceHandler {
   }
 
   Future<Map<String, dynamic>> _fetchAPI({params: "", postparams: ""}) async {
+    var uri = Uri.parse(endpoint + "?api" + params);
     final response = await http.post(
-      endpoint + "?api" + params,
-      headers: { "content-type": "application/x-www-form-urlencoded" },
+      uri,
+      headers: {"content-type": "application/x-www-form-urlencoded"},
       body: "api_key=$apiKey$postparams",
     );
     final body = Utf8Decoder().convert(response.bodyBytes);
@@ -82,18 +83,19 @@ class FeverServiceHandler extends ServiceHandler {
     _useInt32 = value;
     Store.sp.setBool(StoreKeys.FEVER_INT_32, value);
   }
-  
+
   @override
   Future<bool> validate() async {
     try {
       return (await _fetchAPI())["auth"] == 1;
-    } catch(exp) {
+    } catch (exp) {
       return false;
     }
   }
 
   @override
-  Future<Tuple2<List<RSSSource>, Map<String, List<String>>>> getSources() async {
+  Future<Tuple2<List<RSSSource>, Map<String, List<String>>>>
+      getSources() async {
     var response = await _fetchAPI(params: "&feeds");
     var sources = response["feeds"].map<RSSSource>((f) {
       return RSSSource(f["id"].toString(), f["url"], f["title"]);
@@ -104,8 +106,8 @@ class FeverServiceHandler extends ServiceHandler {
     if (groups == null || feedGroups == null) throw Error();
     var groupsIdMap = Map<int, String>();
     for (var group in groups) {
-        var title = group["title"].trim();
-        groupsIdMap[group["id"]] = title;
+      var title = group["title"].trim();
+      groupsIdMap[group["id"]] = title;
     }
     for (var group in feedGroups) {
       var name = groupsIdMap[group["group_id"]];
@@ -126,7 +128,7 @@ class FeverServiceHandler extends ServiceHandler {
       response = (await _fetchAPI(params: "&items&max_id=$minId"))["items"];
       if (response == null) throw Error();
       for (var i in response) {
-        if (i["id"] is String)  i["id"] = int.parse(i["id"]);
+        if (i["id"] is String) i["id"] = int.parse(i["id"]);
         if (i["id"] > lastId) items.add(i);
       }
       if (response.length == 0 && minId == Utils.syncMaxId) {
@@ -136,11 +138,9 @@ class FeverServiceHandler extends ServiceHandler {
       } else {
         minId = response.fold(minId, (m, n) => min<int>(m, n["id"]));
       }
-    } while (
-      minId > lastId && 
-      (response == null || response.length >= 50) && 
-      items.length < fetchLimit
-    );
+    } while (minId > lastId &&
+        (response == null || response.length >= 50) &&
+        items.length < fetchLimit);
     var parsedItems = items.map<RSSItem>((i) {
       var dom = parse(i["html"]);
       var item = RSSItem(
@@ -157,15 +157,17 @@ class FeverServiceHandler extends ServiceHandler {
       );
       // Try to get the thumbnail of the item
       var img = dom.querySelector("img");
-      if (img != null && img.attributes["src"] != null) { 
+      if (img != null && img.attributes["src"] != null) {
         var thumb = img.attributes["src"];
         if (thumb.startsWith("http")) {
           item.thumb = thumb;
         }
-      } else if (useInt32) { // TTRSS Fever Plugin attachments
+      } else if (useInt32) {
+        // TTRSS Fever Plugin attachments
         var a = dom.querySelector("body>ul>li:first-child>a");
-        if (a != null && a.text.endsWith(", image\/generic") && a.attributes["href"] != null)
-          item.thumb = a.attributes["href"];
+        if (a != null &&
+            a.text.endsWith(", image\/generic") &&
+            a.attributes["href"] != null) item.thumb = a.attributes["href"];
       }
       return item;
     });
@@ -182,15 +184,13 @@ class FeverServiceHandler extends ServiceHandler {
     final unreadIds = responses[0]["unread_item_ids"];
     final starredIds = responses[1]["saved_item_ids"];
     return Tuple2(
-      Set.from(unreadIds.split(",")),
-      Set.from(starredIds.split(","))
-    );
+        Set.from(unreadIds.split(",")), Set.from(starredIds.split(",")));
   }
 
   Future<void> _markItem(RSSItem item, String asType) async {
     try {
       await _fetchAPI(postparams: "&mark=item&as=$asType&id=${item.id}");
-    } catch(exp) {
+    } catch (exp) {
       print(exp);
     }
   }
@@ -199,18 +199,22 @@ class FeverServiceHandler extends ServiceHandler {
   Future<void> markAllRead(Set<String> sids, DateTime date, bool before) async {
     if (date != null && !before) {
       var items = Global.itemsModel.getItems().where((i) =>
-        (sids.length == 0 || sids.contains(i.source)) && i.date.compareTo(date) >= 0
-      );
+          (sids.length == 0 || sids.contains(i.source)) &&
+          i.date.compareTo(date) >= 0);
       await Future.wait(items.map((i) => markRead(i)));
     } else {
-      var timestamp = date != null ? date.millisecondsSinceEpoch : DateTime.now().millisecondsSinceEpoch;
+      var timestamp = date != null
+          ? date.millisecondsSinceEpoch
+          : DateTime.now().millisecondsSinceEpoch;
       timestamp = timestamp ~/ 1000 + 1;
       try {
-        await Future.wait(Global.sourcesModel.getSources()
-          .where((s) => sids.length == 0 || sids.contains(s.id))
-          .map((s) => _fetchAPI(postparams: "&mark=feed&as=read&id=${s.id}&before=$timestamp"))
-        );
-      } catch(exp) {
+        await Future.wait(Global.sourcesModel
+            .getSources()
+            .where((s) => sids.length == 0 || sids.contains(s.id))
+            .map((s) => _fetchAPI(
+                postparams:
+                    "&mark=feed&as=read&id=${s.id}&before=$timestamp")));
+      } catch (exp) {
         print(exp);
       }
     }

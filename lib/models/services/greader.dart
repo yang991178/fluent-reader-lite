@@ -45,25 +45,24 @@ class GReaderServiceHandler extends ServiceHandler {
     this.endpoint,
     this.username,
     this.password,
-    this.fetchLimit,
-    {
-      this.inoreaderId,
-      this.inoreaderKey,
-      this.removeInoreaderAd,
-    }
-  ) {
+    this.fetchLimit, {
+    this.inoreaderId,
+    this.inoreaderKey,
+    this.removeInoreaderAd,
+  }) {
     _lastFetched = Store.sp.getInt(StoreKeys.LAST_FETCHED);
     _lastId = Store.sp.getString(StoreKeys.LAST_ID);
     _auth = Store.sp.getString(StoreKeys.AUTH);
-    useInt64 = Store.sp.getBool(StoreKeys.USE_INT_64)
-      ?? !endpoint.endsWith("theoldreader.com");
+    useInt64 = Store.sp.getBool(StoreKeys.USE_INT_64) ??
+        !endpoint.endsWith("theoldreader.com");
   }
 
   void persist() {
     Store.sp.setInt(
-      StoreKeys.SYNC_SERVICE,
-      inoreaderId != null ? SyncService.Inoreader.index : SyncService.GReader.index
-    );
+        StoreKeys.SYNC_SERVICE,
+        inoreaderId != null
+            ? SyncService.Inoreader.index
+            : SyncService.GReader.index);
     Store.sp.setString(StoreKeys.ENDPOINT, endpoint);
     Store.sp.setString(StoreKeys.USERNAME, username);
     Store.sp.setString(StoreKeys.PASSWORD, password);
@@ -112,19 +111,19 @@ class GReaderServiceHandler extends ServiceHandler {
     Store.sp.setString(StoreKeys.AUTH, value);
   }
 
-  Future<http.Response> _fetchAPI(String params,
-      {dynamic body}) async {
+  Future<http.Response> _fetchAPI(String params, {dynamic body}) async {
     final headers = Map<String, String>();
     if (auth != null) headers["Authorization"] = auth;
     if (inoreaderId != null) {
       headers["AppId"] = inoreaderId;
       headers["AppKey"] = inoreaderKey;
     }
+    var uri = Uri.parse(endpoint + params);
     if (body == null) {
-      return await http.get(endpoint + params, headers: headers);
+      return await http.get(uri, headers: headers);
     } else {
       headers["Content-Type"] = "application/x-www-form-urlencoded";
-      return await http.post(endpoint + params, headers: headers, body: body);
+      return await http.post(uri, headers: headers, body: body);
     }
   }
 
@@ -150,7 +149,7 @@ class GReaderServiceHandler extends ServiceHandler {
   }
 
   Future<http.Response> _editTag(String ref, String tag, {add: true}) async {
-    final body = "i=$ref&${add?"a":"r"}=$tag";
+    final body = "i=$ref&${add ? "a" : "r"}=$tag";
     return await _fetchAPI("/reader/api/0/edit-tag", body: body);
   }
 
@@ -165,7 +164,7 @@ class GReaderServiceHandler extends ServiceHandler {
     try {
       final result = await _fetchAPI("/reader/api/0/user-info");
       return result.statusCode == 200;
-    } catch(exp) {
+    } catch (exp) {
       return false;
     }
   }
@@ -188,11 +187,13 @@ class GReaderServiceHandler extends ServiceHandler {
   }
 
   @override
-  Future<Tuple2<List<RSSSource>, Map<String, List<String>>>> getSources() async {
-    final response = await _fetchAPI("/reader/api/0/subscription/list?output=json");
+  Future<Tuple2<List<RSSSource>, Map<String, List<String>>>>
+      getSources() async {
+    final response =
+        await _fetchAPI("/reader/api/0/subscription/list?output=json");
     assert(response.statusCode == 200);
     List subscriptions = jsonDecode(response.body)["subscriptions"];
-    final groupsMap =  Map<String, List<String>>();
+    final groupsMap = Map<String, List<String>>();
     for (var s in subscriptions) {
       final categories = s["categories"];
       if (categories != null) {
@@ -232,7 +233,7 @@ class GReaderServiceHandler extends ServiceHandler {
           }
         }
         continuation = fetched["continuation"];
-      } catch(exp) {
+      } catch (exp) {
         break;
       }
     } while (continuation != null && items.length < fetchLimit);
@@ -264,15 +265,17 @@ class GReaderServiceHandler extends ServiceHandler {
         item.title = titleDom.documentElement.text;
       }
       var img = dom.querySelector("img");
-      if (img != null && img.attributes["src"] != null) { 
+      if (img != null && img.attributes["src"] != null) {
         var thumb = img.attributes["src"];
         if (thumb.startsWith("http")) {
           item.thumb = thumb;
         }
       }
       for (var c in i["categories"]) {
-        if (!item.hasRead && c.endsWith("/state/com.google/read")) item.hasRead = true;
-        else if (!item.starred && c.endsWith("/state/com.google/starred")) item.starred = true;
+        if (!item.hasRead && c.endsWith("/state/com.google/read"))
+          item.hasRead = true;
+        else if (!item.starred && c.endsWith("/state/com.google/starred"))
+          item.starred = true;
       }
       return item;
     }).toList();
@@ -284,13 +287,17 @@ class GReaderServiceHandler extends ServiceHandler {
     List<Set<String>> results;
     if (inoreaderId != null) {
       results = await Future.wait([
-        _fetchAll("/reader/api/0/stream/items/ids?output=json&xt=$_READ_TAG&n=1000"),
-        _fetchAll("/reader/api/0/stream/items/ids?output=json&it=$_STAR_TAG&n=1000"),
+        _fetchAll(
+            "/reader/api/0/stream/items/ids?output=json&xt=$_READ_TAG&n=1000"),
+        _fetchAll(
+            "/reader/api/0/stream/items/ids?output=json&it=$_STAR_TAG&n=1000"),
       ]);
     } else {
       results = await Future.wait([
-        _fetchAll("/reader/api/0/stream/items/ids?output=json&s=$_ALL_TAG&xt=$_READ_TAG&n=1000"),
-        _fetchAll("/reader/api/0/stream/items/ids?output=json&s=$_STAR_TAG&n=1000"),
+        _fetchAll(
+            "/reader/api/0/stream/items/ids?output=json&s=$_ALL_TAG&xt=$_READ_TAG&n=1000"),
+        _fetchAll(
+            "/reader/api/0/stream/items/ids?output=json&s=$_STAR_TAG&n=1000"),
       ]);
     }
     return Tuple2.fromList(results);
@@ -301,10 +308,12 @@ class GReaderServiceHandler extends ServiceHandler {
     if (date != null) {
       List<String> predicates = ["hasRead = 0"];
       if (sids.length > 0) {
-        predicates.add("source IN (${List.filled(sids.length, "?").join(" , ")})");
+        predicates
+            .add("source IN (${List.filled(sids.length, "?").join(" , ")})");
       }
       if (date != null) {
-        predicates.add("date ${before ? "<=" : ">="} ${date.millisecondsSinceEpoch}");
+        predicates
+            .add("date ${before ? "<=" : ">="} ${date.millisecondsSinceEpoch}");
       }
       final rows = await Global.db.query(
         "items",
@@ -321,12 +330,12 @@ class GReaderServiceHandler extends ServiceHandler {
           refs = [];
         }
       }
-      if (refs.length > 0)  _editTag(refs.join("&i="), _READ_TAG);
+      if (refs.length > 0) _editTag(refs.join("&i="), _READ_TAG);
     } else {
       if (sids.length == 0)
         sids = Set.from(Global.sourcesModel.getSources().map((s) => s.id));
       for (var sid in sids) {
-        final body = { "s": sid };
+        final body = {"s": sid};
         _fetchAPI("/reader/api/0/mark-all-as-read", body: body);
       }
     }

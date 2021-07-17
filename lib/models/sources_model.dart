@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:fluent_reader_lite/models/source.dart';
 import 'package:fluent_reader_lite/utils/global.dart';
 import 'package:fluent_reader_lite/utils/store.dart';
@@ -42,8 +40,7 @@ class SourcesModel with ChangeNotifier {
 
   Future<void> updateUnreadCounts() async {
     final rows = await Global.db.rawQuery(
-      "SELECT source, COUNT(iid) FROM items WHERE hasRead=0 GROUP BY source;"
-    );
+        "SELECT source, COUNT(iid) FROM items WHERE hasRead=0 GROUP BY source;");
     for (var source in _sources.values) {
       var cloned = source.clone();
       _sources[source.id] = cloned;
@@ -65,7 +62,8 @@ class SourcesModel with ChangeNotifier {
     for (var item in items) {
       var source = _sources[item.source];
       if (!item.hasRead) source.unreadCount += 1;
-      if (item.date.compareTo(source.latest) > 0 || source.lastTitle.length == 0) {
+      if (item.date.compareTo(source.latest) > 0 ||
+          source.lastTitle.length == 0) {
         source.latest = item.date;
         source.lastTitle = item.title;
         changed.add(source.id);
@@ -78,8 +76,8 @@ class SourcesModel with ChangeNotifier {
         var source = _sources[sid];
         batch.update(
           "sources",
-          { 
-            "latest": source.latest.millisecondsSinceEpoch, 
+          {
+            "latest": source.latest.millisecondsSinceEpoch,
             "lastTitle": source.lastTitle,
           },
           where: "sid = ?",
@@ -172,33 +170,36 @@ class SourcesModel with ChangeNotifier {
 
   Future<String> _fetchFavicon(String url) async {
     try {
-        url = url.split("/").getRange(0, 3).join("/");
-        var result = await http.get(url);
-        if (result.statusCode == 200) {
-            var htmlStr = result.body;
-            var dom = parse(htmlStr);
-            var links = dom.getElementsByTagName("link");
-            for (var link in links) {
-                var rel = link.attributes["rel"];
-                if ((rel == "icon" || rel == "shortcut icon") && link.attributes.containsKey("href")) {
-                    var href = link.attributes["href"];
-                    var parsedUrl = Uri.parse(url);
-                    if (href.startsWith("//")) return parsedUrl.scheme + ":" + href;
-                    else if (href.startsWith("/")) return url + href;
-                    else return href;
-                }
-            }
+      url = url.split("/").getRange(0, 3).join("/");
+      var uri = Uri.parse(url);
+      var result = await http.get(uri);
+      if (result.statusCode == 200) {
+        var htmlStr = result.body;
+        var dom = parse(htmlStr);
+        var links = dom.getElementsByTagName("link");
+        for (var link in links) {
+          var rel = link.attributes["rel"];
+          if ((rel == "icon" || rel == "shortcut icon") &&
+              link.attributes.containsKey("href")) {
+            var href = link.attributes["href"];
+            var parsedUrl = Uri.parse(url);
+            if (href.startsWith("//"))
+              return parsedUrl.scheme + ":" + href;
+            else if (href.startsWith("/"))
+              return url + href;
+            else
+              return href;
+          }
         }
-        url = url + "/favicon.ico";
-        if (await Utils.validateFavicon(url)) { 
-            return url;
-        } else {
-            return null;
-        }
-    } catch(exp) {
+      }
+      url = url + "/favicon.ico";
+      if (await Utils.validateFavicon(url)) {
+        return url;
+      } else {
         return null;
+      }
+    } catch (exp) {
+      return null;
     }
   }
-
-  
 }

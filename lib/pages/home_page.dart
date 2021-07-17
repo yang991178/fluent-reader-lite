@@ -25,19 +25,20 @@ class HomePage extends StatefulWidget {
 
 class ScrollTopNotifier with ChangeNotifier {
   int index = 0;
-  
+
   void onTap(int newIndex) {
     var oldIndex = index;
     index = newIndex;
     if (newIndex == oldIndex) notifyListeners();
-  } 
+  }
 }
 
 class _HomePageState extends State<HomePage> {
   final _scrollTopNotifier = ScrollTopNotifier();
   final _controller = CupertinoTabController();
   final List<GlobalKey<NavigatorState>> _tabNavigatorKeys = [
-    GlobalKey(), GlobalKey(),
+    GlobalKey(),
+    GlobalKey(),
   ];
   StreamSubscription _uriSub;
 
@@ -46,13 +47,15 @@ class _HomePageState extends State<HomePage> {
     if (uri.host == "import") {
       if (Global.syncModel.hasService) {
         showCupertinoDialog(
-          context: context, 
+          context: context,
           builder: (context) => CupertinoAlertDialog(
             title: Text(S.of(context).serviceExists),
             actions: [
               CupertinoDialogAction(
                 child: Text(S.of(context).confirm),
-                onPressed: () { Navigator.of(context).pop(); },
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
               ),
             ],
           ),
@@ -72,14 +75,14 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _uriSub = getUriLinksStream().listen(_uriStreamListener);
+    _uriSub = uriLinkStream.listen(_uriStreamListener);
     Future.delayed(Duration.zero, () async {
       try {
         final uri = await getInitialUri();
         if (uri != null) {
           _uriStreamListener(uri);
         }
-      } catch(exp) {
+      } catch (exp) {
         print(exp);
       }
     });
@@ -93,14 +96,15 @@ class _HomePageState extends State<HomePage> {
 
   Widget _constructPage(Widget page, bool isMobile) {
     return isMobile
-      ? CupertinoPageScaffold(
-        child: page,
-        backgroundColor: CupertinoColors.systemBackground.resolveFrom(context),
-      )
-      : Container(
-        child: page,
-        color: CupertinoColors.systemBackground.resolveFrom(context),
-      );
+        ? CupertinoPageScaffold(
+            child: page,
+            backgroundColor:
+                CupertinoColors.systemBackground.resolveFrom(context),
+          )
+        : Container(
+            child: page,
+            color: CupertinoColors.systemBackground.resolveFrom(context),
+          );
   }
 
   Widget buildLeft(BuildContext context, {isMobile: true}) {
@@ -132,8 +136,8 @@ class _HomePageState extends State<HomePage> {
           },
           builder: (context) {
             Widget page = index == 0
-              ? ItemListPage(_scrollTopNotifier)
-              : SubscriptionListPage(_scrollTopNotifier);
+                ? ItemListPage(_scrollTopNotifier)
+                : SubscriptionListPage(_scrollTopNotifier);
             return _constructPage(page, isMobile);
           },
         );
@@ -142,7 +146,9 @@ class _HomePageState extends State<HomePage> {
     return WillPopScope(
       child: leftTabs,
       onWillPop: () async {
-        return !(await _tabNavigatorKeys[_controller.index].currentState.maybePop());
+        return !(await _tabNavigatorKeys[_controller.index]
+            .currentState
+            .maybePop());
       },
     );
   }
@@ -163,32 +169,31 @@ class _HomePageState extends State<HomePage> {
           tablet: (context) {
             final left = buildLeft(context, isMobile: false);
             final right = Container(
-              decoration: BoxDecoration(),
-              clipBehavior: Clip.hardEdge,
-              child: CupertinoTabView(
-              navigatorKey: Global.tabletPanel,
-              routes: {
-                "/": (context) => TabletBasePage(),
-                ...MyApp.baseRoutes,
-              },
-            ));
+                decoration: BoxDecoration(),
+                clipBehavior: Clip.hardEdge,
+                child: CupertinoTabView(
+                  navigatorKey: Global.tabletPanel,
+                  routes: {
+                    "/": (context) => TabletBasePage(),
+                    ...MyApp.baseRoutes,
+                  },
+                ));
             return Container(
-              color: CupertinoColors.systemBackground.resolveFrom(context),
-              child: Row(
-                children: [
-                  Container(
-                    constraints: BoxConstraints(maxWidth: 320),
-                    child: left,
-                  ),
-                  VerticalDivider(
-                    width: 1,
-                    thickness: 1,
-                    color: CupertinoColors.systemGrey4.resolveFrom(context),
-                  ),
-                  Expanded(child: right),
-                ],
-              )
-            );
+                color: CupertinoColors.systemBackground.resolveFrom(context),
+                child: Row(
+                  children: [
+                    Container(
+                      constraints: BoxConstraints(maxWidth: 320),
+                      child: left,
+                    ),
+                    VerticalDivider(
+                      width: 1,
+                      thickness: 1,
+                      color: CupertinoColors.systemGrey4.resolveFrom(context),
+                    ),
+                    Expanded(child: right),
+                  ],
+                ));
           },
         );
       },

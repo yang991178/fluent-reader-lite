@@ -12,8 +12,8 @@ abstract class Utils {
     launch(url, forceSafariVC: false, forceWebView: false);
   }
 
-  static int binarySearch<T>(List<T> sortedList, T value, 
-    int Function(T, T) compare) {
+  static int binarySearch<T>(
+      List<T> sortedList, T value, int Function(T, T) compare) {
     var min = 0;
     var max = sortedList.length;
     while (min < max) {
@@ -33,9 +33,11 @@ abstract class Utils {
   static Future<bool> validateFavicon(String url) async {
     var flag = false;
     try {
-      var result = await http.get(url);
+      var uri = Uri.parse(url);
+      var result = await http.get(uri);
       if (result.statusCode == 200) {
-        var contentType = result.headers["Content-Type"] ?? result.headers["content-type"];
+        var contentType =
+            result.headers["Content-Type"] ?? result.headers["content-type"];
         if (contentType != null && contentType.startsWith("image")) flag = true;
       }
     } finally {
@@ -47,7 +49,8 @@ abstract class Utils {
     r"^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,63}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*$)",
     caseSensitive: false,
   );
-  static bool testUrl(String url) => url != null && _urlRegex.hasMatch(url.trim());
+  static bool testUrl(String url) =>
+      url != null && _urlRegex.hasMatch(url.trim());
 
   static bool notEmpty(String text) => text != null && text.trim().length > 0;
 
@@ -60,7 +63,9 @@ abstract class Utils {
         actions: [
           CupertinoDialogAction(
             child: Text(S.of(context).close),
-            onPressed: () { Navigator.of(context).pop(); },
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
           ),
         ],
       ),
@@ -74,7 +79,7 @@ abstract class Utils {
       String ap = PinyinHelper.getShortPinyin(a);
       String bp = PinyinHelper.getShortPinyin(b);
       return ap.compareTo(bp);
-    } catch(exp) {
+    } catch (exp) {
       return a.compareTo(b);
     }
   }
