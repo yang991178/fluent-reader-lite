@@ -73,7 +73,7 @@
     "endpoint": "Ponto de saída",
     "username": "Usuário",
     "password": "Senha",
-    "fetchLimit": "LImite de busca",
+    "fetchLimit": "Limite de busca",
     "enter": "Requerido",
     "entered": "Entrar",
     "serviceFailure": "Não foi possível conectar com o serviço",
