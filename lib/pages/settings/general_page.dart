@@ -4,7 +4,6 @@ import 'package:fluent_reader_lite/generated/l10n.dart';
 import 'package:fluent_reader_lite/models/global_model.dart';
 import 'package:fluent_reader_lite/utils/colors.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
