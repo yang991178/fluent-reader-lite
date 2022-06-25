@@ -42,8 +42,9 @@ void main() async {
   SystemChannels.lifecycle.setMessageHandler((msg) {
     if (msg == AppLifecycleState.resumed.toString()) {
       if (Global.server != null) Global.server.restart();
-      if (Global.globalModel.syncOnStart
-        && DateTime.now().difference(Global.syncModel.lastSynced).inMinutes >= 10) {
+      if (Global.globalModel.syncOnStart &&
+          DateTime.now().difference(Global.syncModel.lastSynced).inMinutes >=
+              10) {
         Global.syncModel.syncWithService();
       }
     }
@@ -67,7 +68,8 @@ class MyApp extends StatelessWidget {
     "/settings/service/inoreader": (context) => InoreaderPage(),
     "/settings/service/greader": (context) => GReaderPage(),
     "/settings/service": (context) {
-      var serviceType = SyncService.values[Store.sp.getInt(StoreKeys.SYNC_SERVICE) ?? 0];
+      var serviceType =
+          SyncService.values[Store.sp.getInt(StoreKeys.SYNC_SERVICE) ?? 0];
       switch (serviceType) {
         case SyncService.None:
           break;
@@ -114,12 +116,19 @@ class MyApp extends StatelessWidget {
             const Locale("en"),
             const Locale("es"),
             const Locale("zh"),
+            const Locale("fr"),
+            const Locale("uk"),
+            const Locale("hr"),
+            const Locale("pt"),
           ],
           localeResolutionCallback: (_locale, supportedLocales) {
             _locale = Locale(_locale.languageCode);
-            if (globalModel.locale != null) return globalModel.locale;
-            else if (supportedLocales.contains(_locale)) return _locale;
-            else return Locale("en");
+            if (globalModel.locale != null)
+              return globalModel.locale;
+            else if (supportedLocales.contains(_locale))
+              return _locale;
+            else
+              return Locale("en");
           },
           theme: CupertinoThemeData(
             primaryColor: CupertinoColors.systemBlue,
@@ -133,9 +142,9 @@ class MyApp extends StatelessWidget {
             final mediaQueryData = MediaQuery.of(context);
             if (Global.globalModel.textScale == null) return child;
             return MediaQuery(
-              data: mediaQueryData.copyWith(textScaleFactor: Global.globalModel.textScale),
-              child: child
-            );
+                data: mediaQueryData.copyWith(
+                    textScaleFactor: Global.globalModel.textScale),
+                child: child);
           },
         ),
       ),

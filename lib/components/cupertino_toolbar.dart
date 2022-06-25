@@ -7,7 +7,6 @@
 import 'package:fluent_reader_lite/utils/colors.dart';
 import 'package:fluent_reader_lite/utils/global.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/widgets.dart';
 
 /// Display a persistent bottom iOS styled toolbar for Cupertino theme
 ///
