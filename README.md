@@ -31,8 +31,8 @@ Fluent Reader Lite is a simplistic, cross-platform, and open-source RSS client.
 
 The following self-hosted and commercial RSS services are supported.
 
-- Fever API (TT-RSS Fever plugin, FreshRSS, Miniflux, etc.)
-- Google Reader API (Bazqux Reader, The Old Reader, etc.)
+- Fever API (TT-RSS Fever plugin, Miniflux, etc.)
+- Google Reader API (Bazqux Reader, FreshRSS, The Old Reader, etc.)
 - Inoreader
 - Feedbin (official or self-hosted)
 
