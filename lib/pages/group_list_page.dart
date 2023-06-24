@@ -2,7 +2,7 @@ import 'package:fluent_reader_lite/components/badge.dart';
 import 'package:fluent_reader_lite/components/dismissible_background.dart';
 import 'package:fluent_reader_lite/components/mark_all_action_sheet.dart';
 import 'package:fluent_reader_lite/components/my_list_tile.dart';
-import 'package:fluent_reader_lite/generated/l10n.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:fluent_reader_lite/models/groups_model.dart';
 import 'package:fluent_reader_lite/models/source.dart';
 import 'package:fluent_reader_lite/models/sources_model.dart';
@@ -31,28 +31,35 @@ class _GroupListPageState extends State<GroupListPage> {
   @override
   Widget build(BuildContext context) {
     final navigationBar = CupertinoSliverNavigationBar(
-      largeTitle: Text(S.of(context).groups),
+      largeTitle: Text(AppLocalizations.of(context).groups),
       automaticallyImplyLeading: false,
-      backgroundColor: Global.isTablet ? CupertinoColors.systemBackground : null,
+      backgroundColor:
+          Global.isTablet ? CupertinoColors.systemBackground : null,
       leading: CupertinoButton(
         minSize: 36,
         padding: EdgeInsets.zero,
-        child: Text(S.of(context).cancel),
-        onPressed: () { Navigator.of(context).pop(); },
+        child: Text(AppLocalizations.of(context).cancel),
+        onPressed: () {
+          Navigator.of(context).pop();
+        },
       ),
     );
     final allSources = Consumer<SourcesModel>(
       builder: (context, sourcesModel, child) {
         var count = _unreadCount(sourcesModel.getSources());
-        return SliverToBoxAdapter(child: MyListTile(
-          title: Text(S.of(context).allSubscriptions),
+        return SliverToBoxAdapter(
+            child: MyListTile(
+          title: Text(AppLocalizations.of(context).allSubscriptions),
           trailing: count > 0 ? Badge(count) : null,
-          onTap: () { Navigator.of(context).pop(List<String>.empty()); },
+          onTap: () {
+            Navigator.of(context).pop(List<String>.empty());
+          },
           background: CupertinoColors.systemBackground,
         ));
       },
     );
-    final dismissBg = DismissibleBackground(CupertinoIcons.checkmark_circle, true);
+    final dismissBg =
+        DismissibleBackground(CupertinoIcons.checkmark_circle, true);
     final groupList = Consumer2<GroupsModel, SourcesModel>(
       builder: (context, groupsModel, sourcesModel, child) {
         final groupNames = groupsModel.groups.keys.toList();
@@ -66,22 +73,21 @@ class _GroupListPageState extends State<GroupListPage> {
             List<String> group;
             final isUncategorized = groupsModel.showUncategorized && index == 0;
             if (isUncategorized) {
-              groupName = S.of(context).uncategorized;
+              groupName = AppLocalizations.of(context).uncategorized;
               group = groupsModel.uncategorized;
             } else {
               groupName = groupNames[index];
               group = groupsModel.groups[groupName];
             }
-            final count = _unreadCount(
-              group.map((sid) => sourcesModel.getSource(sid))
-            );
+            final count =
+                _unreadCount(group.map((sid) => sourcesModel.getSource(sid)));
             final tile = MyListTile(
-              title: Flexible(child: Text(groupName, overflow: TextOverflow.ellipsis)),
+              title: Flexible(
+                  child: Text(groupName, overflow: TextOverflow.ellipsis)),
               trailing: count > 0 ? Badge(count) : null,
-              onTap: () { 
+              onTap: () {
                 Navigator.of(context).pop(
-                  isUncategorized ? _uncategorizedIndicator : [groupName]
-                );
+                    isUncategorized ? _uncategorizedIndicator : [groupName]);
               },
               background: CupertinoColors.systemBackground,
             );
@@ -105,19 +111,21 @@ class _GroupListPageState extends State<GroupListPage> {
         );
       },
     );
-    final padding = SliverToBoxAdapter(child: Padding(
-      padding: EdgeInsets.only(bottom: 80),
-    ),);
-    return CupertinoPageScaffold(
-      backgroundColor: CupertinoColors.systemBackground,
-      child: CupertinoScrollbar(child: CustomScrollView(
-        slivers: [
-          navigationBar,
-          allSources,
-          groupList,
-          padding,
-        ],
-      ))
+    final padding = SliverToBoxAdapter(
+      child: Padding(
+        padding: EdgeInsets.only(bottom: 80),
+      ),
     );
+    return CupertinoPageScaffold(
+        backgroundColor: CupertinoColors.systemBackground,
+        child: CupertinoScrollbar(
+            child: CustomScrollView(
+          slivers: [
+            navigationBar,
+            allSources,
+            groupList,
+            padding,
+          ],
+        )));
   }
 }

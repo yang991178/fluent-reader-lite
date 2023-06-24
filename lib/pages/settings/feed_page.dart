@@ -1,6 +1,6 @@
 import 'package:fluent_reader_lite/components/list_tile_group.dart';
 import 'package:fluent_reader_lite/components/my_list_tile.dart';
-import 'package:fluent_reader_lite/generated/l10n.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:fluent_reader_lite/models/feeds_model.dart';
 import 'package:fluent_reader_lite/models/groups_model.dart';
 import 'package:fluent_reader_lite/utils/colors.dart';
@@ -14,24 +14,32 @@ class FeedPage extends StatelessWidget {
       builder: (context) => CupertinoPageScaffold(
         backgroundColor: MyColors.background,
         navigationBar: CupertinoNavigationBar(
-          middle: Text(isToRight ? S.of(context).swipeRight : S.of(context).swipeLeft),
+          middle: Text(isToRight
+              ? AppLocalizations.of(context).swipeRight
+              : AppLocalizations.of(context).swipeLeft),
         ),
         child: Consumer<FeedsModel>(
           builder: (context, feedsModel, child) {
             final swipeOptons = [
-              Tuple2(S.of(context).toggleRead, ItemSwipeOption.ToggleRead),
-              Tuple2(S.of(context).toggleStar, ItemSwipeOption.ToggleStar),
-              Tuple2(S.of(context).share, ItemSwipeOption.Share),
-              Tuple2(S.of(context).openExternal, ItemSwipeOption.OpenExternal),
-              Tuple2(S.of(context).openMenu, ItemSwipeOption.OpenMenu),
+              Tuple2(AppLocalizations.of(context).toggleRead,
+                  ItemSwipeOption.ToggleRead),
+              Tuple2(AppLocalizations.of(context).toggleStar,
+                  ItemSwipeOption.ToggleStar),
+              Tuple2(AppLocalizations.of(context).share, ItemSwipeOption.Share),
+              Tuple2(AppLocalizations.of(context).openExternal,
+                  ItemSwipeOption.OpenExternal),
+              Tuple2(AppLocalizations.of(context).openMenu,
+                  ItemSwipeOption.OpenMenu),
             ];
             return ListView(children: [
               ListTileGroup.fromOptions(
                 swipeOptons,
                 isToRight ? feedsModel.swipeR : feedsModel.swipeL,
-                (v) { 
-                  if (isToRight) feedsModel.swipeR = v;
-                  else feedsModel.swipeL = v;
+                (v) {
+                  if (isToRight)
+                    feedsModel.swipeR = v;
+                  else
+                    feedsModel.swipeL = v;
                 },
               ),
             ]);
@@ -46,76 +54,89 @@ class FeedPage extends StatelessWidget {
     return CupertinoPageScaffold(
       backgroundColor: MyColors.background,
       navigationBar: CupertinoNavigationBar(
-        middle: Text(S.of(context).feed),
+        middle: Text(AppLocalizations.of(context).feed),
       ),
       child: Consumer<FeedsModel>(
         builder: (context, feedsModel, child) {
           final swipeOptons = {
-            ItemSwipeOption.ToggleRead: S.of(context).toggleRead,
-            ItemSwipeOption.ToggleStar: S.of(context).toggleStar,
-            ItemSwipeOption.Share: S.of(context).share,
-            ItemSwipeOption.OpenExternal: S.of(context).openExternal,
-            ItemSwipeOption.OpenMenu: S.of(context).openMenu,
+            ItemSwipeOption.ToggleRead: AppLocalizations.of(context).toggleRead,
+            ItemSwipeOption.ToggleStar: AppLocalizations.of(context).toggleStar,
+            ItemSwipeOption.Share: AppLocalizations.of(context).share,
+            ItemSwipeOption.OpenExternal:
+                AppLocalizations.of(context).openExternal,
+            ItemSwipeOption.OpenMenu: AppLocalizations.of(context).openMenu,
           };
           final preferences = ListTileGroup([
             MyListTile(
-              title: Text(S.of(context).showThumb),
+              title: Text(AppLocalizations.of(context).showThumb),
               trailing: CupertinoSwitch(
                 value: feedsModel.showThumb,
-                onChanged: (v) { feedsModel.showThumb = v; },
+                onChanged: (v) {
+                  feedsModel.showThumb = v;
+                },
               ),
               trailingChevron: false,
             ),
             MyListTile(
-              title: Text(S.of(context).showSnippet),
+              title: Text(AppLocalizations.of(context).showSnippet),
               trailing: CupertinoSwitch(
                 value: feedsModel.showSnippet,
-                onChanged: (v) { feedsModel.showSnippet = v; },
+                onChanged: (v) {
+                  feedsModel.showSnippet = v;
+                },
               ),
               trailingChevron: false,
             ),
             MyListTile(
-              title: Text(S.of(context).dimRead),
+              title: Text(AppLocalizations.of(context).dimRead),
               trailing: CupertinoSwitch(
                 value: feedsModel.dimRead,
-                onChanged: (v) { feedsModel.dimRead = v; },
+                onChanged: (v) {
+                  feedsModel.dimRead = v;
+                },
               ),
               trailingChevron: false,
               withDivider: false,
             ),
-          ], title: S.of(context).preferences);
+          ], title: AppLocalizations.of(context).preferences);
           final groups = ListTileGroup([
             Consumer<GroupsModel>(
               builder: (context, groupsModel, child) {
                 return MyListTile(
-                  title: Text(S.of(context).showUncategorized),
+                  title: Text(AppLocalizations.of(context).showUncategorized),
                   trailing: CupertinoSwitch(
                     value: groupsModel.showUncategorized,
-                    onChanged: (v) { groupsModel.showUncategorized = v; },
+                    onChanged: (v) {
+                      groupsModel.showUncategorized = v;
+                    },
                   ),
                   trailingChevron: false,
                   withDivider: false,
                 );
               },
             ),
-          ], title: S.of(context).groups);
+          ], title: AppLocalizations.of(context).groups);
           return ListView(
             children: [
               preferences,
               groups,
               ListTileGroup([
                 MyListTile(
-                  title: Text(S.of(context).swipeRight),
+                  title: Text(AppLocalizations.of(context).swipeRight),
                   trailing: Text(swipeOptons[feedsModel.swipeR]),
-                  onTap: () { _openGestureOptions(context, true); },
+                  onTap: () {
+                    _openGestureOptions(context, true);
+                  },
                 ),
                 MyListTile(
-                  title: Text(S.of(context).swipeLeft),
+                  title: Text(AppLocalizations.of(context).swipeLeft),
                   trailing: Text(swipeOptons[feedsModel.swipeL]),
-                  onTap: () { _openGestureOptions(context, false); },
+                  onTap: () {
+                    _openGestureOptions(context, false);
+                  },
                   withDivider: false,
                 ),
-              ], title: S.of(context).gestures),
+              ], title: AppLocalizations.of(context).gestures),
             ],
           );
         },

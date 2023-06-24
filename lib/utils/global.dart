@@ -6,6 +6,7 @@ import 'package:fluent_reader_lite/models/service.dart';
 import 'package:fluent_reader_lite/models/services/feedbin.dart';
 import 'package:fluent_reader_lite/models/services/fever.dart';
 import 'package:fluent_reader_lite/models/services/greader.dart';
+import 'package:fluent_reader_lite/models/services/miniflux.dart';
 import 'package:fluent_reader_lite/models/sources_model.dart';
 import 'package:fluent_reader_lite/models/sync_model.dart';
 import 'package:fluent_reader_lite/utils/db.dart';
@@ -36,9 +37,13 @@ abstract class Global {
     itemsModel = ItemsModel();
     feedsModel = FeedsModel();
     groupsModel = GroupsModel();
-    var serviceType = SyncService.values[Store.sp.getInt(StoreKeys.SYNC_SERVICE) ?? 0];
+    var serviceType =
+        SyncService.values[Store.sp.getInt(StoreKeys.SYNC_SERVICE) ?? 0];
     switch (serviceType) {
       case SyncService.None:
+        break;
+      case SyncService.Miniflux:
+        service = MinifluxServiceHandler();
         break;
       case SyncService.Fever:
         service = FeverServiceHandler();
@@ -62,11 +67,11 @@ abstract class Global {
       where: "date < ? AND starred = 0",
       whereArgs: [
         DateTime.now()
-          .subtract(Duration(days: globalModel.keepItemsDays))
-          .millisecondsSinceEpoch,
+            .subtract(Duration(days: globalModel.keepItemsDays))
+            .millisecondsSinceEpoch,
       ],
     );
-    server = Jaguar(address: "127.0.0.1",port: 9000);
+    server = Jaguar(address: "127.0.0.1", port: 9000);
     server.addRoute(serveFlutterAssets());
     await server.serve();
     await sourcesModel.init();
@@ -75,14 +80,15 @@ abstract class Global {
   }
 
   static Brightness currentBrightness(BuildContext context) {
-    return globalModel.getBrightness() ?? MediaQuery.of(context).platformBrightness;
+    return globalModel.getBrightness() ??
+        MediaQuery.of(context).platformBrightness;
   }
 
   static bool get isTablet => tabletPanel.currentWidget != null;
 
   static NavigatorState responsiveNavigator(BuildContext context) {
     return tabletPanel.currentWidget != null
-      ? Global.tabletPanel.currentState
-      : Navigator.of(context, rootNavigator: true);
+        ? Global.tabletPanel.currentState
+        : Navigator.of(context, rootNavigator: true);
   }
 }

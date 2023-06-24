@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:fluent_reader_lite/components/list_tile_group.dart';
 import 'package:fluent_reader_lite/components/my_list_tile.dart';
-import 'package:fluent_reader_lite/generated/l10n.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:fluent_reader_lite/utils/colors.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -18,17 +18,15 @@ class TextEditorPage extends StatefulWidget {
 
   TextEditorPage(
     this.title,
-    this.validate,
-    {
-      this.navigationBarColor,
-      this.saveText,
-      this.initialValue: "",
-      this.inputType,
-      this.autocorrect: false,
-      this.suggestions,
-      Key key,
-    })
-    : super(key: key);
+    this.validate, {
+    this.navigationBarColor,
+    this.saveText,
+    this.initialValue: "",
+    this.inputType,
+    this.autocorrect: false,
+    this.suggestions,
+    Key key,
+  }) : super(key: key);
 
   @override
   _TextEditorPage createState() => _TextEditorPage();
@@ -45,30 +43,36 @@ class _TextEditorPage extends State<TextEditorPage> {
   }
 
   void _onSave() async {
-    setState(() { _validating = true; });
+    setState(() {
+      _validating = true;
+    });
     var trimmed = _controller.text.trim();
     var valid = await widget.validate(trimmed);
     if (!mounted) return;
-    setState(() { _validating = false; });
+    setState(() {
+      _validating = false;
+    });
     if (valid) {
       Navigator.of(context).pop(trimmed);
     } else {
       showCupertinoDialog(
         context: context,
         builder: (context) => CupertinoAlertDialog(
-          title: Text(S.of(context).invalidValue),
+          title: Text(AppLocalizations.of(context).invalidValue),
           actions: [
             CupertinoDialogAction(
-              child: Text(S.of(context).close),
+              child: Text(AppLocalizations.of(context).close),
               isDefaultAction: true,
-              onPressed: () { Navigator.of(context).pop(); },
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
             ),
           ],
         ),
       );
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
@@ -79,8 +83,8 @@ class _TextEditorPage extends State<TextEditorPage> {
         trailing: CupertinoButton(
           padding: EdgeInsets.zero,
           child: _validating
-            ? CupertinoActivityIndicator()
-            : Text(widget.saveText ?? S.of(context).save),
+              ? CupertinoActivityIndicator()
+              : Text(widget.saveText ?? AppLocalizations.of(context).save),
           onPressed: _validating ? null : _onSave,
         ),
       ),
@@ -95,23 +99,30 @@ class _TextEditorPage extends State<TextEditorPage> {
             autofocus: true,
             obscureText: widget.inputType == TextInputType.visiblePassword,
             keyboardType: widget.inputType,
-            onSubmitted: (v) { _onSave(); },
+            onSubmitted: (v) {
+              _onSave();
+            },
             autocorrect: widget.autocorrect,
             enableSuggestions: widget.autocorrect,
           ),
         ]),
-        if (widget.suggestions != null) ...widget.suggestions.map((s) {
-          return MyListTile(
-            title: Flexible(child: Text(
-              s,
-              style: TextStyle(color: CupertinoColors.secondaryLabel.resolveFrom(context)),
-              overflow: TextOverflow.ellipsis,
-            )),
-            trailingChevron: false,
-            background: MyColors.background,
-            onTap: () { _controller.text = s; },
-          );
-        })
+        if (widget.suggestions != null)
+          ...widget.suggestions.map((s) {
+            return MyListTile(
+              title: Flexible(
+                  child: Text(
+                s,
+                style: TextStyle(
+                    color: CupertinoColors.secondaryLabel.resolveFrom(context)),
+                overflow: TextOverflow.ellipsis,
+              )),
+              trailingChevron: false,
+              background: MyColors.background,
+              onTap: () {
+                _controller.text = s;
+              },
+            );
+          })
       ]),
     );
   }

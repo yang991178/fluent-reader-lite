@@ -12,6 +12,7 @@ import 'package:fluent_reader_lite/pages/settings/services/feedbin_page.dart';
 import 'package:fluent_reader_lite/pages/settings/services/fever_page.dart';
 import 'package:fluent_reader_lite/pages/settings/services/greader_page.dart';
 import 'package:fluent_reader_lite/pages/settings/services/inoreader_page.dart';
+import 'package:fluent_reader_lite/pages/settings/services/miniflux_page.dart';
 import 'package:fluent_reader_lite/pages/settings/source_edit_page.dart';
 import 'package:fluent_reader_lite/pages/settings/sources_page.dart';
 import 'package:fluent_reader_lite/pages/settings_page.dart';
@@ -25,7 +26,7 @@ import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'generated/l10n.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'models/global_model.dart';
 
 void main() async {
@@ -65,6 +66,7 @@ class MyApp extends StatelessWidget {
     "/settings/about": (context) => AboutPage(),
     "/settings/service/fever": (context) => FeverPage(),
     "/settings/service/feedbin": (context) => FeedbinPage(),
+    "/settings/service/miniflux": (context) => MinifluxPage(),
     "/settings/service/inoreader": (context) => InoreaderPage(),
     "/settings/service/greader": (context) => GReaderPage(),
     "/settings/service": (context) {
@@ -75,8 +77,13 @@ class MyApp extends StatelessWidget {
           break;
         case SyncService.Fever:
           return FeverPage();
+          break;
+        case SyncService.Miniflux:
+          return MinifluxPage();
+          break;
         case SyncService.Feedbin:
           return FeedbinPage();
+          break;
         case SyncService.GReader:
           return GReaderPage();
           break;
@@ -105,7 +112,7 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           localizationsDelegates: [
             // ... app-specific localization delegate[s] here
-            S.delegate,
+            AppLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,

@@ -1,5 +1,5 @@
 import 'package:fluent_reader_lite/components/responsive_action_sheet.dart';
-import 'package:fluent_reader_lite/generated/l10n.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:fluent_reader_lite/utils/global.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -20,33 +20,41 @@ class MarkAllActionSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final sheet = CupertinoActionSheet(
-      title: Text(S.of(context).markAll),
+      title: Text(AppLocalizations.of(context).markAll),
       actions: [
         CupertinoActionSheetAction(
           isDestructiveAction: true,
-          child: Text(S.of(context).allArticles),
-          onPressed: () { _markAll(context); },
+          child: Text(AppLocalizations.of(context).allArticles),
+          onPressed: () {
+            _markAll(context);
+          },
         ),
         CupertinoActionSheetAction(
-          child: Text(S.of(context).daysAgo(1)),
-          onPressed: () { _markAll(context, date: _offset(1)); },
+          child: Text(AppLocalizations.of(context).daysAgo(1)),
+          onPressed: () {
+            _markAll(context, date: _offset(1));
+          },
         ),
         CupertinoActionSheetAction(
-          child: Text(S.of(context).daysAgo(3)),
-          onPressed: () { _markAll(context, date: _offset(3)); },
+          child: Text(AppLocalizations.of(context).daysAgo(3)),
+          onPressed: () {
+            _markAll(context, date: _offset(3));
+          },
         ),
         CupertinoActionSheetAction(
-          child: Text(S.of(context).daysAgo(7)),
-          onPressed: () { _markAll(context, date: _offset(7)); },
+          child: Text(AppLocalizations.of(context).daysAgo(7)),
+          onPressed: () {
+            _markAll(context, date: _offset(7));
+          },
         ),
       ],
       cancelButton: CupertinoActionSheetAction(
-        child: Text(S.of(context).cancel),
-        onPressed: () { 
+        child: Text(AppLocalizations.of(context).cancel),
+        onPressed: () {
           Navigator.of(context, rootNavigator: true).pop();
         },
       ),
-    ); 
-    return ResponsiveActionSheet(sheet);    
+    );
+    return ResponsiveActionSheet(sheet);
   }
 }

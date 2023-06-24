@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:fluent_reader_lite/components/list_tile_group.dart';
 import 'package:fluent_reader_lite/components/my_list_tile.dart';
-import 'package:fluent_reader_lite/generated/l10n.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:fluent_reader_lite/models/services/feedbin.dart';
 import 'package:fluent_reader_lite/models/services/service_import.dart';
 import 'package:fluent_reader_lite/models/sync_model.dart';
@@ -22,7 +22,8 @@ class FeedbinPage extends StatefulWidget {
 }
 
 class _FeedbinPageState extends State<FeedbinPage> {
-  String _endpoint = Store.sp.getString(StoreKeys.ENDPOINT) ?? "https://api.feedbin.me/v2/";
+  String _endpoint =
+      Store.sp.getString(StoreKeys.ENDPOINT) ?? "https://api.feedbin.me/v2/";
   String _username = Store.sp.getString(StoreKeys.USERNAME) ?? "";
   String _password = Store.sp.getString(StoreKeys.PASSWORD) ?? "";
   int _fetchLimit = Store.sp.getInt(StoreKeys.FETCH_LIMIT) ?? 250;
@@ -35,15 +36,21 @@ class _FeedbinPageState extends State<FeedbinPage> {
       ServiceImport import = ModalRoute.of(context).settings.arguments;
       if (import == null) return;
       if (Utils.testUrl(import.endpoint)) {
-        setState(() { _endpoint = import.endpoint; });
+        setState(() {
+          _endpoint = import.endpoint;
+        });
       }
       if (Utils.notEmpty(import.username)) {
-        setState(() { _username = import.username; });
+        setState(() {
+          _username = import.username;
+        });
       }
       if (Utils.notEmpty(import.password)) {
         final bytes = base64.decode(import.password);
         final password = utf8.decode(bytes);
-        setState(() { _password = password; });
+        setState(() {
+          _password = password;
+        });
       }
     });
   }
@@ -51,7 +58,7 @@ class _FeedbinPageState extends State<FeedbinPage> {
   void _editEndpoint() async {
     final String endpoint = await Navigator.of(context).push(CupertinoPageRoute(
       builder: (context) => TextEditorPage(
-        S.of(context).endpoint, 
+        AppLocalizations.of(context).endpoint,
         Utils.testUrl,
         initialValue: _endpoint,
         inputType: TextInputType.url,
@@ -62,31 +69,37 @@ class _FeedbinPageState extends State<FeedbinPage> {
       ),
     ));
     if (endpoint == null) return;
-    setState(() { _endpoint = endpoint; });
+    setState(() {
+      _endpoint = endpoint;
+    });
   }
 
   void _editUsername() async {
     final String username = await Navigator.of(context).push(CupertinoPageRoute(
       builder: (context) => TextEditorPage(
-        S.of(context).username, 
+        AppLocalizations.of(context).username,
         Utils.notEmpty,
         initialValue: _username,
       ),
     ));
     if (username == null) return;
-    setState(() { _username = username; });
+    setState(() {
+      _username = username;
+    });
   }
 
   void _editPassword() async {
     final String password = await Navigator.of(context).push(CupertinoPageRoute(
       builder: (context) => TextEditorPage(
-        S.of(context).password, 
+        AppLocalizations.of(context).password,
         Utils.notEmpty,
         inputType: TextInputType.visiblePassword,
       ),
     ));
     if (password == null) return;
-    setState(() { _password = password; });
+    setState(() {
+      _password = password;
+    });
   }
 
   bool _canSave() {
@@ -101,7 +114,9 @@ class _FeedbinPageState extends State<FeedbinPage> {
       _password,
       _fetchLimit,
     );
-    setState(() { _validating = true; });
+    setState(() {
+      _validating = true;
+    });
     DialogHelper().show(
       context,
       DialogWidget.progress(style: DialogStyle.cupertino),
@@ -116,7 +131,9 @@ class _FeedbinPageState extends State<FeedbinPage> {
       DialogHelper().hide(context);
       if (mounted) Navigator.of(context).pop();
     } else {
-      setState(() { _validating = false; });
+      setState(() {
+        _validating = false;
+      });
       DialogHelper().hide(context);
       Utils.showServiceFailureDialog(context);
     }
@@ -126,18 +143,18 @@ class _FeedbinPageState extends State<FeedbinPage> {
     final bool confirmed = await showCupertinoDialog(
       context: context,
       builder: (context) => CupertinoAlertDialog(
-        title: Text(S.of(context).logOutWarning),
+        title: Text(AppLocalizations.of(context).logOutWarning),
         actions: [
           CupertinoDialogAction(
             isDefaultAction: true,
-            child: Text(S.of(context).cancel),
+            child: Text(AppLocalizations.of(context).cancel),
             onPressed: () {
               Navigator.of(context).pop();
             },
           ),
           CupertinoDialogAction(
             isDestructiveAction: true,
-            child: Text(S.of(context).confirm),
+            child: Text(AppLocalizations.of(context).confirm),
             onPressed: () {
               Navigator.of(context).pop(true);
             },
@@ -146,7 +163,9 @@ class _FeedbinPageState extends State<FeedbinPage> {
       ),
     );
     if (confirmed != null) {
-      setState(() { _validating = true; });
+      setState(() {
+        _validating = true;
+      });
       DialogHelper().show(
         context,
         DialogWidget.progress(style: DialogStyle.cupertino),
@@ -163,64 +182,69 @@ class _FeedbinPageState extends State<FeedbinPage> {
   Widget build(BuildContext context) {
     final inputs = ListTileGroup([
       MyListTile(
-        title: Text(S.of(context).endpoint),
+        title: Text(AppLocalizations.of(context).endpoint),
         trailing: Text(_endpoint.length == 0
-          ? S.of(context).enter
-          : S.of(context).entered),
+            ? AppLocalizations.of(context).enter
+            : AppLocalizations.of(context).entered),
         onTap: _editEndpoint,
       ),
       MyListTile(
-        title: Text(S.of(context).username),
+        title: Text(AppLocalizations.of(context).username),
         trailing: Text(_username.length == 0
-          ? S.of(context).enter
-          : S.of(context).entered),
+            ? AppLocalizations.of(context).enter
+            : AppLocalizations.of(context).entered),
         onTap: _editUsername,
       ),
       MyListTile(
-        title: Text(S.of(context).password),
+        title: Text(AppLocalizations.of(context).password),
         trailing: Text(_password.length == 0
-          ? S.of(context).enter
-          : S.of(context).entered),
+            ? AppLocalizations.of(context).enter
+            : AppLocalizations.of(context).entered),
         onTap: _editPassword,
         withDivider: false,
       ),
-    ], title: S.of(context).credentials);
+    ], title: AppLocalizations.of(context).credentials);
     final syncItems = ListTileGroup([
       MyListTile(
-        title: Text(S.of(context).fetchLimit),
+        title: Text(AppLocalizations.of(context).fetchLimit),
         trailing: Text(_fetchLimit.toString()),
         trailingChevron: false,
         withDivider: false,
       ),
       MyListTile(
-        title: Expanded(child: CupertinoSlider(
+        title: Expanded(
+            child: CupertinoSlider(
           min: 250,
           max: 1500,
           divisions: 5,
           value: _fetchLimit.toDouble(),
-          onChanged: (v) { setState(() { _fetchLimit = v.toInt(); }); },
+          onChanged: (v) {
+            setState(() {
+              _fetchLimit = v.toInt();
+            });
+          },
         )),
         trailingChevron: false,
         withDivider: false,
       ),
-    ], title: S.of(context).sync);
+    ], title: AppLocalizations.of(context).sync);
     final saveButton = Selector<SyncModel, bool>(
       selector: (context, syncModel) => syncModel.syncing,
       builder: (context, syncing, child) {
         var canSave = !syncing && _canSave();
         final saveStyle = TextStyle(
           color: canSave
-            ? CupertinoColors.activeBlue.resolveFrom(context)
-            : CupertinoColors.secondaryLabel.resolveFrom(context),
+              ? CupertinoColors.activeBlue.resolveFrom(context)
+              : CupertinoColors.secondaryLabel.resolveFrom(context),
         );
         return ListTileGroup([
           MyListTile(
-            title: Expanded(child: Center(
-              child: Text(
-                S.of(context).save,
-                style: saveStyle,
-              )
-            )),
+            title: Expanded(
+                child: Center(
+                    child: Text(
+              AppLocalizations.of(context).save,
+              style: saveStyle,
+            ))),
             onTap: canSave ? _save : null,
             trailingChevron: false,
             withDivider: false,
@@ -233,16 +257,16 @@ class _FeedbinPageState extends State<FeedbinPage> {
       builder: (context, syncing, child) {
         return ListTileGroup([
           MyListTile(
-            title: Expanded(child: Center(
-              child: Text(
-                S.of(context).logOut,
-                style: TextStyle(
-                  color: (_validating || syncing)
+            title: Expanded(
+                child: Center(
+                    child: Text(
+              AppLocalizations.of(context).logOut,
+              style: TextStyle(
+                color: (_validating || syncing)
                     ? CupertinoColors.secondaryLabel.resolveFrom(context)
                     : CupertinoColors.destructiveRed,
-                ),
-              )
-            )),
+              ),
+            ))),
             onTap: (_validating || syncing) ? null : _logOut,
             trailingChevron: false,
             withDivider: false,

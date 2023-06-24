@@ -1,6 +1,6 @@
 import 'package:fluent_reader_lite/components/list_tile_group.dart';
 import 'package:fluent_reader_lite/components/my_list_tile.dart';
-import 'package:fluent_reader_lite/generated/l10n.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:fluent_reader_lite/models/global_model.dart';
 import 'package:fluent_reader_lite/utils/colors.dart';
 import 'package:flutter/cupertino.dart';
@@ -32,14 +32,14 @@ class _GeneralPageState extends State<GeneralPage> {
   Widget build(BuildContext context) => CupertinoPageScaffold(
         backgroundColor: MyColors.background,
         navigationBar: CupertinoNavigationBar(
-          middle: Text(S.of(context).general),
+          middle: Text(AppLocalizations.of(context).general),
         ),
         child: Consumer<GlobalModel>(
           builder: (context, globalModel, child) {
             final useSystemTextScale = globalModel.textScale == null;
             final textScaleItems = ListTileGroup([
               MyListTile(
-                title: Text(S.of(context).followSystem),
+                title: Text(AppLocalizations.of(context).followSystem),
                 trailing: CupertinoSwitch(
                   value: useSystemTextScale,
                   onChanged: (v) {
@@ -71,10 +71,10 @@ class _GeneralPageState extends State<GeneralPage> {
                   trailingChevron: false,
                   withDivider: false,
                 ),
-            ], title: S.of(context).fontSize);
+            ], title: AppLocalizations.of(context).fontSize);
             final syncItems = ListTileGroup([
               MyListTile(
-                title: Text(S.of(context).syncOnStart),
+                title: Text(AppLocalizations.of(context).syncOnStart),
                 trailing: CupertinoSwitch(
                   value: globalModel.syncOnStart,
                   onChanged: (v) {
@@ -85,7 +85,7 @@ class _GeneralPageState extends State<GeneralPage> {
                 trailingChevron: false,
               ),
               MyListTile(
-                title: Text(S.of(context).inAppBrowser),
+                title: Text(AppLocalizations.of(context).inAppBrowser),
                 trailing: CupertinoSwitch(
                   value: globalModel.inAppBrowser,
                   onChanged: (v) {
@@ -96,18 +96,18 @@ class _GeneralPageState extends State<GeneralPage> {
                 trailingChevron: false,
                 withDivider: false,
               ),
-            ], title: S.of(context).preferences);
+            ], title: AppLocalizations.of(context).preferences);
             final storageItems = ListTileGroup([
               MyListTile(
-                title: Text(S.of(context).clearCache),
+                title: Text(AppLocalizations.of(context).clearCache),
                 onTap: _clearingCache ? null : _clearCache,
                 trailing: _clearingCache ? CupertinoActivityIndicator() : null,
                 trailingChevron: !_clearingCache,
               ),
               MyListTile(
-                title: Text(S.of(context).autoDelete),
-                trailing:
-                    Text(S.of(context).daysAgo(globalModel.keepItemsDays)),
+                title: Text(AppLocalizations.of(context).autoDelete),
+                trailing: Text(AppLocalizations.of(context)
+                    .daysAgo(globalModel.keepItemsDays)),
                 trailingChevron: false,
                 withDivider: false,
               ),
@@ -126,22 +126,23 @@ class _GeneralPageState extends State<GeneralPage> {
                 trailingChevron: false,
                 withDivider: false,
               ),
-            ], title: S.of(context).storage);
+            ], title: AppLocalizations.of(context).storage);
             final themeItems = ListTileGroup.fromOptions(
               [
-                Tuple2(S.of(context).followSystem, ThemeSetting.Default),
-                Tuple2(S.of(context).light, ThemeSetting.Light),
-                Tuple2(S.of(context).dark, ThemeSetting.Dark),
+                Tuple2(AppLocalizations.of(context).followSystem,
+                    ThemeSetting.Default),
+                Tuple2(AppLocalizations.of(context).light, ThemeSetting.Light),
+                Tuple2(AppLocalizations.of(context).dark, ThemeSetting.Dark),
               ],
               globalModel.theme,
               (t) {
                 globalModel.theme = t;
               },
-              title: S.of(context).theme,
+              title: AppLocalizations.of(context).theme,
             );
             final localeItems = ListTileGroup.fromOptions(
               [
-                Tuple2(S.of(context).followSystem, null),
+                Tuple2(AppLocalizations.of(context).followSystem, null),
                 const Tuple2("Deutsch", Locale("de")),
                 const Tuple2("English", Locale("en")),
                 const Tuple2("Español", Locale("es")),
@@ -155,7 +156,7 @@ class _GeneralPageState extends State<GeneralPage> {
               (l) {
                 globalModel.locale = l;
               },
-              title: S.of(context).language,
+              title: AppLocalizations.of(context).language,
             );
             return ListView(
               children: [

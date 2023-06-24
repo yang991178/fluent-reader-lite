@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:fluent_reader_lite/generated/l10n.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:fluent_reader_lite/models/feeds_model.dart';
 import 'package:fluent_reader_lite/models/item.dart';
 import 'package:fluent_reader_lite/models/items_model.dart';
@@ -157,19 +157,19 @@ class ArticlePageState extends State<ArticlePage> {
         child: Icon(
           Icons.rss_feed,
           color: resolvedDarkGrey,
-          semanticLabel: S.of(context).rssText,
+          semanticLabel: AppLocalizations.of(context).rssText,
         ),
         padding: EdgeInsets.symmetric(horizontal: 8),
       ),
       1: Icon(
         Icons.article_outlined,
         color: resolvedDarkGrey,
-        semanticLabel: S.of(context).loadFull,
+        semanticLabel: AppLocalizations.of(context).loadFull,
       ),
       2: Icon(
         Icons.language,
         color: resolvedDarkGrey,
-        semanticLabel: S.of(context).loadWebpage,
+        semanticLabel: AppLocalizations.of(context).loadWebpage,
       ),
     };
     return Selector2<ItemsModel, SourcesModel, Tuple2<RSSItem, RSSSource>>(
@@ -203,12 +203,12 @@ class ArticlePageState extends State<ArticlePage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      S.of(context).wentWrong,
+                      AppLocalizations.of(context).wentWrong,
                       style: TextStyle(
                           color: CupertinoColors.label.resolveFrom(context)),
                     ),
                     CupertinoButton(
-                      child: Text(S.of(context).retry),
+                      child: Text(AppLocalizations.of(context).retry),
                       onPressed: () {
                         _loadOpenTarget(item, source);
                       },
@@ -243,8 +243,8 @@ class ArticlePageState extends State<ArticlePage> {
                         ? CupertinoIcons.circle
                         : CupertinoIcons.smallcircle_fill_circle,
                     semanticLabel: item.hasRead
-                        ? S.of(context).markUnread
-                        : S.of(context).markRead,
+                        ? AppLocalizations.of(context).markUnread
+                        : AppLocalizations.of(context).markRead,
                     onPressed: () {
                       HapticFeedback.mediumImpact();
                       Global.itemsModel
@@ -256,8 +256,8 @@ class ArticlePageState extends State<ArticlePage> {
                         ? CupertinoIcons.star_fill
                         : CupertinoIcons.star,
                     semanticLabel: item.starred
-                        ? S.of(context).star
-                        : S.of(context).unstar,
+                        ? AppLocalizations.of(context).star
+                        : AppLocalizations.of(context).unstar,
                     onPressed: () {
                       HapticFeedback.mediumImpact();
                       Global.itemsModel
@@ -266,7 +266,7 @@ class ArticlePageState extends State<ArticlePage> {
                   ),
                   CupertinoToolbarItem(
                     icon: CupertinoIcons.share,
-                    semanticLabel: S.of(context).share,
+                    semanticLabel: AppLocalizations.of(context).share,
                     onPressed: () {
                       final media = MediaQuery.of(context);
                       Share.share(item.link,
@@ -281,7 +281,7 @@ class ArticlePageState extends State<ArticlePage> {
                   ),
                   CupertinoToolbarItem(
                     icon: CupertinoIcons.chevron_up,
-                    semanticLabel: S.of(context).prev,
+                    semanticLabel: AppLocalizations.of(context).prev,
                     onPressed: idx <= 0
                         ? null
                         : () {
@@ -290,7 +290,7 @@ class ArticlePageState extends State<ArticlePage> {
                   ),
                   CupertinoToolbarItem(
                     icon: CupertinoIcons.chevron_down,
-                    semanticLabel: S.of(context).next,
+                    semanticLabel: AppLocalizations.of(context).next,
                     onPressed: (idx == -1 ||
                             (idx == feed.iids.length - 1 && feed.allLoaded))
                         ? null

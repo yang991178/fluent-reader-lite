@@ -1,6 +1,6 @@
 import 'package:fluent_reader_lite/components/list_tile_group.dart';
 import 'package:fluent_reader_lite/components/my_list_tile.dart';
-import 'package:fluent_reader_lite/generated/l10n.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:fluent_reader_lite/utils/colors.dart';
 import 'package:fluent_reader_lite/utils/utils.dart';
 import 'package:flutter/cupertino.dart';
@@ -28,7 +28,7 @@ class AboutPage extends StatelessWidget {
     return CupertinoPageScaffold(
       backgroundColor: MyColors.background,
       navigationBar: CupertinoNavigationBar(
-        middle: Text(S.of(context).about),
+        middle: Text(AppLocalizations.of(context).about),
       ),
       child: ListView(
         children: [
@@ -38,19 +38,27 @@ class AboutPage extends StatelessWidget {
               children: [
                 Image.asset("assets/icons/logo.png", width: 80, height: 80),
                 Text("Fluent Reader Lite", style: nameStyle),
-                Text("${S.of(context).version} $version", style: versionStyle),
-                Text("Copyright © 2021 Haoyuan Liu. All rights reserved.", style: copyrightStyle),
+                Text("${AppLocalizations.of(context).version} $version",
+                    style: versionStyle),
+                Text("Copyright © 2021 Haoyuan Liu. All rights reserved.",
+                    style: copyrightStyle),
               ],
             ),
           ),
           ListTileGroup([
             MyListTile(
-              title: Text(S.of(context).openSource),
-              onTap: () { Utils.openExternal("https://github.com/yang991178/fluent-reader-lite"); },
+              title: Text(AppLocalizations.of(context).openSource),
+              onTap: () {
+                Utils.openExternal(
+                    "https://github.com/yang991178/fluent-reader-lite");
+              },
             ),
             MyListTile(
-              title: Text(S.of(context).feedback),
-              onTap: () { Utils.openExternal("https://github.com/yang991178/fluent-reader-lite/issues"); },
+              title: Text(AppLocalizations.of(context).feedback),
+              onTap: () {
+                Utils.openExternal(
+                    "https://github.com/yang991178/fluent-reader-lite/issues");
+              },
               withDivider: false,
             ),
           ]),

@@ -1,11 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:crypto/crypto.dart';
 import 'package:fluent_reader_lite/components/list_tile_group.dart';
 import 'package:fluent_reader_lite/components/my_list_tile.dart';
+import 'package:fluent_reader_lite/models/services/miniflux.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:fluent_reader_lite/models/services/fever.dart';
 import 'package:fluent_reader_lite/models/services/service_import.dart';
 import 'package:fluent_reader_lite/models/sync_model.dart';
 import 'package:fluent_reader_lite/pages/settings/text_editor_page.dart';
@@ -17,16 +16,15 @@ import 'package:flutter/cupertino.dart';
 import 'package:overlay_dialog/overlay_dialog.dart';
 import 'package:provider/provider.dart';
 
-class FeverPage extends StatefulWidget {
+class MinifluxPage extends StatefulWidget {
   @override
-  _FeverPageState createState() => _FeverPageState();
+  _MinifluxPageState createState() => _MinifluxPageState();
 }
 
-class _FeverPageState extends State<FeverPage> {
+class _MinifluxPageState extends State<MinifluxPage> {
   String _endpoint = Store.sp.getString(StoreKeys.ENDPOINT) ?? "";
   String _username = Store.sp.getString(StoreKeys.USERNAME) ?? "";
-  String _apiKey = Store.sp.getString(StoreKeys.API_KEY);
-  String _password = Store.sp.getString(StoreKeys.PASSWORD) ?? "";
+  String _apiKey = Store.sp.getString(StoreKeys.API_KEY) ?? "";
   int _fetchLimit = Store.sp.getInt(StoreKeys.FETCH_LIMIT) ?? 250;
   bool _validating = false;
 
@@ -47,8 +45,10 @@ class _FeverPageState extends State<FeverPage> {
         });
       }
       if (Utils.notEmpty(import.apiKey)) {
+        final bytes = base64.decode(import.apiKey);
+        final apiKey = utf8.decode(bytes);
         setState(() {
-          _apiKey = import.apiKey;
+          _apiKey = apiKey;
         });
       }
     });
@@ -61,6 +61,10 @@ class _FeverPageState extends State<FeverPage> {
         Utils.testUrl,
         initialValue: _endpoint,
         inputType: TextInputType.url,
+        suggestions: [
+          "https://api.feedbin.com/v2/",
+          "https://api.feedbin.me/v2/",
+        ],
       ),
     ));
     if (endpoint == null) return;
@@ -80,36 +84,35 @@ class _FeverPageState extends State<FeverPage> {
     if (username == null) return;
     setState(() {
       _username = username;
-      _apiKey = null;
     });
   }
 
   void _editPassword() async {
-    final String password = await Navigator.of(context).push(CupertinoPageRoute(
+    final String apiKey = await Navigator.of(context).push(CupertinoPageRoute(
       builder: (context) => TextEditorPage(
-        AppLocalizations.of(context).password,
+        AppLocalizations.of(context).getApiKey,
         Utils.notEmpty,
         inputType: TextInputType.visiblePassword,
       ),
     ));
-    if (password == null) return;
+    if (apiKey == null) return;
     setState(() {
-      _password = password;
-      _apiKey = null;
+      _apiKey = apiKey;
     });
   }
 
   bool _canSave() {
     if (_validating) return false;
-    return _endpoint.length > 0 &&
-        ((_username.length > 0 && _password.length > 0) || _apiKey != null);
+    return _endpoint.length > 0 && _username.length > 0 && _apiKey.length > 0;
   }
 
   void _save() async {
-    final apiKey =
-        _apiKey ?? md5.convert(utf8.encode("$_username:$_password")).toString();
-    final handler =
-        FeverServiceHandler.fromValues(_endpoint, apiKey, _fetchLimit);
+    final handler = MinifluxServiceHandler.fromValues(
+      _endpoint,
+      _username,
+      _apiKey,
+      _fetchLimit,
+    );
     setState(() {
       _validating = true;
     });
@@ -120,7 +123,7 @@ class _FeverPageState extends State<FeverPage> {
     final isValid = await handler.validate();
     if (!mounted) return;
     if (isValid) {
-      handler.persist(_username, _password);
+      handler.persist();
       await Global.syncModel.syncWithService();
       Global.syncModel.checkHasService();
       _validating = false;
@@ -192,8 +195,8 @@ class _FeverPageState extends State<FeverPage> {
         onTap: _editUsername,
       ),
       MyListTile(
-        title: Text(AppLocalizations.of(context).password),
-        trailing: Text(_password.length == 0 && _apiKey == null
+        title: Text(AppLocalizations.of(context).getApiKey),
+        trailing: Text(_apiKey.length == 0
             ? AppLocalizations.of(context).enter
             : AppLocalizations.of(context).entered),
         onTap: _editPassword,
@@ -273,7 +276,7 @@ class _FeverPageState extends State<FeverPage> {
     final page = CupertinoPageScaffold(
       backgroundColor: MyColors.background,
       navigationBar: CupertinoNavigationBar(
-        middle: Text("Fever API"),
+        middle: Text("Miniflux"),
       ),
       child: ListView(children: [
         inputs,

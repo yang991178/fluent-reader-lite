@@ -9,6 +9,7 @@ class ServiceImport {
     "f": "/settings/service/fever",
     "g": "/settings/service/greader",
     "i": "/settings/service/inoreader",
+    "m": "/settings/service/miniflux",
     "fb": "/settings/service/feedbin"
   };
 

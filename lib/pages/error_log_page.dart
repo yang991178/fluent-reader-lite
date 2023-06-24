@@ -1,5 +1,5 @@
 import 'package:fluent_reader_lite/components/list_tile_group.dart';
-import 'package:fluent_reader_lite/generated/l10n.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:fluent_reader_lite/utils/colors.dart';
 import 'package:fluent_reader_lite/utils/store.dart';
 import 'package:flutter/cupertino.dart';
@@ -13,10 +13,10 @@ class ErrorLogPage extends StatelessWidget {
     return CupertinoPageScaffold(
       backgroundColor: MyColors.background,
       navigationBar: CupertinoNavigationBar(
-        middle: Text(S.of(context).errorLog),
+        middle: Text(AppLocalizations.of(context).errorLog),
         trailing: CupertinoButton(
           padding: EdgeInsets.zero,
-          child: Text(S.of(context).copy),
+          child: Text(AppLocalizations.of(context).copy),
           onPressed: () {
             Clipboard.setData(ClipboardData(text: errorLog));
           },

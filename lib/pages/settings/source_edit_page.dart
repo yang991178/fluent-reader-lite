@@ -1,6 +1,6 @@
 import 'package:fluent_reader_lite/components/list_tile_group.dart';
 import 'package:fluent_reader_lite/components/my_list_tile.dart';
-import 'package:fluent_reader_lite/generated/l10n.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:fluent_reader_lite/models/source.dart';
 import 'package:fluent_reader_lite/models/sources_model.dart';
 import 'package:fluent_reader_lite/pages/settings/text_editor_page.dart';
@@ -16,7 +16,7 @@ class SourceEditPage extends StatelessWidget {
   void _editName(BuildContext context, RSSSource source) async {
     final String name = await Navigator.of(context).push(CupertinoPageRoute(
       builder: (context) => TextEditorPage(
-        S.of(context).name,
+        AppLocalizations.of(context).name,
         (v) => v.trim().length > 0,
         initialValue: source.name,
       ),
@@ -30,7 +30,7 @@ class SourceEditPage extends StatelessWidget {
   void _editIcon(BuildContext context, RSSSource source) async {
     final String iconUrl = await Navigator.of(context).push(CupertinoPageRoute(
       builder: (context) => TextEditorPage(
-        S.of(context).icon,
+        AppLocalizations.of(context).icon,
         (v) async {
           var trimmed = v.trim();
           if (trimmed.length == 0) return false;
@@ -56,33 +56,45 @@ class SourceEditPage extends StatelessWidget {
         );
         final urlTile = ListTileGroup([
           MyListTile(
-            title: Flexible(child: Text(source.url, style: urlStyle, overflow: TextOverflow.ellipsis)),
+            title: Flexible(
+                child: Text(source.url,
+                    style: urlStyle, overflow: TextOverflow.ellipsis)),
             trailing: Icon(
               CupertinoIcons.doc_on_clipboard,
-              semanticLabel: S.of(context).copy,
+              semanticLabel: AppLocalizations.of(context).copy,
             ),
-            onTap: () { Clipboard.setData(ClipboardData(text: source.url)); },
+            onTap: () {
+              Clipboard.setData(ClipboardData(text: source.url));
+            },
             trailingChevron: false,
             withDivider: false,
           ),
         ], title: "URL");
         final editSource = ListTileGroup([
           MyListTile(
-            title: Text(S.of(context).name),
-            onTap: () { _editName(context, source); },
+            title: Text(AppLocalizations.of(context).name),
+            onTap: () {
+              _editName(context, source);
+            },
           ),
           MyListTile(
-            title: Text(S.of(context).icon),
-            onTap: () { _editIcon(context, source); },
+            title: Text(AppLocalizations.of(context).icon),
+            onTap: () {
+              _editIcon(context, source);
+            },
             withDivider: false,
           ),
-        ], title: S.of(context).edit);
+        ], title: AppLocalizations.of(context).edit);
         final openTarget = ListTileGroup.fromOptions(
           [
-            Tuple2(S.of(context).rssText, SourceOpenTarget.Local),
-            Tuple2(S.of(context).loadFull, SourceOpenTarget.FullContent),
-            Tuple2(S.of(context).loadWebpage, SourceOpenTarget.Webpage),
-            Tuple2(S.of(context).openExternal, SourceOpenTarget.External),
+            Tuple2(
+                AppLocalizations.of(context).rssText, SourceOpenTarget.Local),
+            Tuple2(AppLocalizations.of(context).loadFull,
+                SourceOpenTarget.FullContent),
+            Tuple2(AppLocalizations.of(context).loadWebpage,
+                SourceOpenTarget.Webpage),
+            Tuple2(AppLocalizations.of(context).openExternal,
+                SourceOpenTarget.External),
           ],
           source.openTarget,
           (v) {
@@ -90,18 +102,20 @@ class SourceEditPage extends StatelessWidget {
             cloned.openTarget = v;
             Global.sourcesModel.put(cloned);
           },
-          title: S.of(context).openTarget,
+          title: AppLocalizations.of(context).openTarget,
         );
         return CupertinoPageScaffold(
           backgroundColor: MyColors.background,
           navigationBar: CupertinoNavigationBar(
             middle: Text(source.name, overflow: TextOverflow.ellipsis),
           ),
-          child: ListView(children: [
-            urlTile,
-            editSource,
-            openTarget,
-          ],),
+          child: ListView(
+            children: [
+              urlTile,
+              editSource,
+              openTarget,
+            ],
+          ),
         );
       },
     );

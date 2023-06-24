@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:fluent_reader_lite/generated/l10n.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:fluent_reader_lite/main.dart';
 import 'package:fluent_reader_lite/models/services/service_import.dart';
 import 'package:fluent_reader_lite/models/sync_model.dart';
@@ -49,10 +49,10 @@ class _HomePageState extends State<HomePage> {
         showCupertinoDialog(
           context: context,
           builder: (context) => CupertinoAlertDialog(
-            title: Text(S.of(context).serviceExists),
+            title: Text(AppLocalizations.of(context).serviceExists),
             actions: [
               CupertinoDialogAction(
-                child: Text(S.of(context).confirm),
+                child: Text(AppLocalizations.of(context).confirm),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
@@ -117,11 +117,11 @@ class _HomePageState extends State<HomePage> {
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.timeline),
-            label: S.of(context).feed,
+            label: AppLocalizations.of(context).feed,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.list),
-            label: S.of(context).subscriptions,
+            label: AppLocalizations.of(context).subscriptions,
           ),
         ],
       ),

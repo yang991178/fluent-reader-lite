@@ -1,6 +1,6 @@
 import 'package:fluent_reader_lite/components/list_tile_group.dart';
 import 'package:fluent_reader_lite/components/my_list_tile.dart';
-import 'package:fluent_reader_lite/generated/l10n.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:fluent_reader_lite/utils/colors.dart';
 import 'package:fluent_reader_lite/utils/global.dart';
 import 'package:flutter/cupertino.dart';
@@ -25,43 +25,60 @@ class SetupPage extends StatelessWidget {
       child: Column(
         children: [
           Image.asset("assets/icons/logo.png", width: 80, height: 80),
-          Text(S.of(context).welcome, style: welcomeStyle),
+          Text(AppLocalizations.of(context).welcome, style: welcomeStyle),
         ],
       ),
     );
     final services = ListTileGroup([
       MyListTile(
         title: Text("Fever API"),
-        onTap: () { _configure(context, "/settings/service/fever"); },
+        onTap: () {
+          _configure(context, "/settings/service/fever");
+        },
       ),
       MyListTile(
         title: Text("Google Reader API"),
-        onTap: () { _configure(context, "/settings/service/greader"); },
+        onTap: () {
+          _configure(context, "/settings/service/greader");
+        },
+      ),
+      MyListTile(
+        title: Text("Miniflux API"),
+        onTap: () {
+          _configure(context, "/settings/service/miniflux");
+        },
       ),
       MyListTile(
         title: Text("Inoreader"),
-        onTap: () { _configure(context, "/settings/service/inoreader"); },
+        onTap: () {
+          _configure(context, "/settings/service/inoreader");
+        },
       ),
       MyListTile(
         title: Text("Feedbin"),
-        onTap: () { _configure(context, "/settings/service/feedbin"); },
-        withDivider: false,
-      ),
-    ], title: S.of(context).service);
-    final settings = ListTileGroup([
-      MyListTile(
-        title: Text(S.of(context).general),
-        onTap: () { _configure(context, "/settings/general"); },
-      ),
-      MyListTile(
-        title: Text(S.of(context).about),
-        onTap: () async {
-          var infos = await PackageInfo.fromPlatform();
-          Navigator.of(context).pushNamed("/settings/about", arguments: infos.version);
+        onTap: () {
+          _configure(context, "/settings/service/feedbin");
         },
         withDivider: false,
       ),
-    ], title: S.of(context).settings);
+    ], title: AppLocalizations.of(context).service);
+    final settings = ListTileGroup([
+      MyListTile(
+        title: Text(AppLocalizations.of(context).general),
+        onTap: () {
+          _configure(context, "/settings/general");
+        },
+      ),
+      MyListTile(
+        title: Text(AppLocalizations.of(context).about),
+        onTap: () async {
+          var infos = await PackageInfo.fromPlatform();
+          Navigator.of(context)
+              .pushNamed("/settings/about", arguments: infos.version);
+        },
+        withDivider: false,
+      ),
+    ], title: AppLocalizations.of(context).settings);
     final page = CupertinoPageScaffold(
       backgroundColor: MyColors.background,
       child: ListView(children: [

@@ -1,4 +1,4 @@
-import 'package:fluent_reader_lite/generated/l10n.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 import 'package:lpinyin/lpinyin.dart';
@@ -57,11 +57,11 @@ abstract class Utils {
     showCupertinoDialog(
       context: context,
       builder: (context) => CupertinoAlertDialog(
-        title: Text(S.of(context).serviceFailure),
-        content: Text(S.of(context).serviceFailureHint),
+        title: Text(AppLocalizations.of(context).serviceFailure),
+        content: Text(AppLocalizations.of(context).serviceFailureHint),
         actions: [
           CupertinoDialogAction(
-            child: Text(S.of(context).close),
+            child: Text(AppLocalizations.of(context).close),
             onPressed: () {
               Navigator.of(context).pop();
             },
