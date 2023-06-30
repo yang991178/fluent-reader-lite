@@ -98,7 +98,7 @@ class MinifluxServiceHandler extends ServiceHandler {
     try {
       final result = await _fetchAPI(_AUTHENTICATE, "GET");
       if (Store.sp.getString('user') == null) {
-        user = jsonDecode(result.body);
+        user = jsonDecode(utf8.decode(result.bodyBytes));
         Store.sp.setString('user', jsonEncode(user));
       }
       return result.statusCode == 200;
@@ -112,7 +112,7 @@ class MinifluxServiceHandler extends ServiceHandler {
       getSources() async {
     final response = await _fetchAPI(_GET_FEEDS, "GET");
     assert(response.statusCode == 200);
-    List subscriptions = jsonDecode(response.body);
+    List subscriptions = jsonDecode(utf8.decode(response.bodyBytes));
     final groupsMap = Map<String, List<String>>();
     for (var s in subscriptions) {
       final category = s["category"];
@@ -138,7 +138,7 @@ class MinifluxServiceHandler extends ServiceHandler {
       p += "&offset=$offset";
       final response = await _fetchAPI(p, "GET");
       assert(response.statusCode == 200);
-      final parsed = jsonDecode(response.body);
+      final parsed = jsonDecode(utf8.decode(response.bodyBytes));
       total = parsed["total"];
       fetched = parsed["entries"];
       if (fetched != null && fetched.length > 0) {
@@ -165,7 +165,7 @@ class MinifluxServiceHandler extends ServiceHandler {
         params += "&offset=$offset";
         final response = await _fetchAPI(params, "GET");
         assert(response.statusCode == 200);
-        final fetched = jsonDecode(response.body);
+        final fetched = jsonDecode(utf8.decode(response.bodyBytes));
         total = fetched["total"];
         fetchedItems = fetched["entries"];
         for (var i in fetchedItems) {
