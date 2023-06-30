@@ -9,10 +9,11 @@ abstract class StoreKeys {
   static const ERROR_LOG = "errorLog";
   static const UNCATEGORIZED = "uncategorized";
   static const UNREAD_SUBS_ONLY = "unreadSubsOnly";
- 
+
   // General
   static const THEME = "theme";
   static const LOCALE = "locale";
+  static const USER = "user";
   static const KEEP_ITEMS_DAYS = "keepItemsD";
   static const SYNC_ON_START = "syncOnStart";
   static const IN_APP_BROWSER = "inAppBrowser";
@@ -65,14 +66,16 @@ class Store {
   }
 
   static void setLocale(Locale locale) {
-    if (locale == null) sp.remove(StoreKeys.LOCALE);
-    else sp.setString(StoreKeys.LOCALE, locale.toString());
+    if (locale == null)
+      sp.remove(StoreKeys.LOCALE);
+    else
+      sp.setString(StoreKeys.LOCALE, locale.toString());
   }
 
   static ThemeSetting getTheme() {
-    return sp.containsKey(StoreKeys.THEME) 
-    ? ThemeSetting.values[sp.getInt(StoreKeys.THEME)]
-    : ThemeSetting.Default;
+    return sp.containsKey(StoreKeys.THEME)
+        ? ThemeSetting.values[sp.getInt(StoreKeys.THEME)]
+        : ThemeSetting.Default;
   }
 
   static void setTheme(ThemeSetting theme) {
@@ -112,7 +115,7 @@ class Store {
   static int getArticleFontSize() {
     return sp.getInt(StoreKeys.ARTICLE_FONT_SIZE) ?? 16;
   }
-  
+
   static void setArticleFontSize(int value) {
     sp.setInt(StoreKeys.ARTICLE_FONT_SIZE, value);
   }

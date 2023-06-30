@@ -14,7 +14,7 @@ class MinifluxServiceHandler extends ServiceHandler {
   static const _ENTRIES_OPERATIONS = "/v1/entries";
   static const _GET_FEEDS = "/v1/feeds";
   static const _AUTHENTICATE = "/v1/me";
-
+  Map<String, dynamic> user;
   String endpoint;
   String username;
   String apiKey;
@@ -25,6 +25,8 @@ class MinifluxServiceHandler extends ServiceHandler {
   MinifluxServiceHandler() {
     endpoint = Store.sp.getString(StoreKeys.ENDPOINT);
     username = Store.sp.getString(StoreKeys.USERNAME);
+    String userPref = Store.sp.getString(StoreKeys.USER);
+    if (userPref != null) user = jsonDecode(userPref) as Map<String, dynamic>;
     apiKey = Store.sp.getString(StoreKeys.API_KEY);
     fetchLimit = Store.sp.getInt(StoreKeys.FETCH_LIMIT);
     _lastFetched = Store.sp.getInt(StoreKeys.LAST_FETCHED);
@@ -51,6 +53,7 @@ class MinifluxServiceHandler extends ServiceHandler {
     super.remove();
     Store.sp.remove(StoreKeys.ENDPOINT);
     Store.sp.remove(StoreKeys.USERNAME);
+    Store.sp.remove(StoreKeys.USER);
     Store.sp.remove(StoreKeys.API_KEY);
     Store.sp.remove(StoreKeys.FETCH_LIMIT);
     Store.sp.remove(StoreKeys.LAST_FETCHED);
@@ -94,6 +97,10 @@ class MinifluxServiceHandler extends ServiceHandler {
   Future<bool> validate() async {
     try {
       final result = await _fetchAPI(_AUTHENTICATE, "GET");
+      if (Store.sp.getString('user') == null) {
+        user = jsonDecode(result.body);
+        Store.sp.setString('user', jsonEncode(user));
+      }
       return result.statusCode == 200;
     } catch (exp) {
       return false;
@@ -233,17 +240,19 @@ class MinifluxServiceHandler extends ServiceHandler {
       while (iids.moveNext()) {
         refs.add(iids.current);
         if (refs.length >= 1000) {
-          // _editTag(refs.join("&i="), _READ_TAG);
+          _fetchAPI("/v1/users/${user['id']}/mark-all-as-read", "PUT");
           refs = [];
         }
       }
-      // if (refs.length > 0) _editTag(refs.join("&i="), _READ_TAG);
+      if (refs.length > 0)
+        _fetchAPI("/v1/users/${user['id']}/mark-all-as-read", "PUT");
+      ;
+      ;
     } else {
       if (sids.length == 0)
         sids = Set.from(Global.sourcesModel.getSources().map((s) => s.id));
       for (var sid in sids) {
-        final body = {"s": sid};
-        _fetchAPI("/reader/api/0/mark-all-as-read", "PUT", body: body);
+        _fetchAPI("/v1/feeds/$sid/mark-all-as-read", "PUT");
       }
     }
   }
