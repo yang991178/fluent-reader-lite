@@ -120,6 +120,7 @@ class MyApp extends StatelessWidget {
             const Locale("uk"),
             const Locale("hr"),
             const Locale("pt"),
+            const Locale("tr"),
           ],
           localeResolutionCallback: (_locale, supportedLocales) {
             _locale = Locale(_locale.languageCode);
