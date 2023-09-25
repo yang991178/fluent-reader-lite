@@ -38,7 +38,7 @@ dependencies:
   sqflite: ^2.0.0+3
   path: ^1.8.0
   share: ^2.0.4
-  package_info: ^2.0.2
+  package_info_plus: ^4.1.0
   crypto: ^3.0.1
   responsive_builder: ^0.4.1
   cached_network_image: ^3.2.1

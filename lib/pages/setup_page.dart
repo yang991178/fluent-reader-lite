@@ -5,7 +5,7 @@ import 'package:fluent_reader_lite/utils/colors.dart';
 import 'package:fluent_reader_lite/utils/global.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'package:package_info/package_info.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class SetupPage extends StatelessWidget {
   void _configure(BuildContext context, String route) {
@@ -32,32 +32,43 @@ class SetupPage extends StatelessWidget {
     final services = ListTileGroup([
       MyListTile(
         title: Text("Fever API"),
-        onTap: () { _configure(context, "/settings/service/fever"); },
+        onTap: () {
+          _configure(context, "/settings/service/fever");
+        },
       ),
       MyListTile(
         title: Text("Google Reader API"),
-        onTap: () { _configure(context, "/settings/service/greader"); },
+        onTap: () {
+          _configure(context, "/settings/service/greader");
+        },
       ),
       MyListTile(
         title: Text("Inoreader"),
-        onTap: () { _configure(context, "/settings/service/inoreader"); },
+        onTap: () {
+          _configure(context, "/settings/service/inoreader");
+        },
       ),
       MyListTile(
         title: Text("Feedbin"),
-        onTap: () { _configure(context, "/settings/service/feedbin"); },
+        onTap: () {
+          _configure(context, "/settings/service/feedbin");
+        },
         withDivider: false,
       ),
     ], title: S.of(context).service);
     final settings = ListTileGroup([
       MyListTile(
         title: Text(S.of(context).general),
-        onTap: () { _configure(context, "/settings/general"); },
+        onTap: () {
+          _configure(context, "/settings/general");
+        },
       ),
       MyListTile(
         title: Text(S.of(context).about),
         onTap: () async {
           var infos = await PackageInfo.fromPlatform();
-          Navigator.of(context).pushNamed("/settings/about", arguments: infos.version);
+          Navigator.of(context)
+              .pushNamed("/settings/about", arguments: infos.version);
         },
         withDivider: false,
       ),

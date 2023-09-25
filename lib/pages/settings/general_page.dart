@@ -148,6 +148,7 @@ class _GeneralPageState extends State<GeneralPage> {
                 const Tuple2("Français", Locale("fr")),
                 const Tuple2("hrvatski", Locale("hr")),
                 const Tuple2("Português do Brasil", Locale("pt")),
+                const Tuple2("Türkçe", Locale("tr")),
                 const Tuple2("Українська", Locale("uk")),
                 const Tuple2("中文（简体）", Locale("zh")),
               ],
