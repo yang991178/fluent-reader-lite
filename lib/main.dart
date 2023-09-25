@@ -120,6 +120,7 @@ class MyApp extends StatelessWidget {
             const Locale("uk"),
             const Locale("hr"),
             const Locale("pt"),
+            const Locale("tr"),
           ],
           localeResolutionCallback: (_locale, supportedLocales) {
             _locale = Locale(_locale.languageCode);
@@ -135,7 +136,12 @@ class MyApp extends StatelessWidget {
             brightness: globalModel.getBrightness(),
           ),
           routes: {
-            "/": (context) => CupertinoScaffold(body: HomePage()),
+            "/": (context) => CupertinoScaffold(
+                body: CupertinoTheme(
+                    // For fixing the bug with modal_bottom_sheet overriding primary color
+                    data: CupertinoThemeData(
+                        primaryColor: CupertinoColors.activeBlue),
+                    child: HomePage())),
             ...baseRoutes,
           },
           builder: (context, child) {

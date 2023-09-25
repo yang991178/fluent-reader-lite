@@ -5,7 +5,7 @@ import 'package:fluent_reader_lite/components/time_text.dart';
 import 'package:fluent_reader_lite/models/source.dart';
 import 'package:fluent_reader_lite/utils/global.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Badge;
 import 'package:flutter/services.dart';
 
 import 'badge.dart';
@@ -72,7 +72,11 @@ class _SubscriptionItemState extends State<SubscriptionItem> {
               child: Favicon(widget.source),
             ),
             Expanded(
-              child: Text(widget.source.name, style: _titleStyle, overflow: TextOverflow.ellipsis,),
+              child: Text(
+                widget.source.name,
+                style: _titleStyle,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ]),
         ),
@@ -83,44 +87,62 @@ class _SubscriptionItemState extends State<SubscriptionItem> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Expanded(
-          child: Text(widget.source.lastTitle, style: _descStyle, overflow: TextOverflow.ellipsis),
+          child: Text(widget.source.lastTitle,
+              style: _descStyle, overflow: TextOverflow.ellipsis),
         ),
         if (widget.source.unreadCount > 0) Badge(widget.source.unreadCount),
       ],
     );
     final body = GestureDetector(
-      onTapDown: (_) { setState(() { pressed = true; }); },
-      onTapUp: (_) { setState(() { pressed = false; }); },
-      onTapCancel: () { setState(() { pressed = false; }); },
+      onTapDown: (_) {
+        setState(() {
+          pressed = true;
+        });
+      },
+      onTapUp: (_) {
+        setState(() {
+          pressed = false;
+        });
+      },
+      onTapCancel: () {
+        setState(() {
+          pressed = false;
+        });
+      },
       onTap: _openSourcePage,
-      child: Column(children: [
-        Container(
-          constraints: BoxConstraints(minHeight: 64),
-          color: pressed 
-            ? CupertinoColors.systemGrey4.resolveFrom(context) 
-            : CupertinoColors.systemBackground.resolveFrom(context),
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                topLine,
-                Padding(padding: EdgeInsets.only(top: 4)),
-                bottomLine
-              ],
+      child: Column(
+        children: [
+          Container(
+            constraints: BoxConstraints(minHeight: 64),
+            color: pressed
+                ? CupertinoColors.systemGrey4.resolveFrom(context)
+                : CupertinoColors.systemBackground.resolveFrom(context),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  topLine,
+                  Padding(padding: EdgeInsets.only(top: 4)),
+                  bottomLine
+                ],
+              ),
             ),
           ),
-        ),
-        Padding(
-          padding: EdgeInsets.only(left: 16),
-          child: Divider(color: CupertinoColors.systemGrey4.resolveFrom(context), height: 1),
-        ),
-      ],),
+          Padding(
+            padding: EdgeInsets.only(left: 16),
+            child: Divider(
+                color: CupertinoColors.systemGrey4.resolveFrom(context),
+                height: 1),
+          ),
+        ],
+      ),
     );
     return Dismissible(
       key: Key("D-${widget.source.id}"),
       background: DismissibleBackground(CupertinoIcons.checkmark_circle, true),
-      secondaryBackground: DismissibleBackground(CupertinoIcons.pencil_circle, false),
+      secondaryBackground:
+          DismissibleBackground(CupertinoIcons.pencil_circle, false),
       dismissThresholds: _dismissThresholds,
       confirmDismiss: _onDismiss,
       child: body,

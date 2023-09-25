@@ -13,7 +13,7 @@ import 'package:fluent_reader_lite/utils/colors.dart';
 import 'package:fluent_reader_lite/utils/global.dart';
 import 'package:fluent_reader_lite/utils/store.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Badge;
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
@@ -37,7 +37,8 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
   bool unreadOnly = Store.sp.getBool(StoreKeys.UNREAD_SUBS_ONLY) ?? false;
 
   void _onScrollTop() {
-    if (widget.scrollTopNotifier.index == 1 && !Navigator.of(context).canPop()) {
+    if (widget.scrollTopNotifier.index == 1 &&
+        !Navigator.of(context).canPop()) {
       PrimaryScrollController.of(context).animateTo(
         0,
         curve: Curves.easeOut,
@@ -51,7 +52,7 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
     super.initState();
     widget.scrollTopNotifier.addListener(_onScrollTop);
   }
-  
+
   @override
   void dispose() {
     widget.scrollTopNotifier.removeListener(_onScrollTop);
@@ -65,7 +66,9 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
         builder: (context) => GroupListPage(),
       ));
     } else {
-      setState(() { transitioning = true; });
+      setState(() {
+        transitioning = true;
+      });
       result = await CupertinoScaffold.showCupertinoModalBottomSheet(
         context: context,
         useRootNavigator: true,
@@ -93,13 +96,16 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
       }
     }
     await Future.delayed(Duration(milliseconds: 300));
-    setState(() { transitioning = false; });
+    setState(() {
+      transitioning = false;
+    });
   }
 
   void _openMarkAllModal() {
     showCupertinoModalPopup(
       context: context,
-      builder: (context) => MarkAllActionSheet(sids == null ? {} : Set.from(sids)),
+      builder: (context) =>
+          MarkAllActionSheet(sids == null ? {} : Set.from(sids)),
     );
   }
 
@@ -116,7 +122,9 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
 
   void _toggleUnreadOnly() {
     HapticFeedback.mediumImpact();
-    setState(() { unreadOnly = !unreadOnly; });
+    setState(() {
+      unreadOnly = !unreadOnly;
+    });
     _onScrollTop();
     Store.sp.setBool(StoreKeys.UNREAD_SUBS_ONLY, unreadOnly);
   }
@@ -129,7 +137,8 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
   }
 
   Widget _buildUnreadTip() {
-    return SliverToBoxAdapter(child: Container(
+    return SliverToBoxAdapter(
+        child: Container(
       padding: EdgeInsets.all(16),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
@@ -143,7 +152,8 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
                 padding: EdgeInsets.only(right: 12),
                 child: Icon(Icons.radio_button_checked),
               ),
-              Flexible(child: Column(
+              Flexible(
+                  child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
@@ -179,58 +189,60 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
           Container(
             constraints: BoxConstraints(
               maxWidth: Global.isTablet
-                ? 260
-                : MediaQuery.of(context).size.width - 60,
+                  ? 260
+                  : MediaQuery.of(context).size.width - 60,
             ),
             child: Text(
-              title ?? S.of(context).subscriptions, 
+              title ?? S.of(context).subscriptions,
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          if (unreadOnly) Padding(
-            padding: EdgeInsets.only(left: 4),
-            child: Icon(Icons.radio_button_checked, size: 18),
-          ),
+          if (unreadOnly)
+            Padding(
+              padding: EdgeInsets.only(left: 4),
+              child: Icon(Icons.radio_button_checked, size: 18),
+            ),
         ],
       ),
     );
     final navigationBar = CupertinoSliverNavigationBar(
-      stretch: false,
-      largeTitle: titleWidget,
-      heroTag: "subscriptions",
-      transitionBetweenRoutes: true,
-      backgroundColor: transitioning ? MyColors.tileBackground : CupertinoColors.systemBackground,
-      leading: CupertinoButton(
-        minSize: 36,
-        padding: EdgeInsets.zero,
-        child: Text(S.of(context).groups),
-        onPressed: _openGroups,
-      ),
-      trailing: Container(
-        transform: Matrix4.translationValues(12, 0, 0),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CupertinoButton(
-              padding: EdgeInsets.zero,
-              child: Icon(
-                CupertinoIcons.checkmark_circle,
-                semanticLabel: S.of(context).markAll,
+        stretch: false,
+        largeTitle: titleWidget,
+        heroTag: "subscriptions",
+        transitionBetweenRoutes: true,
+        backgroundColor: transitioning
+            ? MyColors.tileBackground
+            : CupertinoColors.systemBackground,
+        leading: CupertinoButton(
+          minSize: 36,
+          padding: EdgeInsets.zero,
+          child: Text(S.of(context).groups),
+          onPressed: _openGroups,
+        ),
+        trailing: Container(
+          transform: Matrix4.translationValues(12, 0, 0),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CupertinoButton(
+                padding: EdgeInsets.zero,
+                child: Icon(
+                  CupertinoIcons.checkmark_circle,
+                  semanticLabel: S.of(context).markAll,
+                ),
+                onPressed: _openMarkAllModal,
               ),
-              onPressed: _openMarkAllModal,
-            ),
-            CupertinoButton(
-              padding: EdgeInsets.zero,
-              child: Icon(
-                CupertinoIcons.settings,
-                semanticLabel: S.of(context).settings,
+              CupertinoButton(
+                padding: EdgeInsets.zero,
+                child: Icon(
+                  CupertinoIcons.settings,
+                  semanticLabel: S.of(context).settings,
+                ),
+                onPressed: _openSettings,
               ),
-              onPressed: _openSettings,
-            ),
-          ],
-        ), 
-      )
-    );
+            ],
+          ),
+        ));
     final sourcesList = Consumer<SourcesModel>(
       builder: (context, sourcesModel, child) {
         List<RSSSource> sources;
@@ -275,14 +287,14 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
                 children: [
                   Text(
                     syncModel.lastSyncSuccess
-                      ? S.of(context).lastSyncSuccess
-                      : S.of(context).lastSyncFailure,
+                        ? S.of(context).lastSyncSuccess
+                        : S.of(context).lastSyncFailure,
                     style: syncStyle,
                   ),
                   Text(
-                    DateFormat
-                      .Md(Localizations.localeOf(context).toString())
-                      .add_Hm().format(syncModel.lastSynced),
+                    DateFormat.Md(Localizations.localeOf(context).toString())
+                        .add_Hm()
+                        .format(syncModel.lastSynced),
                     style: syncStyle,
                   ),
                 ],
@@ -292,21 +304,23 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
         );
       },
     );
-    return CupertinoScrollbar(child: CustomScrollView(
-      slivers: [
-        navigationBar,
-        SyncControl(),
-        if (Global.sourcesModel.showUnreadTip) _buildUnreadTip(),
-        if (sids != null && sids.length > 0) Consumer<SourcesModel>(
+    return CupertinoScrollbar(
+        child: CustomScrollView(slivers: [
+      navigationBar,
+      SyncControl(),
+      if (Global.sourcesModel.showUnreadTip) _buildUnreadTip(),
+      if (sids != null && sids.length > 0)
+        Consumer<SourcesModel>(
           builder: (context, sourcesModel, child) {
             var count = sids
-              .map((sid) => sourcesModel.getSource(sid))
-              .fold(0, (c, s) => c + s.unreadCount);
-            return SliverToBoxAdapter(child: MyListTile(
+                .map((sid) => sourcesModel.getSource(sid))
+                .fold(0, (c, s) => c + s.unreadCount);
+            return SliverToBoxAdapter(
+                child: MyListTile(
               title: Text(S.of(context).allArticles),
               trailing: count > 0 ? Badge(count) : null,
               trailingChevron: false,
-              onTap: () async { 
+              onTap: () async {
                 await Global.feedsModel.initSourcesFeed(sids.toList());
                 Navigator.of(context).pushNamed("/feed", arguments: title);
               },
@@ -314,10 +328,8 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
             ));
           },
         ),
-        sourcesList,
-        syncInfo,
-      ]
-    ));
+      sourcesList,
+      syncInfo,
+    ]));
   }
-  
 }
