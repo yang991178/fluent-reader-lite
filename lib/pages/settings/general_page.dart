@@ -115,8 +115,8 @@ class _GeneralPageState extends State<GeneralPage> {
                 title: Expanded(
                     child: CupertinoSlider(
                   min: 1,
-                  max: 4,
-                  divisions: 3,
+                  max: 52,
+                  divisions: 51,
                   value: (globalModel.keepItemsDays ~/ 7).toDouble(),
                   onChanged: (v) {
                     globalModel.keepItemsDays = (v * 7).toInt();
