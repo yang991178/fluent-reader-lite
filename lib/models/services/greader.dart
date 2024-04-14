@@ -162,7 +162,8 @@ class GReaderServiceHandler extends ServiceHandler {
   @override
   Future<bool> validate() async {
     try {
-      final result = await _fetchAPI("/reader/api/0/user-info");
+      // add output param for miniflux server
+      final result = await _fetchAPI("/reader/api/0/user-info?output=json");
       return result.statusCode == 200;
     } catch (exp) {
       return false;
