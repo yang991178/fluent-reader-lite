@@ -12,7 +12,7 @@ enum ItemSwipeOption {
 
 class FeedsModel with ChangeNotifier {
   RSSFeed all = RSSFeed();
-  RSSFeed source;
+  RSSFeed? source;
 
   bool _showThumb = Store.sp.getBool(StoreKeys.SHOW_THUMB) ?? true;
   bool get showThumb => _showThumb;
@@ -56,23 +56,23 @@ class FeedsModel with ChangeNotifier {
 
   void broadcast() { notifyListeners(); }
 
-  Future<void> initSourcesFeed(Iterable<String> sids) async {
+  Future<void> initSourcesFeed(Iterable<String?> sids) async {
     Set<String> sidSet = Set.from(sids);
     source = RSSFeed(sids: sidSet);
-    await source.init();
+    await source!.init();
   }
 
   void addFetchedItems(Iterable<RSSItem> items) {
     for (var feed in [all, source]) {
       if (feed == null) continue;
       var lastDate = feed.iids.length > 0
-        ? Global.itemsModel.getItem(feed.iids.last).date
+        ? Global.itemsModel!.getItem(feed.iids.last)!.date
         : null;
       for (var item in items) {
         if (!feed.testItem(item)) continue;
         if (lastDate != null && item.date.isBefore(lastDate)) continue;
-        var idx = Utils.binarySearch(feed.iids, item.id, (a, b) {
-          return Global.itemsModel.getItem(b).date.compareTo(Global.itemsModel.getItem(a).date);
+        var idx = Utils.binarySearch(feed.iids, item.id, (dynamic a, dynamic b) {
+          return Global.itemsModel!.getItem(b)!.date.compareTo(Global.itemsModel!.getItem(a)!.date);
         });
         feed.iids.insert(idx, item.id);
       }

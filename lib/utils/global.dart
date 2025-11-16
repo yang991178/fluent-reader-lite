@@ -17,15 +17,15 @@ import 'package:sqflite/sqflite.dart';
 
 abstract class Global {
   static bool _initialized = false;
-  static GlobalModel globalModel;
-  static SourcesModel sourcesModel;
-  static ItemsModel itemsModel;
-  static FeedsModel feedsModel;
-  static GroupsModel groupsModel;
-  static SyncModel syncModel;
-  static ServiceHandler service;
-  static Database db;
-  static Jaguar server;
+  static GlobalModel? globalModel;
+  static SourcesModel? sourcesModel;
+  static ItemsModel? itemsModel;
+  static FeedsModel? feedsModel;
+  static GroupsModel? groupsModel;
+  static SyncModel? syncModel;
+  static ServiceHandler? service;
+  static Database? db;
+  static Jaguar? server;
   static final GlobalKey<NavigatorState> tabletPanel = GlobalKey();
 
   static void init() {
@@ -57,30 +57,30 @@ abstract class Global {
 
   static void _initContents() async {
     db = await DatabaseHelper.getDatabase();
-    await db.delete(
+    await db!.delete(
       "items",
       where: "date < ? AND starred = 0",
       whereArgs: [
         DateTime.now()
-          .subtract(Duration(days: globalModel.keepItemsDays))
+          .subtract(Duration(days: globalModel!.keepItemsDays))
           .millisecondsSinceEpoch,
       ],
     );
     server = Jaguar(address: "127.0.0.1",port: 9000);
-    server.addRoute(serveFlutterAssets());
-    await server.serve();
-    await sourcesModel.init();
-    await feedsModel.all.init();
-    if (globalModel.syncOnStart) await syncModel.syncWithService();
+    server!.addRoute(serveFlutterAssets());
+    await server!.serve();
+    await sourcesModel!.init();
+    await feedsModel!.all.init();
+    if (globalModel!.syncOnStart) await syncModel!.syncWithService();
   }
 
   static Brightness currentBrightness(BuildContext context) {
-    return globalModel.getBrightness() ?? MediaQuery.of(context).platformBrightness;
+    return globalModel!.getBrightness() ?? MediaQuery.of(context).platformBrightness;
   }
 
   static bool get isTablet => tabletPanel.currentWidget != null;
 
-  static NavigatorState responsiveNavigator(BuildContext context) {
+  static NavigatorState? responsiveNavigator(BuildContext context) {
     return tabletPanel.currentWidget != null
       ? Global.tabletPanel.currentState
       : Navigator.of(context, rootNavigator: true);

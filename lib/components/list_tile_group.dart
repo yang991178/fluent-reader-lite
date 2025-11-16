@@ -5,13 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:tuple/tuple.dart';
 
 class ListTileGroup extends StatelessWidget {
-  ListTileGroup(this.children, {this.title, Key key}) : super(key: key);
+  ListTileGroup(this.children, {this.title, Key? key}) : super(key: key);
 
   ListTileGroup.fromOptions(
     List<Tuple2<String, dynamic>> options, 
     dynamic selected, 
     Function onSelected,
-    {this.title, Key key}) :
+    {this.title, Key? key}) :
     children = options.map((t) => MyListTile(
       title: Text(t.item1),
       trailing: t.item2 == selected
@@ -24,7 +24,7 @@ class ListTileGroup extends StatelessWidget {
     super(key: key);
 
   final Iterable<Widget> children;
-  final String title;
+  final String? title;
 
   static const _titleStyle = TextStyle(
     fontSize: 12,
@@ -37,7 +37,7 @@ class ListTileGroup extends StatelessWidget {
     children: [
       if (title != null) Padding(
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        child: Text(title, style: _titleStyle),
+        child: Text(title!, style: _titleStyle),
       ),
       Container(
         color: MyColors.tileBackground.resolveFrom(context),

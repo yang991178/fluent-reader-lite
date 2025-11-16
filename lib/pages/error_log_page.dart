@@ -13,10 +13,10 @@ class ErrorLogPage extends StatelessWidget {
     return CupertinoPageScaffold(
       backgroundColor: MyColors.background,
       navigationBar: CupertinoNavigationBar(
-        middle: Text(S.of(context).errorLog),
+        middle: Text(S.of(context)!.errorLog),
         trailing: CupertinoButton(
           padding: EdgeInsets.zero,
-          child: Text(S.of(context).copy),
+          child: Text(S.of(context)!.copy),
           onPressed: () {
             Clipboard.setData(ClipboardData(text: errorLog));
           },

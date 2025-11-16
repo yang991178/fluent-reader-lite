@@ -17,12 +17,12 @@ class _SettingsPageState extends State<SettingsPage> {
     return CupertinoPageScaffold(
       backgroundColor: MyColors.background,
       navigationBar: CupertinoNavigationBar(
-        middle: Text(S.of(context).settings),
+        middle: Text(S.of(context)!.settings),
       ),
       child: ListView(children: [
         ListTileGroup([
           MyListTile(
-            title: Text(S.of(context).subscriptions),
+            title: Text(S.of(context)!.subscriptions),
             leading: Icon(Icons.rss_feed,
                 color: CupertinoColors.systemOrange, size: 24),
             onTap: () {
@@ -30,7 +30,7 @@ class _SettingsPageState extends State<SettingsPage> {
             },
           ),
           MyListTile(
-            title: Text(S.of(context).feed),
+            title: Text(S.of(context)!.feed),
             leading: Icon(Icons.timeline,
                 color: CupertinoColors.systemBlue, size: 24),
             onTap: () {
@@ -38,7 +38,7 @@ class _SettingsPageState extends State<SettingsPage> {
             },
           ),
           MyListTile(
-            title: Text(S.of(context).reading),
+            title: Text(S.of(context)!.reading),
             leading: Icon(Icons.article_outlined,
                 color: CupertinoColors.systemBlue, size: 24),
             onTap: () {
@@ -46,10 +46,10 @@ class _SettingsPageState extends State<SettingsPage> {
             },
             withDivider: false,
           ),
-        ], title: S.of(context).preferences),
+        ], title: S.of(context)!.preferences),
         ListTileGroup([
           MyListTile(
-            title: Text(S.of(context).service),
+            title: Text(S.of(context)!.service),
             leading: Icon(Icons.account_circle,
                 color: CupertinoColors.systemOrange, size: 24),
             onTap: () {
@@ -57,10 +57,10 @@ class _SettingsPageState extends State<SettingsPage> {
             },
             withDivider: false,
           ),
-        ], title: S.of(context).account),
+        ], title: S.of(context)!.account),
         ListTileGroup([
           MyListTile(
-            title: Text(S.of(context).general),
+            title: Text(S.of(context)!.general),
             leading: Icon(Icons.toggle_on,
                 color: CupertinoColors.systemGreen, size: 24),
             onTap: () {
@@ -68,7 +68,7 @@ class _SettingsPageState extends State<SettingsPage> {
             },
           ),
           MyListTile(
-            title: Text(S.of(context).about),
+            title: Text(S.of(context)!.about),
             leading:
                 Icon(Icons.info, color: CupertinoColors.systemBlue, size: 24),
             onTap: () async {
@@ -78,7 +78,7 @@ class _SettingsPageState extends State<SettingsPage> {
             },
             withDivider: false,
           ),
-        ], title: S.of(context).app),
+        ], title: S.of(context)!.app),
       ]),
     );
   }

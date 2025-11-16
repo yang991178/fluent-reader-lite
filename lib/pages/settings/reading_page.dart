@@ -18,12 +18,12 @@ class _ReadingPageState extends State<ReadingPage> {
     return CupertinoPageScaffold(
       backgroundColor: MyColors.background,
       navigationBar: CupertinoNavigationBar(
-        middle: Text(S.of(context).reading),
+        middle: Text(S.of(context)!.reading),
       ),
       child: ListView(children: [
         ListTileGroup([
           MyListTile(
-            title: Text(S.of(context).fontSize),
+            title: Text(S.of(context)!.fontSize),
             trailing: Text(_fontSize.toString()),
             trailingChevron: false,
             withDivider: false,
@@ -40,7 +40,7 @@ class _ReadingPageState extends State<ReadingPage> {
             trailingChevron: false,
             withDivider: false,
           ),
-        ], title: S.of(context).preferences),
+        ], title: S.of(context)!.preferences),
       ]),
     );
   }

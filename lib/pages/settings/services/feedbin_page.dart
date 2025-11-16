@@ -22,8 +22,8 @@ class FeedbinPage extends StatefulWidget {
 }
 
 class _FeedbinPageState extends State<FeedbinPage> {
-  String _endpoint = Store.sp.getString(StoreKeys.ENDPOINT) ?? "https://api.feedbin.me/v2/";
-  String _username = Store.sp.getString(StoreKeys.USERNAME) ?? "";
+  String? _endpoint = Store.sp.getString(StoreKeys.ENDPOINT) ?? "https://api.feedbin.me/v2/";
+  String? _username = Store.sp.getString(StoreKeys.USERNAME) ?? "";
   String _password = Store.sp.getString(StoreKeys.PASSWORD) ?? "";
   int _fetchLimit = Store.sp.getInt(StoreKeys.FETCH_LIMIT) ?? 250;
   bool _validating = false;
@@ -32,7 +32,7 @@ class _FeedbinPageState extends State<FeedbinPage> {
   void initState() {
     super.initState();
     Future.delayed(Duration.zero, () {
-      ServiceImport import = ModalRoute.of(context).settings.arguments;
+      ServiceImport? import = ModalRoute.of(context)!.settings.arguments as ServiceImport?;
       if (import == null) return;
       if (Utils.testUrl(import.endpoint)) {
         setState(() { _endpoint = import.endpoint; });
@@ -41,7 +41,7 @@ class _FeedbinPageState extends State<FeedbinPage> {
         setState(() { _username = import.username; });
       }
       if (Utils.notEmpty(import.password)) {
-        final bytes = base64.decode(import.password);
+        final bytes = base64.decode(import.password!);
         final password = utf8.decode(bytes);
         setState(() { _password = password; });
       }
@@ -49,9 +49,9 @@ class _FeedbinPageState extends State<FeedbinPage> {
   }
 
   void _editEndpoint() async {
-    final String endpoint = await Navigator.of(context).push(CupertinoPageRoute(
+    final String? endpoint = await Navigator.of(context).push(CupertinoPageRoute(
       builder: (context) => TextEditorPage(
-        S.of(context).endpoint, 
+        S.of(context)!.endpoint, 
         Utils.testUrl,
         initialValue: _endpoint,
         inputType: TextInputType.url,
@@ -66,9 +66,9 @@ class _FeedbinPageState extends State<FeedbinPage> {
   }
 
   void _editUsername() async {
-    final String username = await Navigator.of(context).push(CupertinoPageRoute(
+    final String? username = await Navigator.of(context).push(CupertinoPageRoute(
       builder: (context) => TextEditorPage(
-        S.of(context).username, 
+        S.of(context)!.username, 
         Utils.notEmpty,
         initialValue: _username,
       ),
@@ -78,9 +78,9 @@ class _FeedbinPageState extends State<FeedbinPage> {
   }
 
   void _editPassword() async {
-    final String password = await Navigator.of(context).push(CupertinoPageRoute(
+    final String? password = await Navigator.of(context).push(CupertinoPageRoute(
       builder: (context) => TextEditorPage(
-        S.of(context).password, 
+        S.of(context)!.password, 
         Utils.notEmpty,
         inputType: TextInputType.visiblePassword,
       ),
@@ -91,7 +91,7 @@ class _FeedbinPageState extends State<FeedbinPage> {
 
   bool _canSave() {
     if (_validating) return false;
-    return _endpoint.length > 0 && _username.length > 0 && _password.length > 0;
+    return _endpoint!.length > 0 && _username!.length > 0 && _password.length > 0;
   }
 
   void _save() async {
@@ -110,8 +110,8 @@ class _FeedbinPageState extends State<FeedbinPage> {
     if (!mounted) return;
     if (isValid) {
       handler.persist();
-      await Global.syncModel.syncWithService();
-      Global.syncModel.checkHasService();
+      await Global.syncModel!.syncWithService();
+      Global.syncModel!.checkHasService();
       _validating = false;
       DialogHelper().hide(context);
       if (mounted) Navigator.of(context).pop();
@@ -123,21 +123,21 @@ class _FeedbinPageState extends State<FeedbinPage> {
   }
 
   void _logOut() async {
-    final bool confirmed = await showCupertinoDialog(
+    final bool? confirmed = await showCupertinoDialog(
       context: context,
       builder: (context) => CupertinoAlertDialog(
-        title: Text(S.of(context).logOutWarning),
+        title: Text(S.of(context)!.logOutWarning),
         actions: [
           CupertinoDialogAction(
             isDefaultAction: true,
-            child: Text(S.of(context).cancel),
+            child: Text(S.of(context)!.cancel),
             onPressed: () {
               Navigator.of(context).pop();
             },
           ),
           CupertinoDialogAction(
             isDestructiveAction: true,
-            child: Text(S.of(context).confirm),
+            child: Text(S.of(context)!.confirm),
             onPressed: () {
               Navigator.of(context).pop(true);
             },
@@ -151,7 +151,7 @@ class _FeedbinPageState extends State<FeedbinPage> {
         context,
         DialogWidget.progress(style: DialogStyle.cupertino),
       );
-      await Global.syncModel.removeService();
+      await Global.syncModel!.removeService();
       _validating = false;
       DialogHelper().hide(context);
       final navigator = Navigator.of(context);
@@ -163,31 +163,31 @@ class _FeedbinPageState extends State<FeedbinPage> {
   Widget build(BuildContext context) {
     final inputs = ListTileGroup([
       MyListTile(
-        title: Text(S.of(context).endpoint),
-        trailing: Text(_endpoint.length == 0
-          ? S.of(context).enter
-          : S.of(context).entered),
+        title: Text(S.of(context)!.endpoint),
+        trailing: Text(_endpoint!.length == 0
+          ? S.of(context)!.enter
+          : S.of(context)!.entered),
         onTap: _editEndpoint,
       ),
       MyListTile(
-        title: Text(S.of(context).username),
-        trailing: Text(_username.length == 0
-          ? S.of(context).enter
-          : S.of(context).entered),
+        title: Text(S.of(context)!.username),
+        trailing: Text(_username!.length == 0
+          ? S.of(context)!.enter
+          : S.of(context)!.entered),
         onTap: _editUsername,
       ),
       MyListTile(
-        title: Text(S.of(context).password),
+        title: Text(S.of(context)!.password),
         trailing: Text(_password.length == 0
-          ? S.of(context).enter
-          : S.of(context).entered),
+          ? S.of(context)!.enter
+          : S.of(context)!.entered),
         onTap: _editPassword,
         withDivider: false,
       ),
-    ], title: S.of(context).credentials);
+    ], title: S.of(context)!.credentials);
     final syncItems = ListTileGroup([
       MyListTile(
-        title: Text(S.of(context).fetchLimit),
+        title: Text(S.of(context)!.fetchLimit),
         trailing: Text(_fetchLimit.toString()),
         trailingChevron: false,
         withDivider: false,
@@ -203,7 +203,7 @@ class _FeedbinPageState extends State<FeedbinPage> {
         trailingChevron: false,
         withDivider: false,
       ),
-    ], title: S.of(context).sync);
+    ], title: S.of(context)!.sync);
     final saveButton = Selector<SyncModel, bool>(
       selector: (context, syncModel) => syncModel.syncing,
       builder: (context, syncing, child) {
@@ -217,7 +217,7 @@ class _FeedbinPageState extends State<FeedbinPage> {
           MyListTile(
             title: Expanded(child: Center(
               child: Text(
-                S.of(context).save,
+                S.of(context)!.save,
                 style: saveStyle,
               )
             )),
@@ -235,7 +235,7 @@ class _FeedbinPageState extends State<FeedbinPage> {
           MyListTile(
             title: Expanded(child: Center(
               child: Text(
-                S.of(context).logOut,
+                S.of(context)!.logOut,
                 style: TextStyle(
                   color: (_validating || syncing)
                     ? CupertinoColors.secondaryLabel.resolveFrom(context)

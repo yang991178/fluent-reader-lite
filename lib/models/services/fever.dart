@@ -13,11 +13,11 @@ import 'package:tuple/tuple.dart';
 import '../service.dart';
 
 class FeverServiceHandler extends ServiceHandler {
-  String endpoint;
-  String apiKey;
-  int _lastId;
-  int fetchLimit;
-  bool _useInt32;
+  String? endpoint;
+  String? apiKey;
+  late int _lastId;
+  int? fetchLimit;
+  late bool _useInt32;
 
   FeverServiceHandler() {
     endpoint = Store.sp.getString(StoreKeys.ENDPOINT);
@@ -38,11 +38,11 @@ class FeverServiceHandler extends ServiceHandler {
 
   void persist(String username, String password) {
     Store.sp.setInt(StoreKeys.SYNC_SERVICE, SyncService.Fever.index);
-    Store.sp.setString(StoreKeys.ENDPOINT, endpoint);
+    Store.sp.setString(StoreKeys.ENDPOINT, endpoint!);
     Store.sp.setString(StoreKeys.USERNAME, username);
     Store.sp.setString(StoreKeys.PASSWORD, password);
-    Store.sp.setString(StoreKeys.API_KEY, apiKey);
-    Store.sp.setInt(StoreKeys.FETCH_LIMIT, fetchLimit);
+    Store.sp.setString(StoreKeys.API_KEY, apiKey!);
+    Store.sp.setInt(StoreKeys.FETCH_LIMIT, fetchLimit!);
     Store.sp.setInt(StoreKeys.LAST_ID, _lastId);
     Store.sp.setBool(StoreKeys.FEVER_INT_32, _useInt32);
     Global.service = this;
@@ -61,8 +61,8 @@ class FeverServiceHandler extends ServiceHandler {
     Global.service = null;
   }
 
-  Future<Map<String, dynamic>> _fetchAPI({params: "", postparams: ""}) async {
-    var uri = Uri.parse(endpoint + "?api" + params);
+  Future<Map<String, dynamic>?> _fetchAPI({params = "", postparams = ""}) async {
+    var uri = Uri.parse(endpoint! + "?api" + params);
     final response = await http.post(
       uri,
       headers: {"content-type": "application/x-www-form-urlencoded"},
@@ -87,24 +87,24 @@ class FeverServiceHandler extends ServiceHandler {
   @override
   Future<bool> validate() async {
     try {
-      return (await _fetchAPI())["auth"] == 1;
+      return (await _fetchAPI())!["auth"] == 1;
     } catch (exp) {
       return false;
     }
   }
 
   @override
-  Future<Tuple2<List<RSSSource>, Map<String, List<String>>>>
+  Future<Tuple2<List<RSSSource>?, Map<String?, List<String?>>>>
       getSources() async {
-    var response = await _fetchAPI(params: "&feeds");
+    var response = (await _fetchAPI(params: "&feeds"))!;
     var sources = response["feeds"].map<RSSSource>((f) {
       return RSSSource(f["id"].toString(), f["url"], f["title"]);
     }).toList();
     var feedGroups = response["feeds_groups"];
-    var groupsMap = Map<String, List<String>>();
-    var groups = (await _fetchAPI(params: "&groups"))["groups"];
+    var groupsMap = Map<String?, List<String?>>();
+    var groups = (await _fetchAPI(params: "&groups"))!["groups"];
     if (groups == null || feedGroups == null) throw Error();
-    var groupsIdMap = Map<int, String>();
+    var groupsIdMap = Map<int?, String?>();
     for (var group in groups) {
       var title = group["title"].trim();
       groupsIdMap[group["id"]] = title;
@@ -113,7 +113,7 @@ class FeverServiceHandler extends ServiceHandler {
       var name = groupsIdMap[group["group_id"]];
       for (var fid in group["feed_ids"].split(",")) {
         groupsMap.putIfAbsent(name, () => []);
-        groupsMap[name].add(fid);
+        groupsMap[name]!.add(fid);
       }
     }
     return Tuple2(sources, groupsMap);
@@ -122,10 +122,10 @@ class FeverServiceHandler extends ServiceHandler {
   @override
   Future<List<RSSItem>> fetchItems() async {
     var minId = useInt32 ? 2147483647 : Utils.syncMaxId;
-    List<dynamic> response;
+    List<dynamic>? response;
     List<dynamic> items = [];
     do {
-      response = (await _fetchAPI(params: "&items&max_id=$minId"))["items"];
+      response = (await _fetchAPI(params: "&items&max_id=$minId"))!["items"];
       if (response == null) throw Error();
       for (var i in response) {
         if (i["id"] is String) i["id"] = int.parse(i["id"]);
@@ -140,7 +140,7 @@ class FeverServiceHandler extends ServiceHandler {
       }
     } while (minId > lastId &&
         (response == null || response.length >= 50) &&
-        items.length < fetchLimit);
+        items.length < fetchLimit!);
     var parsedItems = items.map<RSSItem>((i) {
       var dom = parse(i["html"]);
       var item = RSSItem(
@@ -150,7 +150,7 @@ class FeverServiceHandler extends ServiceHandler {
         link: i["url"],
         date: DateTime.fromMillisecondsSinceEpoch(i["created_on_time"] * 1000),
         content: i["html"],
-        snippet: dom.documentElement.text.trim(),
+        snippet: dom.documentElement!.text.trim(),
         creator: i["author"],
         hasRead: i["is_read"] == 1,
         starred: i["is_saved"] == 1,
@@ -158,7 +158,7 @@ class FeverServiceHandler extends ServiceHandler {
       // Try to get the thumbnail of the item
       var img = dom.querySelector("img");
       if (img != null && img.attributes["src"] != null) {
-        var thumb = img.attributes["src"];
+        var thumb = img.attributes["src"]!;
         if (thumb.startsWith("http")) {
           item.thumb = thumb;
         }
@@ -181,8 +181,8 @@ class FeverServiceHandler extends ServiceHandler {
       _fetchAPI(params: "&unread_item_ids"),
       _fetchAPI(params: "&saved_item_ids"),
     ]);
-    final unreadIds = responses[0]["unread_item_ids"];
-    final starredIds = responses[1]["saved_item_ids"];
+    final unreadIds = responses[0]!["unread_item_ids"];
+    final starredIds = responses[1]!["saved_item_ids"];
     return Tuple2(
         Set.from(unreadIds.split(",")), Set.from(starredIds.split(",")));
   }
@@ -196,9 +196,9 @@ class FeverServiceHandler extends ServiceHandler {
   }
 
   @override
-  Future<void> markAllRead(Set<String> sids, DateTime date, bool before) async {
+  Future<void> markAllRead(Set<String?> sids, DateTime? date, bool before) async {
     if (date != null && !before) {
-      var items = Global.itemsModel.getItems().where((i) =>
+      var items = Global.itemsModel!.getItems().where((i) =>
           (sids.length == 0 || sids.contains(i.source)) &&
           i.date.compareTo(date) >= 0);
       await Future.wait(items.map((i) => markRead(i)));
@@ -208,7 +208,7 @@ class FeverServiceHandler extends ServiceHandler {
           : DateTime.now().millisecondsSinceEpoch;
       timestamp = timestamp ~/ 1000 + 1;
       try {
-        await Future.wait(Global.sourcesModel
+        await Future.wait(Global.sourcesModel!
             .getSources()
             .where((s) => sids.length == 0 || sids.contains(s.id))
             .map((s) => _fetchAPI(

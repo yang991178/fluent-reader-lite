@@ -18,10 +18,10 @@ class GroupListPage extends StatefulWidget {
 }
 
 class _GroupListPageState extends State<GroupListPage> {
-  static const List<String> _uncategorizedIndicator = [null, null];
+  static const List<String?> _uncategorizedIndicator = [null, null];
 
-  int _unreadCount(Iterable<RSSSource> sources) {
-    return sources.fold(0, (c, s) => c + (s != null ? s.unreadCount : 0));
+  int _unreadCount(Iterable<RSSSource?> sources) {
+    return sources.fold(0, (c, s) => c + (s != null ? s.unreadCount: 0));
   }
 
   static const _dismissThresholds = {
@@ -31,13 +31,13 @@ class _GroupListPageState extends State<GroupListPage> {
   @override
   Widget build(BuildContext context) {
     final navigationBar = CupertinoSliverNavigationBar(
-      largeTitle: Text(S.of(context).groups),
+      largeTitle: Text(S.of(context)!.groups),
       automaticallyImplyLeading: false,
       backgroundColor: Global.isTablet ? CupertinoColors.systemBackground : null,
       leading: CupertinoButton(
         minSize: 36,
         padding: EdgeInsets.zero,
-        child: Text(S.of(context).cancel),
+        child: Text(S.of(context)!.cancel),
         onPressed: () { Navigator.of(context).pop(); },
       ),
     );
@@ -45,7 +45,7 @@ class _GroupListPageState extends State<GroupListPage> {
       builder: (context, sourcesModel, child) {
         var count = _unreadCount(sourcesModel.getSources());
         return SliverToBoxAdapter(child: MyListTile(
-          title: Text(S.of(context).allSubscriptions),
+          title: Text(S.of(context)!.allSubscriptions),
           trailing: count > 0 ? Badge(count) : null,
           onTap: () { Navigator.of(context).pop(List<String>.empty()); },
           background: CupertinoColors.systemBackground,
@@ -62,21 +62,21 @@ class _GroupListPageState extends State<GroupListPage> {
         }
         return SliverList(
           delegate: SliverChildBuilderDelegate((context, index) {
-            String groupName;
-            List<String> group;
+            String? groupName;
+            List<String?>? group;
             final isUncategorized = groupsModel.showUncategorized && index == 0;
             if (isUncategorized) {
-              groupName = S.of(context).uncategorized;
+              groupName = S.of(context)!.uncategorized;
               group = groupsModel.uncategorized;
             } else {
               groupName = groupNames[index];
               group = groupsModel.groups[groupName];
             }
             final count = _unreadCount(
-              group.map((sid) => sourcesModel.getSource(sid))
+              group!.map((sid) => sourcesModel.getSource(sid))
             );
             final tile = MyListTile(
-              title: Flexible(child: Text(groupName, overflow: TextOverflow.ellipsis)),
+              title: Flexible(child: Text(groupName!, overflow: TextOverflow.ellipsis)),
               trailing: count > 0 ? Badge(count) : null,
               onTap: () { 
                 Navigator.of(context).pop(
@@ -93,7 +93,7 @@ class _GroupListPageState extends State<GroupListPage> {
               dismissThresholds: _dismissThresholds,
               confirmDismiss: (_) async {
                 HapticFeedback.mediumImpact();
-                Set<String> sids = Set.from(group);
+                Set<String> sids = Set.from(group!);
                 showCupertinoModalPopup(
                   context: context,
                   builder: (context) => MarkAllActionSheet(sids),

@@ -13,7 +13,7 @@ import 'badge.dart';
 class SubscriptionItem extends StatefulWidget {
   final RSSSource source;
 
-  SubscriptionItem(this.source, {Key key}) : super(key: key);
+  SubscriptionItem(this.source, {Key? key}) : super(key: key);
 
   @override
   _SubscriptionItemState createState() => _SubscriptionItemState();
@@ -23,7 +23,7 @@ class _SubscriptionItemState extends State<SubscriptionItem> {
   bool pressed = false;
 
   void _openSourcePage() async {
-    await Global.feedsModel.initSourcesFeed([widget.source.id]);
+    await Global.feedsModel!.initSourcesFeed([widget.source.id]);
     Navigator.of(context).pushNamed("/feed", arguments: widget.source.name);
   }
 
@@ -90,7 +90,7 @@ class _SubscriptionItemState extends State<SubscriptionItem> {
           child: Text(widget.source.lastTitle,
               style: _descStyle, overflow: TextOverflow.ellipsis),
         ),
-        if (widget.source.unreadCount > 0) Badge(widget.source.unreadCount),
+        if (widget.source.unreadCount> 0) Badge(widget.source.unreadCount),
       ],
     );
     final body = GestureDetector(

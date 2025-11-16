@@ -1,10 +1,10 @@
 import 'package:flutter/cupertino.dart';
 
 class DismissibleBackground extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;
   final bool isToRight;
 
-  DismissibleBackground(this.icon, this.isToRight, {Key key})
+  DismissibleBackground(this.icon, this.isToRight, {Key? key})
     : super(key: key);
 
   @override

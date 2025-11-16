@@ -22,7 +22,7 @@ import 'package:provider/provider.dart';
 class SubscriptionListPage extends StatefulWidget {
   final ScrollTopNotifier scrollTopNotifier;
 
-  SubscriptionListPage(this.scrollTopNotifier, {Key key}) : super(key: key);
+  SubscriptionListPage(this.scrollTopNotifier, {Key? key}) : super(key: key);
 
   @override
   _SubscriptionListPageState createState() {
@@ -31,8 +31,8 @@ class SubscriptionListPage extends StatefulWidget {
 }
 
 class _SubscriptionListPageState extends State<SubscriptionListPage> {
-  List<String> sids;
-  String title;
+  List<String?>? sids;
+  String? title;
   bool transitioning = false;
   bool unreadOnly = Store.sp.getBool(StoreKeys.UNREAD_SUBS_ONLY) ?? false;
 
@@ -60,7 +60,7 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
   }
 
   void _openGroups() async {
-    List<String> result;
+    List<String>? result;
     if (Global.isTablet) {
       result = await Navigator.of(context).push(CupertinoPageRoute(
         builder: (context) => GroupListPage(),
@@ -85,13 +85,13 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
         });
       } else if (result.length > 1) {
         setState(() {
-          title = S.of(context).uncategorized;
-          sids = Global.groupsModel.uncategorized;
+          title = S.of(context)!.uncategorized;
+          sids = Global.groupsModel!.uncategorized;
         });
       } else {
         setState(() {
-          title = result[0];
-          sids = Global.groupsModel.groups[title];
+          title = result![0];
+          sids = Global.groupsModel!.groups[title];
         });
       }
     }
@@ -105,7 +105,7 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
     showCupertinoModalPopup(
       context: context,
       builder: (context) =>
-          MarkAllActionSheet(sids == null ? {} : Set.from(sids)),
+          MarkAllActionSheet(sids == null ? {} : Set.from(sids!)),
     );
   }
 
@@ -114,7 +114,7 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
   }
 
   void _openErrorLog() {
-    if (!Global.syncModel.lastSyncSuccess) {
+    if (!Global.syncModel!.lastSyncSuccess) {
       HapticFeedback.mediumImpact();
       Navigator.of(context, rootNavigator: true).pushNamed("/error-log");
     }
@@ -130,8 +130,8 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
   }
 
   void _dismissTip() {
-    if (Global.sourcesModel.showUnreadTip) {
-      Global.sourcesModel.showUnreadTip = false;
+    if (Global.sourcesModel!.showUnreadTip) {
+      Global.sourcesModel!.showUnreadTip = false;
       setState(() {});
     }
   }
@@ -157,7 +157,7 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    S.of(context).unreadSourceTip,
+                    S.of(context)!.unreadSourceTip,
                     style: TextStyle(
                       color: CupertinoColors.label.resolveFrom(context),
                       fontWeight: FontWeight.bold,
@@ -167,7 +167,7 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
                   CupertinoButton(
                     minSize: 28,
                     padding: EdgeInsets.zero,
-                    child: Text(S.of(context).confirm),
+                    child: Text(S.of(context)!.confirm),
                     onPressed: _dismissTip,
                   ),
                 ],
@@ -193,7 +193,7 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
                   : MediaQuery.of(context).size.width - 60,
             ),
             child: Text(
-              title ?? S.of(context).subscriptions,
+              title ?? S.of(context)!.subscriptions,
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -216,7 +216,7 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
         leading: CupertinoButton(
           minSize: 36,
           padding: EdgeInsets.zero,
-          child: Text(S.of(context).groups),
+          child: Text(S.of(context)!.groups),
           onPressed: _openGroups,
         ),
         trailing: Container(
@@ -228,7 +228,7 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
                 padding: EdgeInsets.zero,
                 child: Icon(
                   CupertinoIcons.checkmark_circle,
-                  semanticLabel: S.of(context).markAll,
+                  semanticLabel: S.of(context)!.markAll,
                 ),
                 onPressed: _openMarkAllModal,
               ),
@@ -236,7 +236,7 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
                 padding: EdgeInsets.zero,
                 child: Icon(
                   CupertinoIcons.settings,
-                  semanticLabel: S.of(context).settings,
+                  semanticLabel: S.of(context)!.settings,
                 ),
                 onPressed: _openSettings,
               ),
@@ -245,28 +245,28 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
         ));
     final sourcesList = Consumer<SourcesModel>(
       builder: (context, sourcesModel, child) {
-        List<RSSSource> sources;
+        List<RSSSource?> sources;
         if (sids == null) {
-          sources = Global.sourcesModel.getSources().toList();
+          sources = Global.sourcesModel!.getSources().toList();
           if (unreadOnly) {
-            sources = sources.where((s) => s.unreadCount > 0).toList();
+            sources = sources.where((s) => s!.unreadCount> 0).toList();
           }
         } else {
           sources = [];
-          for (var sid in sids) {
-            final source = Global.sourcesModel.getSource(sid);
-            if (!unreadOnly || source.unreadCount > 0) {
+          for (var sid in sids!) {
+            final source = Global.sourcesModel!.getSource(sid);
+            if (!unreadOnly || source!.unreadCount> 0) {
               sources.add(source);
             }
           }
         }
         // Latest sources first
         sources.sort((a, b) {
-          return b.latest.compareTo(a.latest);
+          return b!.latest.compareTo(a!.latest);
         });
         return SliverList(
           delegate: SliverChildBuilderDelegate((content, index) {
-            var source = sources[index];
+            var source = sources[index]!;
             return SubscriptionItem(source, key: Key(source.id));
           }, childCount: sources.length),
         );
@@ -287,8 +287,8 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
                 children: [
                   Text(
                     syncModel.lastSyncSuccess
-                        ? S.of(context).lastSyncSuccess
-                        : S.of(context).lastSyncFailure,
+                        ? S.of(context)!.lastSyncSuccess
+                        : S.of(context)!.lastSyncFailure,
                     style: syncStyle,
                   ),
                   Text(
@@ -308,20 +308,20 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
         child: CustomScrollView(slivers: [
       navigationBar,
       SyncControl(),
-      if (Global.sourcesModel.showUnreadTip) _buildUnreadTip(),
-      if (sids != null && sids.length > 0)
+      if (Global.sourcesModel!.showUnreadTip) _buildUnreadTip(),
+      if (sids != null && sids!.length > 0)
         Consumer<SourcesModel>(
           builder: (context, sourcesModel, child) {
-            var count = sids
+            var count = sids!
                 .map((sid) => sourcesModel.getSource(sid))
-                .fold(0, (c, s) => c + s.unreadCount);
+                .fold(0, (dynamic c, s) => c + s!.unreadCount);
             return SliverToBoxAdapter(
                 child: MyListTile(
-              title: Text(S.of(context).allArticles),
+              title: Text(S.of(context)!.allArticles),
               trailing: count > 0 ? Badge(count) : null,
               trailingChevron: false,
               onTap: () async {
-                await Global.feedsModel.initSourcesFeed(sids.toList());
+                await Global.feedsModel!.initSourcesFeed(sids!.toList());
                 Navigator.of(context).pushNamed("/feed", arguments: title);
               },
               background: CupertinoColors.systemBackground,

@@ -40,19 +40,19 @@ class _HomePageState extends State<HomePage> {
     GlobalKey(),
     GlobalKey(),
   ];
-  StreamSubscription _uriSub;
+  late StreamSubscription _uriSub;
 
-  void _uriStreamListener(Uri uri) {
+  void _uriStreamListener(Uri? uri) {
     if (uri == null) return;
     if (uri.host == "import") {
-      if (Global.syncModel.hasService) {
+      if (Global.syncModel!.hasService) {
         showCupertinoDialog(
           context: context,
           builder: (context) => CupertinoAlertDialog(
-            title: Text(S.of(context).serviceExists),
+            title: Text(S.of(context)!.serviceExists),
             actions: [
               CupertinoDialogAction(
-                child: Text(S.of(context).confirm),
+                child: Text(S.of(context)!.confirm),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
@@ -60,7 +60,7 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
         );
-      } else if (!Global.syncModel.syncing) {
+      } else if (!Global.syncModel!.syncing) {
         final import = ServiceImport(uri.queryParameters);
         final route = ServiceImport.typeMap[uri.queryParameters["t"]];
         if (route != null) {
@@ -107,7 +107,7 @@ class _HomePageState extends State<HomePage> {
           );
   }
 
-  Widget buildLeft(BuildContext context, {isMobile: true}) {
+  Widget buildLeft(BuildContext context, {isMobile = true}) {
     final leftTabs = CupertinoTabScaffold(
       controller: _controller,
       backgroundColor: CupertinoColors.systemBackground,
@@ -117,11 +117,11 @@ class _HomePageState extends State<HomePage> {
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.timeline),
-            label: S.of(context).feed,
+            label: S.of(context)!.feed,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.list),
-            label: S.of(context).subscriptions,
+            label: S.of(context)!.subscriptions,
           ),
         ],
       ),
@@ -147,7 +147,7 @@ class _HomePageState extends State<HomePage> {
       child: leftTabs,
       onWillPop: () async {
         return !(await _tabNavigatorKeys[_controller.index]
-            .currentState
+            .currentState!
             .maybePop());
       },
     );

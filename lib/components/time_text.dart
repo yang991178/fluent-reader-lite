@@ -3,22 +3,22 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 
 class TimeText extends StatefulWidget {
-  final DateTime date;
-  final TextStyle style;
+  final DateTime? date;
+  final TextStyle? style;
 
-  TimeText(this.date, {this.style, Key key}) : super(key: key);
+  TimeText(this.date, {this.style, Key? key}) : super(key: key);
 
   @override
   _TimeTextState createState() => _TimeTextState();
 }
 
 class _TimeTextState extends State<TimeText> {
-  Timer _timer;
-  Duration _duration;
+  Timer? _timer;
+  Duration? _duration;
 
   int diffMinutes() {
     final now = DateTime.now();
-    return now.difference(widget.date).inMinutes;
+    return now.difference(widget.date!).inMinutes;
   }
 
   @override
@@ -37,9 +37,9 @@ class _TimeTextState extends State<TimeText> {
     } else {
       duration = Duration(minutes: (60 * 24) - diff % (60 * 24));
     }
-    if (_duration == null || duration.compareTo(_duration) != 0) {
+    if (_duration == null || duration.compareTo(_duration!) != 0) {
       _duration = duration;
-      if (_timer != null) _timer.cancel();
+      if (_timer != null) _timer!.cancel();
       _timer = Timer.periodic(duration, (_) {
         setState(() {});
         updateTimer();
@@ -49,13 +49,13 @@ class _TimeTextState extends State<TimeText> {
 
   @override
   void dispose() {
-    if (_timer != null) _timer.cancel();
+    if (_timer != null) _timer!.cancel();
     super.dispose();
   }
 
   @override
   void didUpdateWidget(covariant TimeText oldWidget) {
-    if (oldWidget.date.compareTo(widget.date) != 0) updateTimer();
+    if (oldWidget.date!.compareTo(widget.date!) != 0) updateTimer();
     super.didUpdateWidget(oldWidget);
   }
 

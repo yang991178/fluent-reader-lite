@@ -1,33 +1,38 @@
-enum SourceOpenTarget {
-    Local, FullContent, Webpage, External
-}
+enum SourceOpenTarget { Local, FullContent, Webpage, External }
 
 class RSSSource {
   String id;
   String url;
-  String iconUrl;
+  String? iconUrl;
   String name;
-  SourceOpenTarget openTarget;
-  int unreadCount;
-  DateTime latest;
-  String lastTitle;
+  SourceOpenTarget openTarget = SourceOpenTarget.Local;
+  int unreadCount = 0;
+  DateTime latest = DateTime.now();
+  String lastTitle = "";
 
-  RSSSource(this.id, this.url, this.name) {
-    openTarget = SourceOpenTarget.Local;
-    latest = DateTime.now();
-    unreadCount = 0;
-    lastTitle = "";
-  }
+  RSSSource(this.id, this.url, this.name);
 
   RSSSource._privateConstructor(
-    this.id, this.url, this.iconUrl, this.name, this.openTarget,
-    this.unreadCount, this.latest, this.lastTitle,
+    this.id,
+    this.url,
+    this.iconUrl,
+    this.name,
+    this.openTarget,
+    this.unreadCount,
+    this.latest,
+    this.lastTitle,
   );
 
   RSSSource clone() {
     return RSSSource._privateConstructor(
-      this.id, this.url, this.iconUrl, this.name, this.openTarget,
-      this.unreadCount, this.latest, this.lastTitle,
+      this.id,
+      this.url,
+      this.iconUrl,
+      this.name,
+      this.openTarget,
+      this.unreadCount,
+      this.latest,
+      this.lastTitle,
     );
   }
 
@@ -43,14 +48,16 @@ class RSSSource {
     };
   }
 
-  RSSSource.fromMap(Map<String, dynamic> map) {
-    id = map["sid"];
-    url = map["url"];
-    iconUrl = map["iconUrl"];
-    name = map["name"];
-    openTarget = SourceOpenTarget.values[map["openTarget"]];
-    latest = DateTime.fromMillisecondsSinceEpoch(map["latest"]);
-    lastTitle = map["lastTitle"];
-    unreadCount = 0;
+  factory RSSSource.fromMap(Map<String, dynamic> map) {
+    return RSSSource._privateConstructor(
+      map["sid"],
+      map["url"],
+      map["iconUrl"],
+      map["name"],
+      SourceOpenTarget.values[map["openTarget"]],
+      0, // Default unreadCount
+      DateTime.fromMillisecondsSinceEpoch(map["latest"]),
+      map["lastTitle"],
+    );
   }
 }

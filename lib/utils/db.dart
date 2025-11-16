@@ -7,9 +7,9 @@ abstract class DatabaseHelper {
   static final _dbName = "frlite.db";
   static final _dbVersion = 1;
 
-  static Database _database;
+  static Database? _database;
 
-  static Future<Database> getDatabase() async {
+  static Future<Database?> getDatabase() async {
     if (_database != null) return _database;
     String path = join(await getDatabasesPath(), _dbName);
     _database = await openDatabase(path, version:_dbVersion, onCreate: _onCreate);

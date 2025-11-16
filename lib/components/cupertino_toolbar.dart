@@ -45,15 +45,13 @@ class CupertinoToolbar extends StatelessWidget {
   /// {@end-tool}
   ///
   CupertinoToolbar({
-    Key key,
-    @required this.items,
-    @required this.body
-  }) : assert(items != null),
-       assert(
+    Key? key,
+    required this.items,
+    required this.body
+  }) : assert(
         items.every((CupertinoToolbarItem item) => (item.icon != null)) == true,
         'Every item must have an icon and onPressed defined',
        ),
-       assert(body != null),
        super(key: key);
 
   /// The interactive items laid out within the toolbar where each item has an icon.
@@ -113,10 +111,10 @@ class CupertinoToolbarItem {
   ///
   /// The argument [icon] should not be null.
   const CupertinoToolbarItem({
-    @required this.icon,
+    required this.icon,
     this.onPressed,
     this.semanticLabel
-  }) : assert(icon != null);
+  });
 
   /// The icon of the item.
   ///
@@ -126,11 +124,11 @@ class CupertinoToolbarItem {
   /// The callback that is called when the item is tapped.
   ///
   /// This attribute must not be null.
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   /// Semantic label for the icon.
   ///
   /// Announced in accessibility modes (e.g TalkBack/VoiceOver).
   /// This label does not show in the UI.
-  final String semanticLabel;
+  final String? semanticLabel;
 }

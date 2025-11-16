@@ -3,10 +3,10 @@ import 'package:fluent_reader_lite/models/source.dart';
 import 'package:flutter/cupertino.dart';
 
 class Favicon extends StatelessWidget {
-  final RSSSource source;
+  final RSSSource? source;
   final double size;
 
-  const Favicon(this.source, {this.size: 16, Key key}) : super(key: key);
+  const Favicon(this.source, {this.size = 16, Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -15,9 +15,9 @@ class Favicon extends StatelessWidget {
       color: CupertinoColors.systemGrey6,
     );
     
-    if (source.iconUrl != null && source.iconUrl.length > 0) {
+    if (source!.iconUrl != null && source!.iconUrl!.length > 0) {
       return CachedNetworkImage(
-        imageUrl: source.iconUrl,
+        imageUrl: source!.iconUrl!,
         width: size,
         height: size,
       );
@@ -27,7 +27,7 @@ class Favicon extends StatelessWidget {
         height: size,
         color: CupertinoColors.systemGrey.resolveFrom(context),
         child: Center(child: Text(
-          source.name.length > 0 ? source.name[0] : "?",
+          source!.name.length > 0 ? source!.name[0] : "?",
           style: _textStyle,
         )),
       );

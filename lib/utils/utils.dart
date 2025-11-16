@@ -48,20 +48,20 @@ abstract class Utils {
     r"^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,63}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*$)",
     caseSensitive: false,
   );
-  static bool testUrl(String url) =>
+  static bool testUrl(String? url) =>
       url != null && _urlRegex.hasMatch(url.trim());
 
-  static bool notEmpty(String text) => text != null && text.trim().length > 0;
+  static bool notEmpty(String? text) => text != null && text.trim().length > 0;
 
   static void showServiceFailureDialog(BuildContext context) {
     showCupertinoDialog(
       context: context,
       builder: (context) => CupertinoAlertDialog(
-        title: Text(S.of(context).serviceFailure),
-        content: Text(S.of(context).serviceFailureHint),
+        title: Text(S.of(context)!.serviceFailure),
+        content: Text(S.of(context)!.serviceFailureHint),
         actions: [
           CupertinoDialogAction(
-            child: Text(S.of(context).close),
+            child: Text(S.of(context)!.close),
             onPressed: () {
               Navigator.of(context).pop();
             },
@@ -71,9 +71,9 @@ abstract class Utils {
     );
   }
 
-  static int localStringCompare(String a, String b) {
-    a = a.toLowerCase();
-    b = b.toLowerCase();
+  static int localStringCompare(String? a, String? b) {
+    a = a!.toLowerCase();
+    b = b!.toLowerCase();
     try {
       String ap = PinyinHelper.getShortPinyin(a);
       String bp = PinyinHelper.getShortPinyin(b);

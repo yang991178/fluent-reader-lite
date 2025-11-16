@@ -10,8 +10,8 @@ import 'package:sqflite/sqflite.dart';
 import 'item.dart';
 
 class SourcesModel with ChangeNotifier {
-  Map<String, RSSSource> _sources = Map();
-  Map<String, RSSSource> _deleted = Map();
+  Map<String?, RSSSource> _sources = Map();
+  Map<String?, RSSSource?> _deleted = Map();
   bool _showUnreadTip = Store.sp.getBool(StoreKeys.UNREAD_SOURCE_TIP) ?? true;
 
   bool get showUnreadTip => _showUnreadTip;
@@ -22,14 +22,14 @@ class SourcesModel with ChangeNotifier {
     }
   }
 
-  bool has(String id) => _sources.containsKey(id);
+  bool has(String? id) => _sources.containsKey(id);
 
-  RSSSource getSource(String id) => _sources[id] ?? _deleted[id];
+  RSSSource? getSource(String? id) => _sources[id] ?? _deleted[id];
 
   Iterable<RSSSource> getSources() => _sources.values;
 
   Future<void> init() async {
-    final maps = await Global.db.query("sources");
+    final maps = await Global.db!.query("sources");
     for (var map in maps) {
       var source = RSSSource.fromMap(map);
       _sources[source.id] = source;
@@ -39,7 +39,7 @@ class SourcesModel with ChangeNotifier {
   }
 
   Future<void> updateUnreadCounts() async {
-    final rows = await Global.db.rawQuery(
+    final rows = await Global.db!.rawQuery(
         "SELECT source, COUNT(iid) FROM items WHERE hasRead=0 GROUP BY source;");
     for (var source in _sources.values) {
       var cloned = source.clone();
@@ -47,20 +47,20 @@ class SourcesModel with ChangeNotifier {
       cloned.unreadCount = 0;
     }
     for (var row in rows) {
-      _sources[row["source"]].unreadCount = row["COUNT(iid)"];
+      _sources[row["source"]]!.unreadCount = row["COUNT(iid)"] as int;
     }
     notifyListeners();
   }
 
-  void updateUnreadCount(String sid, int diff) {
-    _sources[sid].unreadCount += diff;
+  void updateUnreadCount(String? sid, int diff) {
+    _sources[sid]!.unreadCount += diff;
     notifyListeners();
   }
 
   Future<void> updateWithFetchedItems(Iterable<RSSItem> items) async {
-    Set<String> changed = Set();
+    Set<String?> changed = Set();
     for (var item in items) {
-      var source = _sources[item.source];
+      var source = _sources[item.source]!;
       if (!item.hasRead) source.unreadCount += 1;
       if (item.date.compareTo(source.latest) > 0 ||
           source.lastTitle.length == 0) {
@@ -71,9 +71,9 @@ class SourcesModel with ChangeNotifier {
     }
     notifyListeners();
     if (changed.length > 0) {
-      var batch = Global.db.batch();
+      var batch = Global.db!.batch();
       for (var sid in changed) {
-        var source = _sources[sid];
+        var source = _sources[sid]!;
         batch.update(
           "sources",
           {
@@ -88,19 +88,19 @@ class SourcesModel with ChangeNotifier {
     }
   }
 
-  Future<void> put(RSSSource source, {force: false}) async {
+  Future<void> put(RSSSource source, {force = false}) async {
     if (_deleted.containsKey(source.id) && !force) return;
     _sources[source.id] = source;
     notifyListeners();
-    await Global.db.insert(
+    await Global.db!.insert(
       "sources",
       source.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
 
-  Future<void> putAll(Iterable<RSSSource> sources, {force: false}) async {
-    Batch batch = Global.db.batch();
+  Future<void> putAll(Iterable<RSSSource> sources, {force = false}) async {
+    Batch batch = Global.db!.batch();
     for (var source in sources) {
       if (_deleted.containsKey(source.id) && !force) continue;
       _sources[source.id] = source;
@@ -115,8 +115,8 @@ class SourcesModel with ChangeNotifier {
   }
 
   Future<void> updateSources() async {
-    final tuple = await Global.service.getSources();
-    final sources = tuple.item1;
+    final tuple = await Global.service!.getSources();
+    final sources = tuple.item1!;
     var curr = Set<String>.from(_sources.keys);
     List<RSSSource> newSources = [];
     for (var source in sources) {
@@ -128,12 +128,12 @@ class SourcesModel with ChangeNotifier {
     }
     await putAll(newSources, force: true);
     await removeSources(curr);
-    Global.groupsModel.groups = tuple.item2;
+    Global.groupsModel!.groups = tuple.item2;
     fetchFavicons();
   }
 
-  Future<void> removeSources(Iterable<String> ids) async {
-    final batch = Global.db.batch();
+  Future<void> removeSources(Iterable<String?> ids) async {
+    final batch = Global.db!.batch();
     for (var id in ids) {
       if (!_sources.containsKey(id)) continue;
       var source = _sources[id];
@@ -151,16 +151,16 @@ class SourcesModel with ChangeNotifier {
       _deleted[id] = source;
     }
     await batch.commit(noResult: true);
-    Global.feedsModel.initAll();
+    Global.feedsModel!.initAll();
     notifyListeners();
   }
 
   Future<void> fetchFavicons() async {
     for (var key in _sources.keys) {
-      if (_sources[key].iconUrl == null) {
-        _fetchFavicon(_sources[key].url).then((url) {
+      if (_sources[key]!.iconUrl == null) {
+        _fetchFavicon(_sources[key]!.url).then((url) {
           if (!_sources.containsKey(key)) return;
-          var source = _sources[key].clone();
+          var source = _sources[key]!.clone();
           source.iconUrl = url == null ? "" : url;
           put(source);
         });
@@ -168,7 +168,7 @@ class SourcesModel with ChangeNotifier {
     }
   }
 
-  Future<String> _fetchFavicon(String url) async {
+  Future<String?> _fetchFavicon(String url) async {
     try {
       url = url.split("/").getRange(0, 3).join("/");
       var uri = Uri.parse(url);
@@ -181,7 +181,7 @@ class SourcesModel with ChangeNotifier {
           var rel = link.attributes["rel"];
           if ((rel == "icon" || rel == "shortcut icon") &&
               link.attributes.containsKey("href")) {
-            var href = link.attributes["href"];
+            var href = link.attributes["href"]!;
             var parsedUrl = Uri.parse(url);
             if (href.startsWith("//"))
               return parsedUrl.scheme + ":" + href;

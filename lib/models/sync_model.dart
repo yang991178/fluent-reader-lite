@@ -22,11 +22,11 @@ class SyncModel with ChangeNotifier {
     if (syncing || Global.service == null) return;
     syncing = true;
     notifyListeners();
-    var sids = Global.sourcesModel.getSources()
+    var sids = Global.sourcesModel!.getSources()
       .map((s) => s.id)
       .toList();
-    await Global.sourcesModel.removeSources(sids);
-    Global.service.remove();
+    await Global.sourcesModel!.removeSources(sids);
+    Global.service!.remove();
     hasService = false;
     syncing = false;
     notifyListeners();
@@ -49,10 +49,10 @@ class SyncModel with ChangeNotifier {
     syncing = true;
     notifyListeners();
     try {
-      await Global.service.reauthenticate();
-      await Global.sourcesModel.updateSources();
-      await Global.itemsModel.syncItems();
-      await Global.itemsModel.fetchItems();
+      await Global.service!.reauthenticate();
+      await Global.sourcesModel!.updateSources();
+      await Global.itemsModel!.syncItems();
+      await Global.itemsModel!.fetchItems();
       lastSyncSuccess = true;
     } catch(exp) {
       lastSyncSuccess = false;

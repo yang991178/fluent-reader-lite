@@ -51,11 +51,11 @@ abstract class StoreKeys {
 
 class Store {
   // Initialized in main.dart
-  static SharedPreferences sp;
+  static late SharedPreferences sp;
 
-  static Locale getLocale() {
+  static Locale? getLocale() {
     if (!sp.containsKey(StoreKeys.LOCALE)) return null;
-    var localeString = sp.getString(StoreKeys.LOCALE);
+    var localeString = sp.getString(StoreKeys.LOCALE)!;
     var splitted = localeString.split('_');
     if (splitted.length > 1) {
       return Locale(splitted[0], splitted[1]);
@@ -64,14 +64,14 @@ class Store {
     }
   }
 
-  static void setLocale(Locale locale) {
+  static void setLocale(Locale? locale) {
     if (locale == null) sp.remove(StoreKeys.LOCALE);
     else sp.setString(StoreKeys.LOCALE, locale.toString());
   }
 
   static ThemeSetting getTheme() {
     return sp.containsKey(StoreKeys.THEME) 
-    ? ThemeSetting.values[sp.getInt(StoreKeys.THEME)]
+    ? ThemeSetting.values[sp.getInt(StoreKeys.THEME)!]
     : ThemeSetting.Default;
   }
 
@@ -79,10 +79,10 @@ class Store {
     sp.setInt(StoreKeys.THEME, theme.index);
   }
 
-  static Map<String, List<String>> getGroups() {
+  static Map<String?, List<String>> getGroups() {
     var groups = sp.getString(StoreKeys.GROUPS);
     if (groups == null) return Map();
-    Map<String, List<String>> result = Map();
+    Map<String?, List<String>> result = Map();
     var parsed = jsonDecode(groups);
     for (var key in parsed.keys) {
       result[key] = List.castFrom(parsed[key]);
@@ -90,18 +90,18 @@ class Store {
     return result;
   }
 
-  static void setGroups(Map<String, List<String>> groups) {
+  static void setGroups(Map<String?, List<String?>> groups) {
     sp.setString(StoreKeys.GROUPS, jsonEncode(groups));
   }
 
-  static List<String> getUncategorized() {
+  static List<String>? getUncategorized() {
     final stored = sp.getString(StoreKeys.UNCATEGORIZED);
     if (stored == null) return null;
     final parsed = jsonDecode(stored);
     return List.castFrom(parsed);
   }
 
-  static void setUncategorized(List<String> value) {
+  static void setUncategorized(List<String>? value) {
     if (value == null) {
       sp.remove(StoreKeys.UNCATEGORIZED);
     } else {

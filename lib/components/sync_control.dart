@@ -11,15 +11,15 @@ class SyncControl extends StatefulWidget {
 class _SyncControlState extends State<SyncControl> {
   Future<void> _onRefresh() {
     var completer = Completer();
-    Function listener;
+    late Function listener;
     listener = () {
-      if (!Global.syncModel.syncing) {
+      if (!Global.syncModel!.syncing) {
         completer.complete();
-        Global.syncModel.removeListener(listener);
+        Global.syncModel!.removeListener(listener as void Function());
       }
     };
-    Global.syncModel.addListener(listener);
-    Global.syncModel.syncWithService();
+    Global.syncModel!.addListener(listener as void Function());
+    Global.syncModel!.syncWithService();
     return completer.future;
   }
 

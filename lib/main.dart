@@ -39,15 +39,15 @@ void main() async {
   runApp(MyApp());
   SystemChannels.lifecycle.setMessageHandler((msg) {
     if (msg == AppLifecycleState.resumed.toString()) {
-      if (Global.server != null) Global.server.restart();
-      if (Global.globalModel.syncOnStart &&
-          DateTime.now().difference(Global.syncModel.lastSynced).inMinutes >=
+      if (Global.server != null) Global.server!.restart();
+      if (Global.globalModel!.syncOnStart &&
+          DateTime.now().difference(Global.syncModel!.lastSynced).inMinutes >=
               10) {
-        Global.syncModel.syncWithService();
+        Global.syncModel!.syncWithService();
       }
     }
     return null;
-  });
+  } as Future<String?> Function(String?)?);
 }
 
 class MyApp extends StatelessWidget {
@@ -77,10 +77,8 @@ class MyApp extends StatelessWidget {
           return FeedbinPage();
         case SyncService.GReader:
           return GReaderPage();
-          break;
         case SyncService.Inoreader:
           return InoreaderPage();
-          break;
       }
       return AboutPage();
     }
@@ -121,7 +119,7 @@ class MyApp extends StatelessWidget {
             const Locale("tr"),
           ],
           localeResolutionCallback: (_locale, supportedLocales) {
-            _locale = Locale(_locale.languageCode);
+            _locale = Locale(_locale!.languageCode);
             if (globalModel.locale != null)
               return globalModel.locale;
             else if (supportedLocales.contains(_locale))
@@ -144,11 +142,11 @@ class MyApp extends StatelessWidget {
           },
           builder: (context, child) {
             final mediaQueryData = MediaQuery.of(context);
-            if (Global.globalModel.textScale == null) return child;
+            if (Global.globalModel!.textScale == null) return child!;
             return MediaQuery(
                 data: mediaQueryData.copyWith(
-                    textScaleFactor: Global.globalModel.textScale),
-                child: child);
+                    textScaleFactor: Global.globalModel!.textScale),
+                child: child!);
           },
         ),
       ),

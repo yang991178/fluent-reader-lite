@@ -1,9 +1,9 @@
 class ServiceImport {
-  String endpoint;
-  String username;
-  String password;
-  String apiId;
-  String apiKey;
+  String? endpoint;
+  String? username;
+  String? password;
+  String? apiId;
+  String? apiKey;
 
   static const typeMap = {
     "f": "/settings/service/fever",

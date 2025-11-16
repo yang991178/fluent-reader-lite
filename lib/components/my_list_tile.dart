@@ -3,23 +3,23 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class MyListTile extends StatefulWidget {
-  final Widget leading;
+  final Widget? leading;
   final Widget title;
-  final Widget trailing;
+  final Widget? trailing;
   final bool trailingChevron;
   final bool withDivider;
-  final Function onTap;
+  final Function? onTap;
   final CupertinoDynamicColor background;
 
   MyListTile({
     this.leading,
-    @required this.title,
+    required this.title,
     this.trailing,
-    this.trailingChevron : true,
-    this.withDivider : true,
+    this.trailingChevron  = true,
+    this.withDivider  = true,
     this.onTap,
-    this.background : MyColors.tileBackground,
-    Key key,
+    this.background  = MyColors.tileBackground,
+    Key? key,
   }) : super(key: key);
 
   @override
@@ -30,7 +30,7 @@ class _MyListTileState extends State<MyListTile> {
   bool pressed = false;
 
   void _onTap() {
-    if (widget.onTap != null) widget.onTap();
+    if (widget.onTap != null) widget.onTap!();
   }
 
   @override
@@ -60,7 +60,7 @@ class _MyListTileState extends State<MyListTile> {
     final rightPart = Row(
       children: [
         if (widget.trailing != null) DefaultTextStyle(
-          child: widget.trailing,
+          child: widget.trailing!,
           style: _labelStyle,
         ),
         if (widget.trailingChevron) Icon(

@@ -15,17 +15,17 @@ class GReaderServiceHandler extends ServiceHandler {
   static const _READ_TAG = "user/-/state/com.google/read";
   static const _STAR_TAG = "user/-/state/com.google/starred";
 
-  String endpoint;
-  String username;
-  String password;
-  int fetchLimit;
-  int _lastFetched;
-  String _lastId;
-  String _auth;
-  bool useInt64;
-  String inoreaderId;
-  String inoreaderKey;
-  bool removeInoreaderAd;
+  String? endpoint;
+  String? username;
+  String? password;
+  int? fetchLimit;
+  int? _lastFetched;
+  String? _lastId;
+  String? _auth;
+  bool? useInt64;
+  String? inoreaderId;
+  String? inoreaderKey;
+  bool? removeInoreaderAd;
 
   GReaderServiceHandler() {
     endpoint = Store.sp.getString(StoreKeys.ENDPOINT);
@@ -54,7 +54,7 @@ class GReaderServiceHandler extends ServiceHandler {
     _lastId = Store.sp.getString(StoreKeys.LAST_ID);
     _auth = Store.sp.getString(StoreKeys.AUTH);
     useInt64 = Store.sp.getBool(StoreKeys.USE_INT_64) ??
-        !endpoint.endsWith("theoldreader.com");
+        !endpoint!.endsWith("theoldreader.com");
   }
 
   void persist() {
@@ -63,15 +63,15 @@ class GReaderServiceHandler extends ServiceHandler {
         inoreaderId != null
             ? SyncService.Inoreader.index
             : SyncService.GReader.index);
-    Store.sp.setString(StoreKeys.ENDPOINT, endpoint);
-    Store.sp.setString(StoreKeys.USERNAME, username);
-    Store.sp.setString(StoreKeys.PASSWORD, password);
-    Store.sp.setInt(StoreKeys.FETCH_LIMIT, fetchLimit);
-    Store.sp.setBool(StoreKeys.USE_INT_64, useInt64);
+    Store.sp.setString(StoreKeys.ENDPOINT, endpoint!);
+    Store.sp.setString(StoreKeys.USERNAME, username!);
+    Store.sp.setString(StoreKeys.PASSWORD, password!);
+    Store.sp.setInt(StoreKeys.FETCH_LIMIT, fetchLimit!);
+    Store.sp.setBool(StoreKeys.USE_INT_64, useInt64!);
     if (inoreaderId != null) {
-      Store.sp.setString(StoreKeys.API_ID, inoreaderId);
-      Store.sp.setString(StoreKeys.API_KEY, inoreaderKey);
-      Store.sp.setBool(StoreKeys.INOREADER_REMOVE_AD, removeInoreaderAd);
+      Store.sp.setString(StoreKeys.API_ID, inoreaderId!);
+      Store.sp.setString(StoreKeys.API_KEY, inoreaderKey!);
+      Store.sp.setBool(StoreKeys.INOREADER_REMOVE_AD, removeInoreaderAd!);
     }
     Global.service = this;
   }
@@ -93,44 +93,44 @@ class GReaderServiceHandler extends ServiceHandler {
     Global.service = null;
   }
 
-  int get lastFetched => _lastFetched;
+  int get lastFetched => _lastFetched!;
   set lastFetched(int value) {
     _lastFetched = value;
     Store.sp.setInt(StoreKeys.LAST_FETCHED, value);
   }
 
-  String get lastId => _lastId;
+  String get lastId => _lastId!;
   set lastId(String value) {
     _lastId = value;
     Store.sp.setString(StoreKeys.LAST_ID, value);
   }
 
-  String get auth => _auth;
+  String get auth => _auth!;
   set auth(String value) {
     _auth = value;
     Store.sp.setString(StoreKeys.AUTH, value);
   }
 
   Future<http.Response> _fetchAPI(String params, {dynamic body}) async {
-    final headers = Map<String, String>();
-    if (auth != null) headers["Authorization"] = auth;
+    final headers = Map<String, String?>();
+ headers["Authorization"] = auth;
     if (inoreaderId != null) {
       headers["AppId"] = inoreaderId;
       headers["AppKey"] = inoreaderKey;
     }
-    var uri = Uri.parse(endpoint + params);
+    var uri = Uri.parse(endpoint! + params);
     if (body == null) {
-      return await http.get(uri, headers: headers);
+      return await http.get(uri, headers: headers as Map<String, String>?);
     } else {
       headers["Content-Type"] = "application/x-www-form-urlencoded";
-      return await http.post(uri, headers: headers, body: body);
+      return await http.post(uri, headers: headers as Map<String, String>?, body: body);
     }
   }
 
   Future<Set<String>> _fetchAll(String params) async {
-    final results = List<String>.empty(growable: true);
-    List fetched;
-    String continuation;
+    final results = List<String?>.empty(growable: true);
+    List? fetched;
+    String? continuation;
     do {
       var p = params;
       if (continuation != null) p += "&c=$continuation";
@@ -148,14 +148,14 @@ class GReaderServiceHandler extends ServiceHandler {
     return new Set.from(results);
   }
 
-  Future<http.Response> _editTag(String ref, String tag, {add: true}) async {
+  Future<http.Response> _editTag(String? ref, String tag, {add = true}) async {
     final body = "i=$ref&${add ? "a" : "r"}=$tag";
     return await _fetchAPI("/reader/api/0/edit-tag", body: body);
   }
 
   String _compactId(String longId) {
     final last = longId.split("/").last;
-    if (!useInt64) return last;
+    if (!useInt64!) return last;
     return int.parse(last, radix: 16).toString();
   }
 
@@ -187,19 +187,19 @@ class GReaderServiceHandler extends ServiceHandler {
   }
 
   @override
-  Future<Tuple2<List<RSSSource>, Map<String, List<String>>>>
+  Future<Tuple2<List<RSSSource>, Map<String?, List<String?>>>>
       getSources() async {
     final response =
         await _fetchAPI("/reader/api/0/subscription/list?output=json");
     assert(response.statusCode == 200);
     List subscriptions = jsonDecode(response.body)["subscriptions"];
-    final groupsMap = Map<String, List<String>>();
+    final groupsMap = Map<String?, List<String?>>();
     for (var s in subscriptions) {
       final categories = s["categories"];
       if (categories != null) {
         for (var c in categories) {
           groupsMap.putIfAbsent(c["label"], () => []);
-          groupsMap[c["label"]].add(s["id"]);
+          groupsMap[c["label"]]!.add(s["id"]);
         }
       }
     }
@@ -212,21 +212,21 @@ class GReaderServiceHandler extends ServiceHandler {
   @override
   Future<List<RSSItem>> fetchItems() async {
     List items = [];
-    List fetchedItems;
-    String continuation;
+    List? fetchedItems;
+    String? continuation;
     do {
       try {
-        final limit = min(fetchLimit - items.length, 1000);
+        final limit = min(fetchLimit! - items.length, 1000);
         var params = "/reader/api/0/stream/contents?output=json&n=$limit";
-        if (lastFetched != null) params += "&ot=$lastFetched";
+ params += "&ot=$lastFetched";
         if (continuation != null) params += "&c=$continuation";
         final response = await _fetchAPI(params);
         assert(response.statusCode == 200);
         final fetched = jsonDecode(response.body);
         fetchedItems = fetched["items"];
-        for (var i in fetchedItems) {
+        for (var i in fetchedItems!) {
           i["id"] = _compactId(i["id"]);
-          if (i["id"] == lastId || items.length >= fetchLimit) {
+          if (i["id"] == lastId || items.length >= fetchLimit!) {
             break;
           } else {
             items.add(i);
@@ -236,7 +236,7 @@ class GReaderServiceHandler extends ServiceHandler {
       } catch (exp) {
         break;
       }
-    } while (continuation != null && items.length < fetchLimit);
+    } while (continuation != null && items.length < fetchLimit!);
     if (items.length > 0) {
       lastId = items[0]["id"];
       lastFetched = int.parse(items[0]["crawlTimeMsec"]) ~/ 1000;
@@ -244,8 +244,8 @@ class GReaderServiceHandler extends ServiceHandler {
     final parsedItems = items.map<RSSItem>((i) {
       final dom = parse(i["summary"]["content"]);
       if (removeInoreaderAd == true) {
-        if (dom.documentElement.text.trim().startsWith("Ads from Inoreader")) {
-          dom.body.firstChild.remove();
+        if (dom.documentElement!.text.trim().startsWith("Ads from Inoreader")) {
+          dom.body!.firstChild!.remove();
         }
       }
       final item = RSSItem(
@@ -254,27 +254,27 @@ class GReaderServiceHandler extends ServiceHandler {
         title: i["title"],
         link: i["canonical"][0]["href"],
         date: DateTime.fromMillisecondsSinceEpoch(i["published"] * 1000),
-        content: dom.body.innerHtml,
-        snippet: dom.documentElement.text.trim(),
+        content: dom.body!.innerHtml,
+        snippet: dom.documentElement!.text.trim(),
         creator: i["author"],
         hasRead: false,
         starred: false,
       );
       if (inoreaderId != null) {
         final titleDom = parse(item.title);
-        item.title = titleDom.documentElement.text;
+        item.title = titleDom.documentElement!.text;
       }
       var img = dom.querySelector("img");
       if (img != null && img.attributes["src"] != null) {
-        var thumb = img.attributes["src"];
+        var thumb = img.attributes["src"]!;
         if (thumb.startsWith("http")) {
           item.thumb = thumb;
         }
       }
       for (var c in i["categories"]) {
-        if (!item.hasRead && c.endsWith("/state/com.google/read"))
+        if (!item.hasRead&& c.endsWith("/state/com.google/read"))
           item.hasRead = true;
-        else if (!item.starred && c.endsWith("/state/com.google/starred"))
+        else if (!item.starred&& c.endsWith("/state/com.google/starred"))
           item.starred = true;
       }
       return item;
@@ -304,27 +304,25 @@ class GReaderServiceHandler extends ServiceHandler {
   }
 
   @override
-  Future<void> markAllRead(Set<String> sids, DateTime date, bool before) async {
+  Future<void> markAllRead(Set<String?> sids, DateTime? date, bool before) async {
     if (date != null) {
       List<String> predicates = ["hasRead = 0"];
       if (sids.length > 0) {
         predicates
             .add("source IN (${List.filled(sids.length, "?").join(" , ")})");
       }
-      if (date != null) {
-        predicates
-            .add("date ${before ? "<=" : ">="} ${date.millisecondsSinceEpoch}");
-      }
-      final rows = await Global.db.query(
+      predicates
+          .add("date ${before ? "<=" : ">="} ${date.millisecondsSinceEpoch}");
+      final rows = await Global.db!.query(
         "items",
         columns: ["iid"],
         where: predicates.join(" AND "),
         whereArgs: sids.toList(),
       );
       final iids = rows.map((r) => r["iid"]).iterator;
-      List<String> refs = [];
+      List<String?> refs = [];
       while (iids.moveNext()) {
-        refs.add(iids.current);
+        refs.add(iids.current as String?);
         if (refs.length >= 1000) {
           _editTag(refs.join("&i="), _READ_TAG);
           refs = [];
@@ -333,7 +331,7 @@ class GReaderServiceHandler extends ServiceHandler {
       if (refs.length > 0) _editTag(refs.join("&i="), _READ_TAG);
     } else {
       if (sids.length == 0)
-        sids = Set.from(Global.sourcesModel.getSources().map((s) => s.id));
+        sids = Set.from(Global.sourcesModel!.getSources().map((s) => s.id));
       for (var sid in sids) {
         final body = {"s": sid};
         _fetchAPI("/reader/api/0/mark-all-as-read", body: body);

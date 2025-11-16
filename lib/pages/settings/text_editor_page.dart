@@ -8,13 +8,13 @@ import 'package:flutter/cupertino.dart';
 
 class TextEditorPage extends StatefulWidget {
   final String title;
-  final String saveText;
-  final String initialValue;
-  final Color navigationBarColor;
+  final String? saveText;
+  final String? initialValue;
+  final Color? navigationBarColor;
   final FutureOr<bool> Function(String) validate;
-  final TextInputType inputType;
+  final TextInputType? inputType;
   final bool autocorrect;
-  final List<String> suggestions;
+  final List<String>? suggestions;
 
   TextEditorPage(
     this.title,
@@ -22,11 +22,11 @@ class TextEditorPage extends StatefulWidget {
     {
       this.navigationBarColor,
       this.saveText,
-      this.initialValue: "",
+      this.initialValue = "",
       this.inputType,
-      this.autocorrect: false,
+      this.autocorrect = false,
       this.suggestions,
-      Key key,
+      Key? key,
     })
     : super(key: key);
 
@@ -35,7 +35,7 @@ class TextEditorPage extends StatefulWidget {
 }
 
 class _TextEditorPage extends State<TextEditorPage> {
-  TextEditingController _controller;
+  TextEditingController? _controller;
   bool _validating = false;
 
   @override
@@ -46,7 +46,7 @@ class _TextEditorPage extends State<TextEditorPage> {
 
   void _onSave() async {
     setState(() { _validating = true; });
-    var trimmed = _controller.text.trim();
+    var trimmed = _controller!.text.trim();
     var valid = await widget.validate(trimmed);
     if (!mounted) return;
     setState(() { _validating = false; });
@@ -56,10 +56,10 @@ class _TextEditorPage extends State<TextEditorPage> {
       showCupertinoDialog(
         context: context,
         builder: (context) => CupertinoAlertDialog(
-          title: Text(S.of(context).invalidValue),
+          title: Text(S.of(context)!.invalidValue),
           actions: [
             CupertinoDialogAction(
-              child: Text(S.of(context).close),
+              child: Text(S.of(context)!.close),
               isDefaultAction: true,
               onPressed: () { Navigator.of(context).pop(); },
             ),
@@ -80,7 +80,7 @@ class _TextEditorPage extends State<TextEditorPage> {
           padding: EdgeInsets.zero,
           child: _validating
             ? CupertinoActivityIndicator()
-            : Text(widget.saveText ?? S.of(context).save),
+            : Text(widget.saveText ?? S.of(context)!.save),
           onPressed: _validating ? null : _onSave,
         ),
       ),
@@ -100,7 +100,7 @@ class _TextEditorPage extends State<TextEditorPage> {
             enableSuggestions: widget.autocorrect,
           ),
         ]),
-        if (widget.suggestions != null) ...widget.suggestions.map((s) {
+        if (widget.suggestions != null) ...widget.suggestions!.map((s) {
           return MyListTile(
             title: Flexible(child: Text(
               s,
@@ -109,7 +109,7 @@ class _TextEditorPage extends State<TextEditorPage> {
             )),
             trailingChevron: false,
             background: MyColors.background,
-            onTap: () { _controller.text = s; },
+            onTap: () { _controller!.text = s; },
           );
         })
       ]),

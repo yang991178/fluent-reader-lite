@@ -3,21 +3,21 @@ import 'package:fluent_reader_lite/utils/store.dart';
 import 'package:flutter/cupertino.dart';
 
 class GroupsModel with ChangeNotifier {
-  Map<String, List<String>> _groups = Store.getGroups();
-  List<String> uncategorized = Store.getUncategorized();
+  Map<String?, List<String?>> _groups = Store.getGroups();
+  List<String>? uncategorized = Store.getUncategorized();
 
-  Map<String, List<String>> get groups => _groups;
-  set groups(Map<String, List<String>> groups) {
+  Map<String?, List<String?>> get groups => _groups;
+  set groups(Map<String?, List<String?>> groups) {
     _groups = groups;
     updateUncategorized();
     notifyListeners();
     Store.setGroups(groups);
   }
 
-  void updateUncategorized({force: false}) {
+  void updateUncategorized({force = false}) {
     if (uncategorized != null || force) {
       final sids = Set<String>.from(
-        Global.sourcesModel.getSources().map<String>((s) => s.id)
+        Global.sourcesModel!.getSources().map<String?>((s) => s.id)
       );
       for (var group in _groups.values) {
         for (var sid in group) {

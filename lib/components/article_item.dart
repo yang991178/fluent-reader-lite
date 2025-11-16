@@ -17,10 +17,10 @@ import 'package:url_launcher/url_launcher.dart';
 
 class ArticleItem extends StatefulWidget {
   final RSSItem item;
-  final RSSSource source;
+  final RSSSource? source;
   final Function openActionSheet;
 
-  ArticleItem(this.item, this.source, this.openActionSheet, {Key key}) : super(key: key);
+  ArticleItem(this.item, this.source, this.openActionSheet, {Key? key}) : super(key: key);
 
   @override
   _ArticleItemState createState() => _ArticleItemState();
@@ -34,19 +34,19 @@ class _ArticleItemState extends State<ArticleItem> {
       return route.isFirst;
     });
     if (!widget.item.hasRead) {
-      Global.itemsModel.updateItem(widget.item.id, read: true);
+      Global.itemsModel!.updateItem(widget.item.id, read: true);
     }
-    if (widget.source.openTarget == SourceOpenTarget.External) {
+    if (widget.source!.openTarget == SourceOpenTarget.External) {
       launch(widget.item.link, forceSafariVC: false, forceWebView: false);
     } else {
       var isSource = Navigator.of(context).canPop();
       if (ArticlePage.state.currentWidget != null) {
-        ArticlePage.state.currentState.loadNewItem(
+        ArticlePage.state.currentState!.loadNewItem(
           widget.item.id,
           isSource: isSource,
         );
       } else {
-        var navigator = Global.responsiveNavigator(context);
+        var navigator = Global.responsiveNavigator(context)!;
         while (navigator.canPop()) navigator.pop();
         navigator.pushNamed(
           "/article", 
@@ -84,15 +84,13 @@ class _ArticleItemState extends State<ArticleItem> {
     ),
   );
 
-  IconData _getDismissIcon(ItemSwipeOption option) {
+  IconData? _getDismissIcon(ItemSwipeOption option) {
     switch (option) {
       case ItemSwipeOption.ToggleRead:
-        return widget.item.hasRead
-          ? Icons.radio_button_checked
+        return widget.item.hasRead? Icons.radio_button_checked
           : Icons.radio_button_unchecked;
       case ItemSwipeOption.ToggleStar:
-        return widget.item.starred
-          ? CupertinoIcons.star
+        return widget.item.starred? CupertinoIcons.star
           : CupertinoIcons.star_fill;
       case ItemSwipeOption.Share:
         return CupertinoIcons.share;
@@ -108,11 +106,11 @@ class _ArticleItemState extends State<ArticleItem> {
     switch(option) {
       case ItemSwipeOption.ToggleRead:
         await Future.delayed(Duration(milliseconds: 200));
-        Global.itemsModel.updateItem(widget.item.id, read: !widget.item.hasRead);
+        Global.itemsModel!.updateItem(widget.item.id, read: !widget.item.hasRead);
         break;
       case ItemSwipeOption.ToggleStar:
         await Future.delayed(Duration(milliseconds: 200));
-        Global.itemsModel.updateItem(widget.item.id, starred: !widget.item.starred);
+        Global.itemsModel!.updateItem(widget.item.id, starred: !widget.item.starred);
         break;
       case ItemSwipeOption.Share:
         Share.share(widget.item.link);
@@ -122,7 +120,7 @@ class _ArticleItemState extends State<ArticleItem> {
         break;
       case ItemSwipeOption.OpenExternal:
         if (!widget.item.hasRead) {
-          Global.itemsModel.updateItem(widget.item.id, read: true);
+          Global.itemsModel!.updateItem(widget.item.id, read: true);
         }
         launch(widget.item.link, forceSafariVC: false, forceWebView: false);
         break;
@@ -132,9 +130,9 @@ class _ArticleItemState extends State<ArticleItem> {
   Future<bool> _onDismiss(DismissDirection direction) async {
     HapticFeedback.mediumImpact();
     if (direction == DismissDirection.startToEnd) {
-      _performSwipeAction(Global.feedsModel.swipeR);
+      _performSwipeAction(Global.feedsModel!.swipeR);
     } else {
-      _performSwipeAction(Global.feedsModel.swipeL);
+      _performSwipeAction(Global.feedsModel!.swipeL);
     }
     return false;
   }
@@ -152,8 +150,7 @@ class _ArticleItemState extends State<ArticleItem> {
     final _titleStyle = TextStyle(
       fontSize: 16,
       fontWeight: FontWeight.bold,
-      color: Global.feedsModel.dimRead && widget.item.hasRead
-        ? CupertinoColors.secondaryLabel.resolveFrom(context)
+      color: Global.feedsModel!.dimRead && widget.item.hasRead? CupertinoColors.secondaryLabel.resolveFrom(context)
         : CupertinoColors.label.resolveFrom(context),
     );
     final _snippetStyle = TextStyle(
@@ -166,12 +163,12 @@ class _ArticleItemState extends State<ArticleItem> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
           Expanded(child: Text(
-            widget.source.name,
+            widget.source!.name,
             style: _descStyle,
             overflow: TextOverflow.ellipsis,
           )),
           Row(children: [
-            if (!Global.feedsModel.dimRead && !widget.item.hasRead) _unreadIndicator,
+            if (!Global.feedsModel!.dimRead && !widget.item.hasRead) _unreadIndicator,
             if (widget.item.starred) _starredIndicator,
             TimeText(widget.item.date, style: _descStyle),
           ]),
@@ -186,7 +183,7 @@ class _ArticleItemState extends State<ArticleItem> {
             widget.item.title, 
             style: _titleStyle,
           ),
-          if (Global.feedsModel.showSnippet && widget.item.snippet.length > 0) Text(
+          if (Global.feedsModel!.showSnippet && widget.item.snippet.length > 0) Text(
             widget.item.snippet,
             style: _snippetStyle,
             overflow: TextOverflow.ellipsis,
@@ -223,12 +220,12 @@ class _ArticleItemState extends State<ArticleItem> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           itemTexts,
-                          if (Global.feedsModel.showThumb && widget.item.thumb != null) Padding(
+                          if (Global.feedsModel!.showThumb && widget.item.thumb != null) Padding(
                             padding: EdgeInsets.only(left: 4),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(4),
                               child: CachedNetworkImage(
-                                imageUrl: widget.item.thumb,
+                                imageUrl: widget.item.thumb!,
                                 width: 64, height: 64, fit: BoxFit.cover,
                                 placeholder: _imagePlaceholderBuilder,
                               ),
@@ -253,11 +250,11 @@ class _ArticleItemState extends State<ArticleItem> {
     return Dismissible(
       key: Key("D-${widget.item.id}"),
       background: DismissibleBackground(
-        _getDismissIcon(Global.feedsModel.swipeR),
+        _getDismissIcon(Global.feedsModel!.swipeR),
         true,
       ),
       secondaryBackground: DismissibleBackground(
-        _getDismissIcon(Global.feedsModel.swipeL),
+        _getDismissIcon(Global.feedsModel!.swipeL),
         false,
       ),
       dismissThresholds: _dismissThresholds,

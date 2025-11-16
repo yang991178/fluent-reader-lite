@@ -14,7 +14,7 @@ class SourcesPage extends StatelessWidget {
     return CupertinoPageScaffold(
       backgroundColor: MyColors.background,
       navigationBar: CupertinoNavigationBar(
-        middle: Text(S.of(context).subscriptions),
+        middle: Text(S.of(context)!.subscriptions),
       ),
       child: ListView(children: [
         Consumer<SourcesModel>(

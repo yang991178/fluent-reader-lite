@@ -8,7 +8,7 @@ import 'package:flutter/cupertino.dart';
 class AboutPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final String version = ModalRoute.of(context).settings.arguments ?? "1.0.0";
+    final String version = ModalRoute.of(context)!.settings.arguments as String? ?? "1.0.0";
     final nameStyle = TextStyle(
       color: CupertinoColors.label.resolveFrom(context),
       fontSize: 18,
@@ -28,7 +28,7 @@ class AboutPage extends StatelessWidget {
     return CupertinoPageScaffold(
       backgroundColor: MyColors.background,
       navigationBar: CupertinoNavigationBar(
-        middle: Text(S.of(context).about),
+        middle: Text(S.of(context)!.about),
       ),
       child: ListView(
         children: [
@@ -38,18 +38,18 @@ class AboutPage extends StatelessWidget {
               children: [
                 Image.asset("assets/icons/logo.png", width: 80, height: 80),
                 Text("Fluent Reader Lite", style: nameStyle),
-                Text("${S.of(context).version} $version", style: versionStyle),
+                Text("${S.of(context)!.version} $version", style: versionStyle),
                 Text("Copyright © 2021 Haoyuan Liu. All rights reserved.", style: copyrightStyle),
               ],
             ),
           ),
           ListTileGroup([
             MyListTile(
-              title: Text(S.of(context).openSource),
+              title: Text(S.of(context)!.openSource),
               onTap: () { Utils.openExternal("https://github.com/yang991178/fluent-reader-lite"); },
             ),
             MyListTile(
-              title: Text(S.of(context).feedback),
+              title: Text(S.of(context)!.feedback),
               onTap: () { Utils.openExternal("https://github.com/yang991178/fluent-reader-lite/issues"); },
               withDivider: false,
             ),
