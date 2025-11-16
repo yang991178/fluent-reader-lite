@@ -24,7 +24,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 import 'generated/l10n.dart';
 import 'models/global_model.dart';
 
@@ -36,7 +35,6 @@ void main() async {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
     ));
-    WebView.platform = SurfaceAndroidWebView();
   }
   runApp(MyApp());
   SystemChannels.lifecycle.setMessageHandler((msg) {

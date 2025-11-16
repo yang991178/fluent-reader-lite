@@ -33,7 +33,15 @@ class ArticlePage extends StatefulWidget {
 enum _ArticleLoadState { Loading, Success, Failure }
 
 class ArticlePageState extends State<ArticlePage> {
-  WebViewController _controller;
+  WebViewController get _controller => WebViewController()
+    ..setJavaScriptMode(JavaScriptMode.unrestricted)
+    ..setNavigationDelegate(
+      NavigationDelegate(
+        onPageStarted: _onPageReady,
+        onPageFinished: _onWebpageReady,
+        onNavigationRequest: _onNavigate,
+      ),
+    );
   int requestId = 0;
   _ArticleLoadState loaded = _ArticleLoadState.Loading;
   bool navigated = false;
@@ -55,7 +63,7 @@ class ArticlePageState extends State<ArticlePage> {
   }
 
   Future<NavigationDecision> _onNavigate(NavigationRequest request) async {
-    if (navigated && request.isForMainFrame) {
+    if (navigated && request.isMainFrame) {
       final internal = Global.globalModel.inAppBrowser;
       await launch(request.url,
           forceSafariVC: internal, forceWebView: internal);
@@ -99,7 +107,7 @@ class ArticlePageState extends State<ArticlePage> {
       var brightness = Global.currentBrightness(context);
       localUrl += "&t=${brightness.index}";
     }
-    _controller.loadUrl(localUrl);
+    _controller.loadRequest(Uri.parse(localUrl));
   }
 
   void _onPageReady(_) async {
@@ -140,7 +148,7 @@ class ArticlePageState extends State<ArticlePage> {
         break;
       case SourceOpenTarget.Webpage:
       case SourceOpenTarget.External:
-        _controller.loadUrl(item.link);
+        _controller.loadRequest(Uri.parse(item.link));
         break;
     }
   }
@@ -187,16 +195,9 @@ class ArticlePageState extends State<ArticlePage> {
             index: loaded.index,
             children: [
               Center(child: CupertinoActivityIndicator()),
-              WebView(
+              WebViewWidget(
                 key: Key("a-$iid-${_target.index}"),
-                javascriptMode: JavascriptMode.unrestricted,
-                onWebViewCreated: (WebViewController webViewController) {
-                  _controller = webViewController;
-                  _loadOpenTarget(item, source);
-                },
-                onPageStarted: _onPageReady,
-                onPageFinished: _onWebpageReady,
-                navigationDelegate: _onNavigate,
+                controller: _controller,
               ),
               Center(
                 child: Column(

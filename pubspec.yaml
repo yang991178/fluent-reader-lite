@@ -25,33 +25,33 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  provider: ^6.0.3
-  tuple: ^2.0.0
-  shared_preferences: ^2.0.15
+  provider: ^6.1.5+1
+  tuple: ^2.0.2
+  shared_preferences: ^2.2.2
   intl: ^0.17.0
-  http: ^0.13.4
-  html: ^0.15.0
-  webview_flutter: ^3.0.4
-  jaguar: ^3.0.11
+  http: ^0.13.6
+  html: ^0.15.4
+  webview_flutter: ^4.4.2
+  jaguar: ^3.1.4
   jaguar_flutter_asset: ^3.0.0
-  url_launcher: ^6.0.9
-  sqflite: ^2.0.0+3
-  path: ^1.8.0
+  url_launcher: ^6.1.11
+  sqflite: ^2.2.8+4
+  path: ^1.8.2
   share: ^2.0.4
-  package_info_plus: ^4.1.0
-  crypto: ^3.0.1
-  responsive_builder: ^0.4.1
-  cached_network_image: ^3.2.1
-  flutter_cache_manager: ^3.3.0
+  package_info_plus: ^4.2.0
+  crypto: ^3.0.3
+  responsive_builder: ^0.7.1
+  cached_network_image: ^3.2.3
+  flutter_cache_manager: ^3.3.1
   lpinyin: ^2.0.3
   uni_links: ^0.5.1
-  modal_bottom_sheet: ^3.0.0-pre
-  overlay_dialog: ^0.2.0
+  modal_bottom_sheet: ^2.1.2
+  overlay_dialog: ^0.2.2
 
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.0
+  cupertino_icons: ^1.0.6
 
 dev_dependencies:
   flutter_test:
