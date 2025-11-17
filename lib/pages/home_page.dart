@@ -49,10 +49,10 @@ class _HomePageState extends State<HomePage> {
         showCupertinoDialog(
           context: context,
           builder: (context) => CupertinoAlertDialog(
-            title: Text(S.of(context)!.serviceExists),
+            title: Text(S.of(context).serviceExists),
             actions: [
               CupertinoDialogAction(
-                child: Text(S.of(context)!.confirm),
+                child: Text(S.of(context).confirm),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
@@ -117,11 +117,11 @@ class _HomePageState extends State<HomePage> {
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.timeline),
-            label: S.of(context)!.feed,
+            label: S.of(context).feed,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.list),
-            label: S.of(context)!.subscriptions,
+            label: S.of(context).subscriptions,
           ),
         ],
       ),

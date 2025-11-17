@@ -31,21 +31,20 @@ class _GroupListPageState extends State<GroupListPage> {
   @override
   Widget build(BuildContext context) {
     final navigationBar = CupertinoSliverNavigationBar(
-      largeTitle: Text(S.of(context)!.groups),
+      largeTitle: Text(S.of(context).groups),
       automaticallyImplyLeading: false,
       backgroundColor: Global.isTablet ? CupertinoColors.systemBackground : null,
       leading: CupertinoButton(
-        minSize: 36,
         padding: EdgeInsets.zero,
-        child: Text(S.of(context)!.cancel),
-        onPressed: () { Navigator.of(context).pop(); },
+        child: Text(S.of(context).cancel),
+        onPressed: () { Navigator.of(context).pop(); }, minimumSize: Size(36, 36),
       ),
     );
     final allSources = Consumer<SourcesModel>(
       builder: (context, sourcesModel, child) {
         var count = _unreadCount(sourcesModel.getSources());
         return SliverToBoxAdapter(child: MyListTile(
-          title: Text(S.of(context)!.allSubscriptions),
+          title: Text(S.of(context).allSubscriptions),
           trailing: count > 0 ? Badge(count) : null,
           onTap: () { Navigator.of(context).pop(List<String>.empty()); },
           background: CupertinoColors.systemBackground,
@@ -66,7 +65,7 @@ class _GroupListPageState extends State<GroupListPage> {
             List<String?>? group;
             final isUncategorized = groupsModel.showUncategorized && index == 0;
             if (isUncategorized) {
-              groupName = S.of(context)!.uncategorized;
+              groupName = S.of(context).uncategorized;
               group = groupsModel.uncategorized;
             } else {
               groupName = groupNames[index];

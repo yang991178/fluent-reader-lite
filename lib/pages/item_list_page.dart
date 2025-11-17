@@ -15,7 +15,7 @@ import 'package:fluent_reader_lite/utils/global.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' hide Badge;
 import 'package:provider/provider.dart';
-import 'package:share/share.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:tuple/tuple.dart';
 
 import 'home_page.dart';
@@ -94,12 +94,12 @@ class _ItemListPageState extends State<ItemListPage> {
         builder: (context) {
           final feed = getFeed()!;
           final sheet = CupertinoActionSheet(
-            title: Text(S.of(context)!.filter),
+            title: Text(S.of(context).filter),
             actions: [
               CupertinoActionSheetAction(
                 child: Row(children: [
                   Icon(CupertinoIcons.today),
-                  Text(S.of(context)!.allArticles),
+                  Text(S.of(context).allArticles),
                   _iconPadding,
                 ], mainAxisAlignment: MainAxisAlignment.spaceBetween),
                 onPressed: () {
@@ -111,7 +111,7 @@ class _ItemListPageState extends State<ItemListPage> {
               CupertinoActionSheetAction(
                 child: Row(children: [
                   Icon(Icons.radio_button_checked),
-                  Text(S.of(context)!.unreadOnly),
+                  Text(S.of(context).unreadOnly),
                   _iconPadding,
                 ], mainAxisAlignment: MainAxisAlignment.spaceBetween),
                 onPressed: () {
@@ -123,7 +123,7 @@ class _ItemListPageState extends State<ItemListPage> {
               CupertinoActionSheetAction(
                 child: Row(children: [
                   Icon(CupertinoIcons.star_fill),
-                  Text(S.of(context)!.starredOnly),
+                  Text(S.of(context).starredOnly),
                   _iconPadding,
                 ], mainAxisAlignment: MainAxisAlignment.spaceBetween),
                 onPressed: () {
@@ -138,8 +138,8 @@ class _ItemListPageState extends State<ItemListPage> {
                   Icon(CupertinoIcons.search,
                       color: CupertinoColors.destructiveRed),
                   Text(feed.search.length > 0
-                      ? S.of(context)!.editKeyword
-                      : S.of(context)!.search),
+                      ? S.of(context).editKeyword
+                      : S.of(context).search),
                   _iconPadding,
                 ], mainAxisAlignment: MainAxisAlignment.spaceBetween),
                 onPressed: () {
@@ -153,7 +153,7 @@ class _ItemListPageState extends State<ItemListPage> {
                   child: Row(children: [
                     Icon(CupertinoIcons.clear_fill,
                         color: CupertinoColors.destructiveRed),
-                    Text(S.of(context)!.clearSearch),
+                    Text(S.of(context).clearSearch),
                     _iconPadding,
                   ], mainAxisAlignment: MainAxisAlignment.spaceBetween),
                   onPressed: () {
@@ -164,7 +164,7 @@ class _ItemListPageState extends State<ItemListPage> {
                 ),
             ],
             cancelButton: CupertinoActionSheetAction(
-              child: Text(S.of(context)!.cancel),
+              child: Text(S.of(context).cancel),
               onPressed: () {
                 Navigator.of(context, rootNavigator: true).pop();
               },
@@ -177,9 +177,9 @@ class _ItemListPageState extends State<ItemListPage> {
   void _editSearchKeyword() async {
     String? keyword = await Navigator.of(context).push(CupertinoPageRoute(
       builder: (context) => TextEditorPage(
-        S.of(context)!.editKeyword,
+        S.of(context).editKeyword,
         (v) => v.trim().length > 0,
-        saveText: S.of(context)!.search,
+        saveText: S.of(context).search,
         initialValue: getFeed()!.search,
         navigationBarColor: CupertinoColors.systemBackground,
         autocorrect: true,
@@ -198,10 +198,12 @@ class _ItemListPageState extends State<ItemListPage> {
           actions: [
             CupertinoActionSheetAction(
               child: Row(children: [
-                Icon(item.hasRead? Icons.radio_button_checked
+                Icon(item.hasRead
+                    ? Icons.radio_button_checked
                     : Icons.radio_button_unchecked),
-                Text(item.hasRead? S.of(context)!.markUnread
-                    : S.of(context)!.markRead),
+                Text(item.hasRead
+                    ? S.of(context).markUnread
+                    : S.of(context).markRead),
                 _iconPadding,
               ], mainAxisAlignment: MainAxisAlignment.spaceBetween),
               onPressed: () {
@@ -211,9 +213,11 @@ class _ItemListPageState extends State<ItemListPage> {
             ),
             CupertinoActionSheetAction(
               child: Row(children: [
-                Icon(item.starred? CupertinoIcons.star
+                Icon(item.starred
+                    ? CupertinoIcons.star
                     : CupertinoIcons.star_fill),
-                Text(item.starred? S.of(context)!.unstar : S.of(context)!.star),
+                Text(
+                    item.starred ? S.of(context).unstar : S.of(context).star),
                 _iconPadding,
               ], mainAxisAlignment: MainAxisAlignment.spaceBetween),
               onPressed: () {
@@ -224,7 +228,7 @@ class _ItemListPageState extends State<ItemListPage> {
             CupertinoActionSheetAction(
               child: Row(children: [
                 Icon(CupertinoIcons.arrow_up),
-                Text(S.of(context)!.markAbove),
+                Text(S.of(context).markAbove),
                 _iconPadding,
               ], mainAxisAlignment: MainAxisAlignment.spaceBetween),
               onPressed: () {
@@ -236,33 +240,34 @@ class _ItemListPageState extends State<ItemListPage> {
             CupertinoActionSheetAction(
               child: Row(children: [
                 Icon(CupertinoIcons.arrow_down),
-                Text(S.of(context)!.markBelow),
+                Text(S.of(context).markBelow),
                 _iconPadding,
               ], mainAxisAlignment: MainAxisAlignment.spaceBetween),
               onPressed: () {
                 Navigator.of(context, rootNavigator: true).pop();
-                Global.itemsModel!.markAllRead(getFeed()!.sids!, date: item.date);
+                Global.itemsModel!
+                    .markAllRead(getFeed()!.sids!, date: item.date);
               },
             ),
             CupertinoActionSheetAction(
               child: Row(children: [
                 Icon(CupertinoIcons.share),
-                Text(S.of(context)!.share),
+                Text(S.of(context).share),
                 _iconPadding,
               ], mainAxisAlignment: MainAxisAlignment.spaceBetween),
               onPressed: () {
                 Navigator.of(context, rootNavigator: true).pop();
                 final media = MediaQuery.of(context);
-                Share.share(
-                  item.link,
+                SharePlus.instance.share(ShareParams(
+                  uri: Uri.parse(item.link),
                   sharePositionOrigin: Rect.fromLTWH(
                       160, media.size.height - media.padding.bottom, 0, 0),
-                );
+                ));
               },
             ),
           ],
           cancelButton: CupertinoActionSheetAction(
-            child: Text(S.of(context)!.cancel),
+            child: Text(S.of(context).cancel),
             onPressed: () {
               Navigator.of(context, rootNavigator: true).pop();
             },
@@ -278,13 +283,13 @@ class _ItemListPageState extends State<ItemListPage> {
           String text;
           switch (getFeed()!.filterType) {
             case FilterType.Unread:
-              text = S.of(context)!.unread;
+              text = S.of(context).unread;
               break;
             case FilterType.Starred:
-              text = S.of(context)!.starred;
+              text = S.of(context).starred;
               break;
             default:
-              text = S.of(context)!.all;
+              text = S.of(context).all;
               break;
           }
           return Text(text, overflow: TextOverflow.ellipsis);
@@ -341,7 +346,7 @@ class _ItemListPageState extends State<ItemListPage> {
               padding: EdgeInsets.zero,
               child: Icon(
                 CupertinoIcons.checkmark_circle,
-                semanticLabel: S.of(context)!.markAll,
+                semanticLabel: S.of(context).markAll,
               ),
               onPressed: _openMarkAllModal,
             ),
@@ -355,7 +360,7 @@ class _ItemListPageState extends State<ItemListPage> {
                             feed.search.length > 0)
                         ? CupertinoIcons.line_horizontal_3_decrease_circle_fill
                         : CupertinoIcons.line_horizontal_3_decrease_circle,
-                    semanticLabel: S.of(context)!.filter,
+                    semanticLabel: S.of(context).filter,
                   ),
                   onPressed: _openFilterModal,
                 );
@@ -390,7 +395,7 @@ class _ItemListPageState extends State<ItemListPage> {
         padding: EdgeInsets.symmetric(vertical: 20),
         child: Center(
             child: feed.allLoaded
-                ? Text(S.of(context)!.allLoaded,
+                ? Text(S.of(context).allLoaded,
                     style: TextStyle(
                       color: CupertinoColors.tertiaryLabel.resolveFrom(context),
                     ))

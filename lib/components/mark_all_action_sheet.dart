@@ -20,28 +20,28 @@ class MarkAllActionSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final sheet = CupertinoActionSheet(
-      title: Text(S.of(context)!.markAll),
+      title: Text(S.of(context).markAll),
       actions: [
         CupertinoActionSheetAction(
           isDestructiveAction: true,
-          child: Text(S.of(context)!.allArticles),
+          child: Text(S.of(context).allArticles),
           onPressed: () { _markAll(context); },
         ),
         CupertinoActionSheetAction(
-          child: Text(S.of(context)!.daysAgo(1)),
+          child: Text(S.of(context).daysAgo(1)),
           onPressed: () { _markAll(context, date: _offset(1)); },
         ),
         CupertinoActionSheetAction(
-          child: Text(S.of(context)!.daysAgo(3)),
+          child: Text(S.of(context).daysAgo(3)),
           onPressed: () { _markAll(context, date: _offset(3)); },
         ),
         CupertinoActionSheetAction(
-          child: Text(S.of(context)!.daysAgo(7)),
+          child: Text(S.of(context).daysAgo(7)),
           onPressed: () { _markAll(context, date: _offset(7)); },
         ),
       ],
       cancelButton: CupertinoActionSheetAction(
-        child: Text(S.of(context)!.cancel),
+        child: Text(S.of(context).cancel),
         onPressed: () { 
           Navigator.of(context, rootNavigator: true).pop();
         },

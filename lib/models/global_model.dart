@@ -3,16 +3,15 @@ import 'dart:io';
 import 'package:fluent_reader_lite/utils/store.dart';
 import 'package:flutter/material.dart';
 
-enum ThemeSetting {
-  Default, Light, Dark
-}
+enum ThemeSetting { Default, Light, Dark }
 
 class GlobalModel with ChangeNotifier {
   ThemeSetting _theme = Store.getTheme();
   Locale? _locale = Store.getLocale();
   int _keepItemsDays = Store.sp.getInt(StoreKeys.KEEP_ITEMS_DAYS) ?? 21;
   bool _syncOnStart = Store.sp.getBool(StoreKeys.SYNC_ON_START) ?? true;
-  bool _inAppBrowser = Store.sp.getBool(StoreKeys.IN_APP_BROWSER) ?? Platform.isIOS;
+  bool _inAppBrowser =
+      Store.sp.getBool(StoreKeys.IN_APP_BROWSER) ?? Platform.isIOS;
   double? _textScale = Store.sp.getDouble(StoreKeys.TEXT_SCALE);
 
   ThemeSetting get theme => _theme;
@@ -23,9 +22,12 @@ class GlobalModel with ChangeNotifier {
       Store.setTheme(value);
     }
   }
+
   Brightness? getBrightness() {
-    if (_theme == ThemeSetting.Default) return null;
-    else return _theme == ThemeSetting.Light ? Brightness.light : Brightness.dark;
+    if (_theme == ThemeSetting.Default)
+      return null;
+    else
+      return _theme == ThemeSetting.Light ? Brightness.light : Brightness.dark;
   }
 
   Locale? get locale => _locale;

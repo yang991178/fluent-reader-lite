@@ -85,7 +85,7 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
         });
       } else if (result.length > 1) {
         setState(() {
-          title = S.of(context)!.uncategorized;
+          title = S.of(context).uncategorized;
           sids = Global.groupsModel!.uncategorized;
         });
       } else {
@@ -157,7 +157,7 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    S.of(context)!.unreadSourceTip,
+                    S.of(context).unreadSourceTip,
                     style: TextStyle(
                       color: CupertinoColors.label.resolveFrom(context),
                       fontWeight: FontWeight.bold,
@@ -165,10 +165,9 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
                   ),
                   Padding(padding: EdgeInsets.only(bottom: 6)),
                   CupertinoButton(
-                    minSize: 28,
                     padding: EdgeInsets.zero,
-                    child: Text(S.of(context)!.confirm),
-                    onPressed: _dismissTip,
+                    child: Text(S.of(context).confirm),
+                    onPressed: _dismissTip, minimumSize: Size(28, 28),
                   ),
                 ],
               )),
@@ -193,7 +192,7 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
                   : MediaQuery.of(context).size.width - 60,
             ),
             child: Text(
-              title ?? S.of(context)!.subscriptions,
+              title ?? S.of(context).subscriptions,
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -214,10 +213,9 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
             ? MyColors.tileBackground
             : CupertinoColors.systemBackground,
         leading: CupertinoButton(
-          minSize: 36,
           padding: EdgeInsets.zero,
-          child: Text(S.of(context)!.groups),
-          onPressed: _openGroups,
+          child: Text(S.of(context).groups),
+          onPressed: _openGroups, minimumSize: Size(36, 36),
         ),
         trailing: Container(
           transform: Matrix4.translationValues(12, 0, 0),
@@ -228,7 +226,7 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
                 padding: EdgeInsets.zero,
                 child: Icon(
                   CupertinoIcons.checkmark_circle,
-                  semanticLabel: S.of(context)!.markAll,
+                  semanticLabel: S.of(context).markAll,
                 ),
                 onPressed: _openMarkAllModal,
               ),
@@ -236,7 +234,7 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
                 padding: EdgeInsets.zero,
                 child: Icon(
                   CupertinoIcons.settings,
-                  semanticLabel: S.of(context)!.settings,
+                  semanticLabel: S.of(context).settings,
                 ),
                 onPressed: _openSettings,
               ),
@@ -287,8 +285,8 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
                 children: [
                   Text(
                     syncModel.lastSyncSuccess
-                        ? S.of(context)!.lastSyncSuccess
-                        : S.of(context)!.lastSyncFailure,
+                        ? S.of(context).lastSyncSuccess
+                        : S.of(context).lastSyncFailure,
                     style: syncStyle,
                   ),
                   Text(
@@ -317,7 +315,7 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
                 .fold(0, (dynamic c, s) => c + s!.unreadCount);
             return SliverToBoxAdapter(
                 child: MyListTile(
-              title: Text(S.of(context)!.allArticles),
+              title: Text(S.of(context).allArticles),
               trailing: count > 0 ? Badge(count) : null,
               trailingChevron: false,
               onTap: () async {

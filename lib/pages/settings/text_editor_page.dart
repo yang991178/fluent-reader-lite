@@ -56,10 +56,10 @@ class _TextEditorPage extends State<TextEditorPage> {
       showCupertinoDialog(
         context: context,
         builder: (context) => CupertinoAlertDialog(
-          title: Text(S.of(context)!.invalidValue),
+          title: Text(S.of(context).invalidValue),
           actions: [
             CupertinoDialogAction(
-              child: Text(S.of(context)!.close),
+              child: Text(S.of(context).close),
               isDefaultAction: true,
               onPressed: () { Navigator.of(context).pop(); },
             ),
@@ -80,7 +80,7 @@ class _TextEditorPage extends State<TextEditorPage> {
           padding: EdgeInsets.zero,
           child: _validating
             ? CupertinoActivityIndicator()
-            : Text(widget.saveText ?? S.of(context)!.save),
+            : Text(widget.saveText ?? S.of(context).save),
           onPressed: _validating ? null : _onSave,
         ),
       ),

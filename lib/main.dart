@@ -142,10 +142,11 @@ class MyApp extends StatelessWidget {
           },
           builder: (context, child) {
             final mediaQueryData = MediaQuery.of(context);
-            if (Global.globalModel!.textScale == null) return child!;
+            final textScale = Global.globalModel!.textScale;
+            if (textScale == null) return child!;
             return MediaQuery(
                 data: mediaQueryData.copyWith(
-                    textScaleFactor: Global.globalModel!.textScale),
+                    textScaler: TextScaler.linear(textScale)),
                 child: child!);
           },
         ),

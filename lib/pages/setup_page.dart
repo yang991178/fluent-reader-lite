@@ -25,7 +25,7 @@ class SetupPage extends StatelessWidget {
       child: Column(
         children: [
           Image.asset("assets/icons/logo.png", width: 80, height: 80),
-          Text(S.of(context)!.welcome, style: welcomeStyle),
+          Text(S.of(context).welcome, style: welcomeStyle),
         ],
       ),
     );
@@ -55,16 +55,16 @@ class SetupPage extends StatelessWidget {
         },
         withDivider: false,
       ),
-    ], title: S.of(context)!.service);
+    ], title: S.of(context).service);
     final settings = ListTileGroup([
       MyListTile(
-        title: Text(S.of(context)!.general),
+        title: Text(S.of(context).general),
         onTap: () {
           _configure(context, "/settings/general");
         },
       ),
       MyListTile(
-        title: Text(S.of(context)!.about),
+        title: Text(S.of(context).about),
         onTap: () async {
           var infos = await PackageInfo.fromPlatform();
           Navigator.of(context)
@@ -72,7 +72,7 @@ class SetupPage extends StatelessWidget {
         },
         withDivider: false,
       ),
-    ], title: S.of(context)!.settings);
+    ], title: S.of(context).settings);
     final page = CupertinoPageScaffold(
       backgroundColor: MyColors.background,
       child: ListView(children: [

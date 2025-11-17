@@ -51,7 +51,7 @@ class _FeverPageState extends State<FeverPage> {
   void _editEndpoint() async {
     final String? endpoint = await Navigator.of(context).push(CupertinoPageRoute(
       builder: (context) => TextEditorPage(
-        S.of(context)!.endpoint, 
+        S.of(context).endpoint, 
         Utils.testUrl,
         initialValue: _endpoint,
         inputType: TextInputType.url,
@@ -64,7 +64,7 @@ class _FeverPageState extends State<FeverPage> {
   void _editUsername() async {
     final String? username = await Navigator.of(context).push(CupertinoPageRoute(
       builder: (context) => TextEditorPage(
-        S.of(context)!.username, 
+        S.of(context).username, 
         Utils.notEmpty,
         initialValue: _username,
       ),
@@ -79,7 +79,7 @@ class _FeverPageState extends State<FeverPage> {
   void _editPassword() async {
     final String? password = await Navigator.of(context).push(CupertinoPageRoute(
       builder: (context) => TextEditorPage(
-        S.of(context)!.password, 
+        S.of(context).password, 
         Utils.notEmpty,
         inputType: TextInputType.visiblePassword,
       ),
@@ -130,18 +130,18 @@ class _FeverPageState extends State<FeverPage> {
     final bool? confirmed = await showCupertinoDialog(
       context: context,
       builder: (context) => CupertinoAlertDialog(
-        title: Text(S.of(context)!.logOutWarning),
+        title: Text(S.of(context).logOutWarning),
         actions: [
           CupertinoDialogAction(
             isDefaultAction: true,
-            child: Text(S.of(context)!.cancel),
+            child: Text(S.of(context).cancel),
             onPressed: () {
               Navigator.of(context).pop();
             },
           ),
           CupertinoDialogAction(
             isDestructiveAction: true,
-            child: Text(S.of(context)!.confirm),
+            child: Text(S.of(context).confirm),
             onPressed: () {
               Navigator.of(context).pop(true);
             },
@@ -167,31 +167,31 @@ class _FeverPageState extends State<FeverPage> {
   Widget build(BuildContext context) {
     final inputs = ListTileGroup([
       MyListTile(
-        title: Text(S.of(context)!.endpoint),
+        title: Text(S.of(context).endpoint),
         trailing: Text(_endpoint!.length == 0
-          ? S.of(context)!.enter
-          : S.of(context)!.entered),
+          ? S.of(context).enter
+          : S.of(context).entered),
         onTap: _editEndpoint,
       ),
       MyListTile(
-        title: Text(S.of(context)!.username),
+        title: Text(S.of(context).username),
         trailing: Text(_username!.length == 0
-          ? S.of(context)!.enter
-          : S.of(context)!.entered),
+          ? S.of(context).enter
+          : S.of(context).entered),
         onTap: _editUsername,
       ),
       MyListTile(
-        title: Text(S.of(context)!.password),
+        title: Text(S.of(context).password),
         trailing: Text(_password.length == 0 && _apiKey == null
-          ? S.of(context)!.enter
-          : S.of(context)!.entered),
+          ? S.of(context).enter
+          : S.of(context).entered),
         onTap: _editPassword,
         withDivider: false,
       ),
-    ], title: S.of(context)!.credentials);
+    ], title: S.of(context).credentials);
     final syncItems = ListTileGroup([
       MyListTile(
-        title: Text(S.of(context)!.fetchLimit),
+        title: Text(S.of(context).fetchLimit),
         trailing: Text(_fetchLimit.toString()),
         trailingChevron: false,
         withDivider: false,
@@ -207,7 +207,7 @@ class _FeverPageState extends State<FeverPage> {
         trailingChevron: false,
         withDivider: false,
       ),
-    ], title: S.of(context)!.sync);
+    ], title: S.of(context).sync);
     final saveButton = Selector<SyncModel, bool>(
       selector: (context, syncModel) => syncModel.syncing,
       builder: (context, syncing, child) {
@@ -221,7 +221,7 @@ class _FeverPageState extends State<FeverPage> {
           MyListTile(
             title: Expanded(child: Center(
               child: Text(
-                S.of(context)!.save,
+                S.of(context).save,
                 style: saveStyle,
               )
             )),
@@ -239,7 +239,7 @@ class _FeverPageState extends State<FeverPage> {
           MyListTile(
             title: Expanded(child: Center(
               child: Text(
-                S.of(context)!.logOut,
+                S.of(context).logOut,
                 style: TextStyle(
                   color: (_validating || syncing)
                     ? CupertinoColors.secondaryLabel.resolveFrom(context)

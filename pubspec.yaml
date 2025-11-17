@@ -18,7 +18,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.4+11
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: '>=3.3.0 <4.0.0'
 
 dependencies:
   flutter:
@@ -28,8 +28,8 @@ dependencies:
   provider: ^6.1.5+1
   tuple: ^2.0.2
   shared_preferences: ^2.2.2
-  intl: ^0.17.0
-  http: ^0.13.6
+  intl: ^0.20.2
+  http: ^1.6.0
   html: ^0.15.4
   webview_flutter: ^4.4.2
   jaguar: ^3.1.4
@@ -37,15 +37,15 @@ dependencies:
   url_launcher: ^6.1.11
   sqflite: ^2.2.8+4
   path: ^1.8.2
-  share: ^2.0.4
-  package_info_plus: ^4.2.0
+  share_plus: ^12.0.1
+  package_info_plus: ^9.0.0
   crypto: ^3.0.3
   responsive_builder: ^0.7.1
   cached_network_image: ^3.2.3
   flutter_cache_manager: ^3.3.1
   lpinyin: ^2.0.3
   uni_links: ^0.5.1
-  modal_bottom_sheet: ^2.1.2
+  modal_bottom_sheet: ^3.0.0
   overlay_dialog: ^0.2.2
 
 
@@ -53,6 +53,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.6
 
+  share: any
 dev_dependencies:
   flutter_test:
     sdk: flutter

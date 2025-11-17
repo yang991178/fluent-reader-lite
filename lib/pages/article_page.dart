@@ -15,8 +15,8 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:tuple/tuple.dart';
-import 'package:share/share.dart';
 import 'package:fluent_reader_lite/components/cupertino_toolbar.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -33,15 +33,7 @@ class ArticlePage extends StatefulWidget {
 enum _ArticleLoadState { Loading, Success, Failure }
 
 class ArticlePageState extends State<ArticlePage> {
-  WebViewController get _controller => WebViewController()
-    ..setJavaScriptMode(JavaScriptMode.unrestricted)
-    ..setNavigationDelegate(
-      NavigationDelegate(
-        onPageStarted: _onPageReady,
-        onPageFinished: _onWebpageReady,
-        onNavigationRequest: _onNavigate,
-      ),
-    );
+  late WebViewController _controller = getNewWebviewController();
   int requestId = 0;
   _ArticleLoadState loaded = _ArticleLoadState.Loading;
   bool navigated = false;
@@ -60,6 +52,23 @@ class ArticlePageState extends State<ArticlePage> {
       _target = null;
       if (isSource != null) isSourceFeed = isSource;
     });
+  }
+
+  WebViewController getNewWebviewController() {
+    return WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageStarted: _onPageReady,
+          onPageFinished: _onWebpageReady,
+          onNavigationRequest: _onNavigate,
+        ),
+      );
+  }
+
+  void loadRequest(Uri uri) {
+    _controller = getNewWebviewController();
+    _controller.loadRequest(uri);
   }
 
   Future<NavigationDecision> _onNavigate(NavigationRequest request) async {
@@ -107,7 +116,7 @@ class ArticlePageState extends State<ArticlePage> {
       var brightness = Global.currentBrightness(context);
       localUrl += "&t=${brightness.index}";
     }
-    _controller.loadRequest(Uri.parse(localUrl));
+    loadRequest(Uri.parse(localUrl));
   }
 
   void _onPageReady(_) async {
@@ -134,11 +143,9 @@ class ArticlePageState extends State<ArticlePage> {
   }
 
   void _loadOpenTarget(RSSItem item, RSSSource? source) {
-    setState(() {
-      requestId += 1;
-      loaded = _ArticleLoadState.Loading;
-      navigated = false;
-    });
+    requestId += 1;
+    loaded = _ArticleLoadState.Loading;
+    navigated = false;
     switch (_target) {
       case SourceOpenTarget.Local:
         _loadHtml(item, source);
@@ -148,7 +155,7 @@ class ArticlePageState extends State<ArticlePage> {
         break;
       case SourceOpenTarget.Webpage:
       case SourceOpenTarget.External:
-        _controller.loadRequest(Uri.parse(item.link));
+        loadRequest(Uri.parse(item.link));
         break;
       case null:
         break;
@@ -167,19 +174,19 @@ class ArticlePageState extends State<ArticlePage> {
         child: Icon(
           Icons.rss_feed,
           color: resolvedDarkGrey,
-          semanticLabel: S.of(context)!.rssText,
+          semanticLabel: S.of(context).rssText,
         ),
         padding: EdgeInsets.symmetric(horizontal: 8),
       ),
       1: Icon(
         Icons.article_outlined,
         color: resolvedDarkGrey,
-        semanticLabel: S.of(context)!.loadFull,
+        semanticLabel: S.of(context).loadFull,
       ),
       2: Icon(
         Icons.language,
         color: resolvedDarkGrey,
-        semanticLabel: S.of(context)!.loadWebpage,
+        semanticLabel: S.of(context).loadWebpage,
       ),
     };
     return Selector2<ItemsModel, SourcesModel, Tuple2<RSSItem, RSSSource?>>(
@@ -191,7 +198,10 @@ class ArticlePageState extends State<ArticlePage> {
       builder: (context, tuple, child) {
         var item = tuple.item1;
         var source = tuple.item2;
-        if (_target == null) _target = source!.openTarget;
+        if (_target == null) {
+          _target = source!.openTarget;
+          _loadOpenTarget(item, source);
+        }
         final body = SafeArea(
           child: IndexedStack(
             index: loaded.index,
@@ -206,14 +216,15 @@ class ArticlePageState extends State<ArticlePage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      S.of(context)!.wentWrong,
+                      S.of(context).wentWrong,
                       style: TextStyle(
                           color: CupertinoColors.label.resolveFrom(context)),
                     ),
                     CupertinoButton(
-                      child: Text(S.of(context)!.retry),
+                      child: Text(S.of(context).retry),
                       onPressed: () {
                         _loadOpenTarget(item, source);
+                        setState(() {});
                       },
                     ),
                   ],
@@ -230,6 +241,7 @@ class ArticlePageState extends State<ArticlePage> {
               children: viewOptions,
               onValueChanged: (dynamic v) {
                 _setOpenTarget(source, target: SourceOpenTarget.values[v]);
+                _loadOpenTarget(item, source);
               },
               groupValue: _target!.index,
             ),
@@ -246,8 +258,8 @@ class ArticlePageState extends State<ArticlePage> {
                         ? CupertinoIcons.circle
                         : CupertinoIcons.smallcircle_fill_circle,
                     semanticLabel: item.hasRead
-                        ? S.of(context)!.markUnread
-                        : S.of(context)!.markRead,
+                        ? S.of(context).markUnread
+                        : S.of(context).markRead,
                     onPressed: () {
                       HapticFeedback.mediumImpact();
                       Global.itemsModel!
@@ -259,8 +271,8 @@ class ArticlePageState extends State<ArticlePage> {
                         ? CupertinoIcons.star_fill
                         : CupertinoIcons.star,
                     semanticLabel: item.starred
-                        ? S.of(context)!.star
-                        : S.of(context)!.unstar,
+                        ? S.of(context).star
+                        : S.of(context).unstar,
                     onPressed: () {
                       HapticFeedback.mediumImpact();
                       Global.itemsModel!
@@ -269,10 +281,11 @@ class ArticlePageState extends State<ArticlePage> {
                   ),
                   CupertinoToolbarItem(
                     icon: CupertinoIcons.share,
-                    semanticLabel: S.of(context)!.share,
+                    semanticLabel: S.of(context).share,
                     onPressed: () {
                       final media = MediaQuery.of(context);
-                      Share.share(item.link,
+                      SharePlus.instance.share(ShareParams(
+                          uri: Uri.parse(item.link),
                           sharePositionOrigin: Rect.fromLTWH(
                               media.size.width -
                                   ArticlePage
@@ -280,12 +293,12 @@ class ArticlePageState extends State<ArticlePage> {
                                       2,
                               media.size.height - media.padding.bottom - 54,
                               0,
-                              0));
+                              0)));
                     },
                   ),
                   CupertinoToolbarItem(
                     icon: CupertinoIcons.chevron_up,
-                    semanticLabel: S.of(context)!.prev,
+                    semanticLabel: S.of(context).prev,
                     onPressed: idx <= 0
                         ? null
                         : () {
@@ -294,7 +307,7 @@ class ArticlePageState extends State<ArticlePage> {
                   ),
                   CupertinoToolbarItem(
                     icon: CupertinoIcons.chevron_down,
-                    semanticLabel: S.of(context)!.next,
+                    semanticLabel: S.of(context).next,
                     onPressed: (idx == -1 ||
                             (idx == feed.iids.length - 1 && feed.allLoaded))
                         ? null

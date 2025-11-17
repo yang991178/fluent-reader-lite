@@ -57,11 +57,11 @@ abstract class Utils {
     showCupertinoDialog(
       context: context,
       builder: (context) => CupertinoAlertDialog(
-        title: Text(S.of(context)!.serviceFailure),
-        content: Text(S.of(context)!.serviceFailureHint),
+        title: Text(S.of(context).serviceFailure),
+        content: Text(S.of(context).serviceFailureHint),
         actions: [
           CupertinoDialogAction(
-            child: Text(S.of(context)!.close),
+            child: Text(S.of(context).close),
             onPressed: () {
               Navigator.of(context).pop();
             },
