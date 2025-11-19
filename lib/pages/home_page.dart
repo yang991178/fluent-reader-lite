@@ -12,7 +12,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_builder/responsive_builder.dart';
-import 'package:uni_links/uni_links.dart';
+import 'package:app_links/app_links.dart';
 
 import 'item_list_page.dart';
 
@@ -75,17 +75,8 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _uriSub = uriLinkStream.listen(_uriStreamListener);
-    Future.delayed(Duration.zero, () async {
-      try {
-        final uri = await getInitialUri();
-        if (uri != null) {
-          _uriStreamListener(uri);
-        }
-      } catch (exp) {
-        print(exp);
-      }
-    });
+    final appLinks = AppLinks();
+    _uriSub = appLinks.uriLinkStream.listen(_uriStreamListener);
   }
 
   @override
