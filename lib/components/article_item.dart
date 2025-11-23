@@ -11,7 +11,7 @@ import 'package:fluent_reader_lite/utils/global.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:share/share.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:tuple/tuple.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -20,7 +20,8 @@ class ArticleItem extends StatefulWidget {
   final RSSSource? source;
   final Function openActionSheet;
 
-  ArticleItem(this.item, this.source, this.openActionSheet, {Key? key}) : super(key: key);
+  ArticleItem(this.item, this.source, this.openActionSheet, {Key? key})
+      : super(key: key);
 
   @override
   _ArticleItemState createState() => _ArticleItemState();
@@ -48,10 +49,8 @@ class _ArticleItemState extends State<ArticleItem> {
       } else {
         var navigator = Global.responsiveNavigator(context)!;
         while (navigator.canPop()) navigator.pop();
-        navigator.pushNamed(
-          "/article", 
-          arguments: Tuple2(widget.item.id, isSource)
-        );
+        navigator.pushNamed("/article",
+            arguments: Tuple2(widget.item.id, isSource));
       }
     }
   }
@@ -62,9 +61,7 @@ class _ArticleItemState extends State<ArticleItem> {
   }
 
   Widget _imagePlaceholderBuilder(BuildContext context, String _) {
-    return Container(
-      color: CupertinoColors.systemGrey5.resolveFrom(context)
-    );
+    return Container(color: CupertinoColors.systemGrey5.resolveFrom(context));
   }
 
   static final _unreadIndicator = Padding(
@@ -87,11 +84,13 @@ class _ArticleItemState extends State<ArticleItem> {
   IconData? _getDismissIcon(ItemSwipeOption option) {
     switch (option) {
       case ItemSwipeOption.ToggleRead:
-        return widget.item.hasRead? Icons.radio_button_checked
-          : Icons.radio_button_unchecked;
+        return widget.item.hasRead
+            ? Icons.radio_button_checked
+            : Icons.radio_button_unchecked;
       case ItemSwipeOption.ToggleStar:
-        return widget.item.starred? CupertinoIcons.star
-          : CupertinoIcons.star_fill;
+        return widget.item.starred
+            ? CupertinoIcons.star
+            : CupertinoIcons.star_fill;
       case ItemSwipeOption.Share:
         return CupertinoIcons.share;
       case ItemSwipeOption.OpenMenu:
@@ -99,21 +98,22 @@ class _ArticleItemState extends State<ArticleItem> {
       case ItemSwipeOption.OpenExternal:
         return CupertinoIcons.square_arrow_right;
     }
-    return null;
   }
 
   void _performSwipeAction(ItemSwipeOption option) async {
-    switch(option) {
+    switch (option) {
       case ItemSwipeOption.ToggleRead:
         await Future.delayed(Duration(milliseconds: 200));
-        Global.itemsModel!.updateItem(widget.item.id, read: !widget.item.hasRead);
+        Global.itemsModel!
+            .updateItem(widget.item.id, read: !widget.item.hasRead);
         break;
       case ItemSwipeOption.ToggleStar:
         await Future.delayed(Duration(milliseconds: 200));
-        Global.itemsModel!.updateItem(widget.item.id, starred: !widget.item.starred);
+        Global.itemsModel!
+            .updateItem(widget.item.id, starred: !widget.item.starred);
         break;
       case ItemSwipeOption.Share:
-        Share.share(widget.item.link);
+        SharePlus.instance.share(ShareParams(uri: Uri.parse(widget.item.link)));
         break;
       case ItemSwipeOption.OpenMenu:
         widget.openActionSheet(widget.item);
@@ -150,8 +150,9 @@ class _ArticleItemState extends State<ArticleItem> {
     final _titleStyle = TextStyle(
       fontSize: 16,
       fontWeight: FontWeight.bold,
-      color: Global.feedsModel!.dimRead && widget.item.hasRead? CupertinoColors.secondaryLabel.resolveFrom(context)
-        : CupertinoColors.label.resolveFrom(context),
+      color: Global.feedsModel!.dimRead && widget.item.hasRead
+          ? CupertinoColors.secondaryLabel.resolveFrom(context)
+          : CupertinoColors.label.resolveFrom(context),
     );
     final _snippetStyle = TextStyle(
       fontSize: 16,
@@ -160,15 +161,17 @@ class _ArticleItemState extends State<ArticleItem> {
     final infoLine = Padding(
       padding: EdgeInsets.only(bottom: 4),
       child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-          Expanded(child: Text(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+              child: Text(
             widget.source!.name,
             style: _descStyle,
             overflow: TextOverflow.ellipsis,
           )),
           Row(children: [
-            if (!Global.feedsModel!.dimRead && !widget.item.hasRead) _unreadIndicator,
+            if (!Global.feedsModel!.dimRead && !widget.item.hasRead)
+              _unreadIndicator,
             if (widget.item.starred) _starredIndicator,
             TimeText(widget.item.date, style: _descStyle),
           ]),
@@ -176,77 +179,94 @@ class _ArticleItemState extends State<ArticleItem> {
       ),
     );
     final itemTexts = Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+        child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          widget.item.title,
+          style: _titleStyle,
+        ),
+        if (Global.feedsModel!.showSnippet && widget.item.snippet.length > 0)
           Text(
-            widget.item.title, 
-            style: _titleStyle,
-          ),
-          if (Global.feedsModel!.showSnippet && widget.item.snippet.length > 0) Text(
             widget.item.snippet,
             style: _snippetStyle,
             overflow: TextOverflow.ellipsis,
             maxLines: 1,
           ),
-      ],)
-    );
+      ],
+    ));
     final body = GestureDetector(
-      onTapDown: (_) { setState(() { pressed = true; }); },
-      onTapUp: (_) { setState(() { pressed = false; }); },
-      onTapCancel: () { setState(() { pressed = false; }); },
-      onLongPress: _openActionSheet,
-      onTap: _openArticle,
-      child: Container(
-        color: pressed 
-          ? CupertinoColors.systemGrey4.resolveFrom(context) 
-          : CupertinoColors.systemBackground.resolveFrom(context),
-        child: Column(children: [
-          Padding(
-            padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: EdgeInsets.fromLTRB(0, 20, 8, 0),
-                  child: Favicon(widget.source),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: Column(
-                    children: [
-                      infoLine,
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+        onTapDown: (_) {
+          setState(() {
+            pressed = true;
+          });
+        },
+        onTapUp: (_) {
+          setState(() {
+            pressed = false;
+          });
+        },
+        onTapCancel: () {
+          setState(() {
+            pressed = false;
+          });
+        },
+        onLongPress: _openActionSheet,
+        onTap: _openArticle,
+        child: Container(
+            color: pressed
+                ? CupertinoColors.systemGrey4.resolveFrom(context)
+                : CupertinoColors.systemBackground.resolveFrom(context),
+            child: Column(children: [
+              Padding(
+                padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(0, 20, 8, 0),
+                      child: Favicon(widget.source),
+                    ),
+                    Expanded(
+                      flex: 1,
+                      child: Column(
                         children: [
-                          itemTexts,
-                          if (Global.feedsModel!.showThumb && widget.item.thumb != null) Padding(
-                            padding: EdgeInsets.only(left: 4),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(4),
-                              child: CachedNetworkImage(
-                                imageUrl: widget.item.thumb!,
-                                width: 64, height: 64, fit: BoxFit.cover,
-                                placeholder: _imagePlaceholderBuilder,
-                              ),
-                            ),
+                          infoLine,
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              itemTexts,
+                              if (Global.feedsModel!.showThumb &&
+                                  widget.item.thumb != null)
+                                Padding(
+                                  padding: EdgeInsets.only(left: 4),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(4),
+                                    child: CachedNetworkImage(
+                                      imageUrl: widget.item.thumb!,
+                                      width: 64,
+                                      height: 64,
+                                      fit: BoxFit.cover,
+                                      placeholder: _imagePlaceholderBuilder,
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-          Container(
-            color: CupertinoColors.systemBackground.resolveFrom(context),
-            padding: EdgeInsets.only(left: 16),
-            child: Divider(color: CupertinoColors.systemGrey4.resolveFrom(context), height: 1),
-          ),
-        ])
-      )
-    );
+              ),
+              Container(
+                color: CupertinoColors.systemBackground.resolveFrom(context),
+                padding: EdgeInsets.only(left: 16),
+                child: Divider(
+                    color: CupertinoColors.systemGrey4.resolveFrom(context),
+                    height: 1),
+              ),
+            ])));
     return Dismissible(
       key: Key("D-${widget.item.id}"),
       background: DismissibleBackground(

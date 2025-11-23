@@ -120,9 +120,6 @@ class ArticlePageState extends State<ArticlePage> {
   }
 
   void _onPageReady(_) async {
-    if (Platform.isAndroid || Global.globalModel!.getBrightness() != null) {
-      await Future.delayed(Duration(milliseconds: 300));
-    }
     setState(() {
       loaded = _ArticleLoadState.Success;
     });
