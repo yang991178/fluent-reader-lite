@@ -37,7 +37,7 @@ void main() async {
     ));
   }
   runApp(MyApp());
-  SystemChannels.lifecycle.setMessageHandler((msg) {
+  SystemChannels.lifecycle.setMessageHandler((msg) async {
     if (msg == AppLifecycleState.resumed.toString()) {
       if (Global.server != null) Global.server!.restart();
       if (Global.globalModel!.syncOnStart &&
@@ -47,7 +47,7 @@ void main() async {
       }
     }
     return null;
-  } as Future<String?> Function(String?)?);
+  });
 }
 
 class MyApp extends StatelessWidget {

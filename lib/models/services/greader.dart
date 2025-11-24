@@ -236,7 +236,7 @@ class GReaderServiceHandler extends ServiceHandler {
           }
         }
         continuation = fetched["continuation"];
-      } catch (exp, sta) {
+      } catch (exp) {
         break;
       }
     } while (continuation != null && items.length < fetchLimit!);
