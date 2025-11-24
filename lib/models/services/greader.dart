@@ -93,37 +93,37 @@ class GReaderServiceHandler extends ServiceHandler {
     Global.service = null;
   }
 
-  int get lastFetched => _lastFetched!;
-  set lastFetched(int value) {
+  int? get lastFetched => _lastFetched;
+  set lastFetched(int? value) {
     _lastFetched = value;
-    Store.sp.setInt(StoreKeys.LAST_FETCHED, value);
+    if (value != null) Store.sp.setInt(StoreKeys.LAST_FETCHED, value);
   }
 
-  String get lastId => _lastId!;
-  set lastId(String value) {
+  String? get lastId => _lastId;
+  set lastId(String? value) {
     _lastId = value;
-    Store.sp.setString(StoreKeys.LAST_ID, value);
+    if (value != null) Store.sp.setString(StoreKeys.LAST_ID, value);
   }
 
-  String get auth => _auth!;
-  set auth(String value) {
+  String? get auth => _auth;
+  set auth(String? value) {
     _auth = value;
-    Store.sp.setString(StoreKeys.AUTH, value);
+    if (value != null) Store.sp.setString(StoreKeys.AUTH, value);
   }
 
   Future<http.Response> _fetchAPI(String params, {dynamic body}) async {
-    final headers = Map<String, String?>();
- headers["Authorization"] = auth;
+    final headers = Map<String, String>();
+    if (auth != null) headers["Authorization"] = auth!;
     if (inoreaderId != null) {
-      headers["AppId"] = inoreaderId;
-      headers["AppKey"] = inoreaderKey;
+      headers["AppId"] = inoreaderId!;
+      headers["AppKey"] = inoreaderKey!;
     }
     var uri = Uri.parse(endpoint! + params);
     if (body == null) {
-      return await http.get(uri, headers: headers as Map<String, String>?);
+      return await http.get(uri, headers: headers);
     } else {
       headers["Content-Type"] = "application/x-www-form-urlencoded";
-      return await http.post(uri, headers: headers as Map<String, String>?, body: body);
+      return await http.post(uri, headers: headers, body: body);
     }
   }
 
@@ -155,7 +155,7 @@ class GReaderServiceHandler extends ServiceHandler {
 
   String _compactId(String longId) {
     final last = longId.split("/").last;
-    if (!useInt64!) return last;
+    if (useInt64 == null || !useInt64!) return last;
     return int.parse(last, radix: 16).toString();
   }
 
@@ -219,22 +219,24 @@ class GReaderServiceHandler extends ServiceHandler {
       try {
         final limit = min(fetchLimit! - items.length, 1000);
         var params = "/reader/api/0/stream/contents?output=json&n=$limit";
- params += "&ot=$lastFetched";
+        params += "&ot=$lastFetched";
         if (continuation != null) params += "&c=$continuation";
         final response = await _fetchAPI(params);
         assert(response.statusCode == 200);
         final fetched = jsonDecode(response.body);
         fetchedItems = fetched["items"];
-        for (var i in fetchedItems!) {
-          i["id"] = _compactId(i["id"]);
-          if (i["id"] == lastId || items.length >= fetchLimit!) {
-            break;
-          } else {
-            items.add(i);
+        if (fetchedItems != null) {
+          for (var i in fetchedItems) {
+            i["id"] = _compactId(i["id"]);
+            if (i["id"] == lastId || items.length >= fetchLimit!) {
+              break;
+            } else {
+              items.add(i);
+            }
           }
         }
         continuation = fetched["continuation"];
-      } catch (exp) {
+      } catch (exp, sta) {
         break;
       }
     } while (continuation != null && items.length < fetchLimit!);
@@ -273,9 +275,9 @@ class GReaderServiceHandler extends ServiceHandler {
         }
       }
       for (var c in i["categories"]) {
-        if (!item.hasRead&& c.endsWith("/state/com.google/read"))
+        if (!item.hasRead && c.endsWith("/state/com.google/read"))
           item.hasRead = true;
-        else if (!item.starred&& c.endsWith("/state/com.google/starred"))
+        else if (!item.starred && c.endsWith("/state/com.google/starred"))
           item.starred = true;
       }
       return item;
@@ -305,7 +307,8 @@ class GReaderServiceHandler extends ServiceHandler {
   }
 
   @override
-  Future<void> markAllRead(Set<String?> sids, DateTime? date, bool before) async {
+  Future<void> markAllRead(
+      Set<String?> sids, DateTime? date, bool before) async {
     if (date != null) {
       List<String> predicates = ["hasRead = 0"];
       if (sids.length > 0) {
