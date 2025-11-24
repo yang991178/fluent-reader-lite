@@ -60,7 +60,7 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
   }
 
   void _openGroups() async {
-    List<String>? result;
+    List<String?>? result;
     if (Global.isTablet) {
       result = await Navigator.of(context).push(CupertinoPageRoute(
         builder: (context) => GroupListPage(),
@@ -167,7 +167,8 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
                   CupertinoButton(
                     padding: EdgeInsets.zero,
                     child: Text(S.of(context).confirm),
-                    onPressed: _dismissTip, minimumSize: Size(28, 28),
+                    onPressed: _dismissTip,
+                    minimumSize: Size(28, 28),
                   ),
                 ],
               )),
@@ -215,7 +216,8 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
         leading: CupertinoButton(
           padding: EdgeInsets.zero,
           child: Text(S.of(context).groups),
-          onPressed: _openGroups, minimumSize: Size(36, 36),
+          onPressed: _openGroups,
+          minimumSize: Size(36, 36),
         ),
         trailing: Container(
           transform: Matrix4.translationValues(12, 0, 0),
@@ -247,13 +249,13 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
         if (sids == null) {
           sources = Global.sourcesModel!.getSources().toList();
           if (unreadOnly) {
-            sources = sources.where((s) => s!.unreadCount> 0).toList();
+            sources = sources.where((s) => s!.unreadCount > 0).toList();
           }
         } else {
           sources = [];
           for (var sid in sids!) {
             final source = Global.sourcesModel!.getSource(sid);
-            if (!unreadOnly || source!.unreadCount> 0) {
+            if (!unreadOnly || source!.unreadCount > 0) {
               sources.add(source);
             }
           }
