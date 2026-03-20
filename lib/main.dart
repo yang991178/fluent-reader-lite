@@ -117,6 +117,7 @@ class MyApp extends StatelessWidget {
             const Locale("hr"),
             const Locale("pt"),
             const Locale("tr"),
+            const Locale("ru"),
           ],
           localeResolutionCallback: (_locale, supportedLocales) {
             _locale = Locale(_locale!.languageCode);
