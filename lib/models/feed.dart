@@ -4,9 +4,7 @@ import 'package:tuple/tuple.dart';
 
 import 'item.dart';
 
-enum FilterType {
-  All, Unread, Starred
-}
+enum FilterType { All, Unread, Starred }
 
 const _LOAD_LIMIT = 50;
 
@@ -25,8 +23,8 @@ class RSSFeed {
   }
 
   String get _filterKey => sids!.length == 0
-    ? StoreKeys.FEED_FILTER_ALL
-    : StoreKeys.FEED_FILTER_SOURCE;
+      ? StoreKeys.FEED_FILTER_ALL
+      : StoreKeys.FEED_FILTER_SOURCE;
 
   Tuple2<String, List<String>> _getPredicates() {
     List<String> where = ["1 = 1"];
@@ -73,7 +71,9 @@ class RSSFeed {
       limit: _LOAD_LIMIT,
       where: predicates.item1,
       whereArgs: predicates.item2,
-    )).map((m) => RSSItem.fromMap(m)).toList();
+    ))
+        .map((m) => RSSItem.fromMap(m))
+        .toList();
     allLoaded = items.length < _LOAD_LIMIT;
     Global.itemsModel!.loadItems(items);
     iids = items.map((i) => i.id).toList();
@@ -85,25 +85,30 @@ class RSSFeed {
   Future<void> loadMore() async {
     if (loading || allLoaded) return;
     loading = true;
-    var predicates = _getPredicates();
-    var offset = iids
-      .map((iid) => Global.itemsModel!.getItem(iid))
-      .fold(0, (dynamic c, i) => c + (testItem(i) ? 1 : 0));
-    var items = (await Global.db!.query(
-      "items",
-      orderBy: "date DESC",
-      limit: _LOAD_LIMIT,
-      offset: offset,
-      where: predicates.item1,
-      whereArgs: predicates.item2,
-    )).map((m) => RSSItem.fromMap(m)).toList();
-    if (items.length < _LOAD_LIMIT) {
-      allLoaded = true;
+    try {
+      var predicates = _getPredicates();
+      var offset = iids
+          .map((iid) => Global.itemsModel!.getItem(iid))
+          .fold(0, (dynamic c, i) => c + ((i == null || testItem(i)) ? 1 : 0));
+      var items = (await Global.db!.query(
+        "items",
+        orderBy: "date DESC",
+        limit: _LOAD_LIMIT,
+        offset: offset,
+        where: predicates.item1,
+        whereArgs: predicates.item2,
+      ))
+          .map((m) => RSSItem.fromMap(m))
+          .toList();
+      if (items.length < _LOAD_LIMIT) {
+        allLoaded = true;
+      }
+      Global.itemsModel!.loadItems(items);
+      iids.addAll(items.map((i) => i.id).cast<String>());
+    } finally {
+      loading = false;
+      Global.feedsModel!.broadcast();
     }
-    Global.itemsModel!.loadItems(items);
-    iids.addAll(items.map((i) => i.id));
-    loading = false;
-    Global.feedsModel!.broadcast();
   }
 
   Future<void> setFilter(FilterType filter) async {
