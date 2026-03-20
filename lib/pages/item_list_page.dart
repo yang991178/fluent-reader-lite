@@ -216,8 +216,7 @@ class _ItemListPageState extends State<ItemListPage> {
                 Icon(item.starred
                     ? CupertinoIcons.star
                     : CupertinoIcons.star_fill),
-                Text(
-                    item.starred ? S.of(context).unstar : S.of(context).star),
+                Text(item.starred ? S.of(context).unstar : S.of(context).star),
                 _iconPadding,
               ], mainAxisAlignment: MainAxisAlignment.spaceBetween),
               onPressed: () {

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:fluent_reader_lite/components/list_tile_group.dart';
 import 'package:fluent_reader_lite/components/my_list_tile.dart';
 import 'package:fluent_reader_lite/generated/l10n.dart';
@@ -68,7 +70,9 @@ class _SettingsPageState extends State<SettingsPage> {
             },
           ),
           MyListTile(
-            title: Text(S.of(context).about),
+            title: Text(Platform.isAndroid
+                ? S.of(context).contact
+                : S.of(context).about),
             leading:
                 Icon(Icons.info, color: CupertinoColors.systemBlue, size: 24),
             onTap: () async {
