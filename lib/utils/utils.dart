@@ -1,7 +1,12 @@
+import 'dart:io';
+
 import 'package:fluent_reader_lite/generated/l10n.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:http/http.dart' as http;
 import 'package:lpinyin/lpinyin.dart';
+import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 abstract class Utils {
@@ -80,6 +85,31 @@ abstract class Utils {
       return ap.compareTo(bp);
     } catch (exp) {
       return a.compareTo(b);
+    }
+  }
+
+  /// Workaround for flutter_cache_manager not evicting files properly.
+  /// See: https://github.com/Baseflow/flutter_cache_manager/issues/476
+  static Future<void> cleanupImageCache({
+    Duration stalePeriod = const Duration(days: 14),
+  }) async {
+    final base = await getTemporaryDirectory();
+    final cacheDir = Directory(join(base.path, DefaultCacheManager.key));
+    if (!cacheDir.existsSync()) return;
+
+    final staleBefore = DateTime.now().subtract(stalePeriod);
+
+    await for (final entity in cacheDir.list()) {
+      if (entity is! File) continue;
+
+      try {
+        final stat = entity.statSync();
+        if (stat.modified.isBefore(staleBefore)) {
+          await entity.delete();
+        }
+      } on FileSystemException {
+        // ignore
+      }
     }
   }
 }
