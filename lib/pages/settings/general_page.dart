@@ -3,6 +3,7 @@ import 'package:fluent_reader_lite/components/my_list_tile.dart';
 import 'package:fluent_reader_lite/generated/l10n.dart';
 import 'package:fluent_reader_lite/models/global_model.dart';
 import 'package:fluent_reader_lite/utils/colors.dart';
+import 'package:fluent_reader_lite/utils/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:provider/provider.dart';
@@ -22,6 +23,7 @@ class _GeneralPageState extends State<GeneralPage> {
       _clearingCache = true;
     });
     await DefaultCacheManager().emptyCache();
+    await Utils.cleanupImageCache(stalePeriod: Duration());
     if (!mounted) return;
     setState(() {
       _clearingCache = false;
