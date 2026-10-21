@@ -134,7 +134,7 @@ class MyApp extends StatelessWidget {
             "/": (context) => CupertinoScaffold(
               body: CupertinoTheme(
                 // For fixing the bug with modal_bottom_sheet overriding primary color
-                data: CupertinoThemeData(
+                data: CupertinoTheme.of(context).copyWith(
                   primaryColor: CupertinoColors.activeBlue,
                 ),
                 child: HomePage(),

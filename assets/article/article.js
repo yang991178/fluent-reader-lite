@@ -1,3 +1,11 @@
+function setArticleTheme(theme) {
+    const root = document.documentElement
+    root.classList.toggle("light", theme === 1)
+    root.classList.toggle("dark", theme === 0)
+    root.style.colorScheme = theme === 1 ? "light" : "dark"
+    root.style.backgroundColor = theme === 1 ? "#fff" : "#000"
+}
+
 async function getArticle(data) {
     if (data.fullContent) {
         const result = await Mercury.parse(data.url, {
@@ -20,7 +28,7 @@ async function renderArticle() {
     payload.remove()
     document.documentElement.style.fontSize = data.fontSize + "px"
     if (data.theme !== null) {
-        document.documentElement.classList.add(data.theme === 1 ? "light" : "dark")
+        setArticleTheme(data.theme)
     }
 
     const article = await getArticle(data)

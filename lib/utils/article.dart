@@ -21,6 +21,17 @@ String decodeArticleResponse(http.Response response) {
 }
 
 String buildArticleDocument(String template, Map<String, Object?> article) {
+  final theme = article['theme'];
+  if (theme != null) {
+    final scheme = theme == 1 ? 'light' : 'dark';
+    final background = theme == 1 ? '#fff' : '#000';
+    // Set the first paint before loading the stylesheet or parser scripts.
+    template = template.replaceFirst(
+      '<html>',
+      '<html class="$scheme" style="color-scheme: $scheme; '
+          'background-color: $background">',
+    );
+  }
   // Keep HTML (including </script>) inside the non-executable JSON data block.
   final data = jsonEncode(article).replaceAll('<', r'\u003c');
   return template.replaceFirst('<!-- ARTICLE_DATA -->', data);
