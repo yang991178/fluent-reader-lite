@@ -1,7 +1,7 @@
 import 'package:fluent_reader_lite/components/my_list_tile.dart';
 import 'package:fluent_reader_lite/utils/colors.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:tuple/tuple.dart';
 
 class ListTileGroup extends StatelessWidget {

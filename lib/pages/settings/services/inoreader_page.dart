@@ -12,7 +12,7 @@ import 'package:fluent_reader_lite/utils/colors.dart';
 import 'package:fluent_reader_lite/utils/global.dart';
 import 'package:fluent_reader_lite/utils/store.dart';
 import 'package:fluent_reader_lite/utils/utils.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:overlay_dialog/overlay_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';

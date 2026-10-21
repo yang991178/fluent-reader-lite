@@ -66,7 +66,21 @@ If you enjoy using this app, consider supporting its development by donating thr
 
 ### Build from source
 
-See [Flutter documentation](https://flutter.dev/docs).
+Use Flutter 3.47 or later (Dart 3.13 or later). The app targets Android 7.0+
+(API 24) and iOS 15.0+.
+
+```sh
+flutter pub get
+dart run intl_utils:generate
+flutter analyze --no-fatal-infos
+flutter build apk
+flutter build ios
+```
+
+Localization files in `lib/generated/` are generated from `lib/l10n/` and are
+not checked in. Generate them before analyzing, testing, or building a fresh
+checkout. Native builds require the corresponding Android or Xcode toolchain;
+see the [Flutter documentation](https://docs.flutter.dev/).
 
 ### Developed with
 

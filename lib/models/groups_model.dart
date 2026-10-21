@@ -1,6 +1,6 @@
 import 'package:fluent_reader_lite/utils/global.dart';
 import 'package:fluent_reader_lite/utils/store.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 
 class GroupsModel with ChangeNotifier {
   Map<String?, List<String?>> _groups = Store.getGroups();

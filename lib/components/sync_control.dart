@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:fluent_reader_lite/utils/global.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 
 class SyncControl extends StatefulWidget {
   @override

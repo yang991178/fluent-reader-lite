@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 
 class Badge extends StatelessWidget {
   Badge(int count, {this.color  = CupertinoColors.systemRed, Key? key}) :

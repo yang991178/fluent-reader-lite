@@ -18,7 +18,8 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.7+17
 
 environment:
-  sdk: '>=3.3.0 <4.0.0'
+  sdk: '>=3.13.0 <4.0.0'
+  flutter: '>=3.47.0'
 
 dependencies:
   flutter:
@@ -42,7 +43,7 @@ dependencies:
   package_info_plus: ^9.0.0
   crypto: ^3.0.3
   responsive_builder: ^0.7.1
-  cached_network_image: ^3.2.3
+  cached_network_image: ^4.0.4
   flutter_cache_manager: ^3.3.1
   lpinyin: ^2.0.3
   modal_bottom_sheet: ^3.0.0
@@ -52,9 +53,11 @@ dependencies:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.6
+  cupertino_icons: ^2.0.0
   path_provider: ^2.1.5
 
+  material_ui: ^1.8.0
+  cupertino_ui: ^1.1.4
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -4,7 +4,7 @@ import 'package:fluent_reader_lite/components/list_tile_group.dart';
 import 'package:fluent_reader_lite/components/my_list_tile.dart';
 import 'package:fluent_reader_lite/generated/l10n.dart';
 import 'package:fluent_reader_lite/utils/colors.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 
 class TextEditorPage extends StatefulWidget {
   final String title;

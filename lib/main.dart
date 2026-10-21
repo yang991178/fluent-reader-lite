@@ -17,13 +17,13 @@ import 'package:fluent_reader_lite/pages/settings/sources_page.dart';
 import 'package:fluent_reader_lite/pages/settings_page.dart';
 import 'package:fluent_reader_lite/utils/global.dart';
 import 'package:fluent_reader_lite/utils/store.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'generated/l10n.dart';
 import 'models/global_model.dart';
 
@@ -32,9 +32,9 @@ void main() async {
   Store.sp = await SharedPreferences.getInstance();
   Global.init();
   if (Platform.isAndroid) {
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-    ));
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(statusBarColor: Colors.transparent),
+    );
   }
   runApp(MyApp());
   SystemChannels.lifecycle.setMessageHandler((msg) async {
@@ -81,7 +81,7 @@ class MyApp extends StatelessWidget {
           return InoreaderPage();
       }
       return AboutPage();
-    }
+    },
   };
   // This widget is the root of your application.
   @override
@@ -102,9 +102,7 @@ class MyApp extends StatelessWidget {
           localizationsDelegates: [
             // ... app-specific localization delegate[s] here
             S.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
+            ...GlobalMaterialLocalizations.delegates,
           ],
           locale: globalModel.locale,
           supportedLocales: [
@@ -134,21 +132,36 @@ class MyApp extends StatelessWidget {
           ),
           routes: {
             "/": (context) => CupertinoScaffold(
-                body: CupertinoTheme(
-                    // For fixing the bug with modal_bottom_sheet overriding primary color
-                    data: CupertinoThemeData(
-                        primaryColor: CupertinoColors.activeBlue),
-                    child: HomePage())),
+              body: CupertinoTheme(
+                // For fixing the bug with modal_bottom_sheet overriding primary color
+                data: CupertinoThemeData(
+                  primaryColor: CupertinoColors.activeBlue,
+                ),
+                child: HomePage(),
+              ),
+            ),
             ...baseRoutes,
           },
           builder: (context, child) {
+            // modal_bottom_sheet and overlay_dialog still use the SDK widgets.
+            // ignore: deprecated_member_use
+            Widget app = CupertinoUiCompatibilityBridge(
+              // ignore: deprecated_member_use
+              child: MaterialUiCompatibilityBridge(child: child!),
+            );
+            app = Theme(
+              data: ThemeData(brightness: CupertinoTheme.brightnessOf(context)),
+              child: app,
+            );
             final mediaQueryData = MediaQuery.of(context);
             final textScale = Global.globalModel!.textScale;
-            if (textScale == null) return child!;
+            if (textScale == null) return app;
             return MediaQuery(
-                data: mediaQueryData.copyWith(
-                    textScaler: TextScaler.linear(textScale)),
-                child: child!);
+              data: mediaQueryData.copyWith(
+                textScaler: TextScaler.linear(textScale),
+              ),
+              child: app,
+            );
           },
         ),
       ),

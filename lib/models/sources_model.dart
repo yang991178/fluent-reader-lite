@@ -2,7 +2,7 @@ import 'package:fluent_reader_lite/models/source.dart';
 import 'package:fluent_reader_lite/utils/global.dart';
 import 'package:fluent_reader_lite/utils/store.dart';
 import 'package:fluent_reader_lite/utils/utils.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:html/parser.dart';
 import 'package:http/http.dart' as http;
 import 'package:sqflite/sqflite.dart';

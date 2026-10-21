@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:fluent_reader_lite/models/global_model.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 abstract class StoreKeys {

@@ -2,9 +2,9 @@
 
 ## Repository Overview
 
-Fluent Reader Lite is an open-source, cross-platform **RSS feed reader** built with **Flutter** (Dart). It targets **iOS** (13.0+) and **Android** (API 24+). It supports Fever API, Google Reader API, Inoreader, and Feedbin as backend sync services. The codebase is ~40 Dart files with no native platform code beyond the standard Flutter boilerplate.
+Fluent Reader Lite is an open-source, cross-platform **RSS feed reader** built with **Flutter** (Dart). It targets **iOS** (15.0+) and **Android** (API 24+). It supports Fever API, Google Reader API, Inoreader, and Feedbin as backend sync services. The codebase is ~40 Dart files with no native platform code beyond the standard Flutter boilerplate.
 
-**Flutter version:** 3.41.x (stable channel). **Dart SDK:** >=3.3.0 <4.0.0 (see `pubspec.yaml`).
+**Flutter version:** 3.47.x (stable channel). **Dart SDK:** >=3.13.0 <4.0.0 (see `pubspec.yaml`).
 The project uses **FVM** (Flutter Version Manager); the SDK path in `android/local.properties` points to `~/fvm/versions/stable`.
 
 ## Build & Development Commands
@@ -33,8 +33,7 @@ dart run intl_utils:generate
 flutter analyze
 ```
 
-There are ~12 pre-existing warnings/infos (deprecated `launch()` calls and `WillPopScope` usage). Do **not** introduce new warnings. Treat new warnings as errors.
-
+There are 10 pre-existing infos (deprecated `launch()` calls and `WillPopScope` usage). Use `flutter analyze --no-fatal-infos` to allow those while still failing on warnings and errors. Do **not** introduce new warnings. Treat new warnings as errors.
 
 ## Project Structure
 
@@ -71,12 +70,12 @@ lib/
 
 | Path | Purpose |
 |------|---------|
-| `pubspec.yaml` | Dependencies, version (1.0.6+16), assets |
+| `pubspec.yaml` | Dependencies, version (1.0.7+17), assets |
 | `android/app/build.gradle` | Android build config: compileSdk 36, minSdk 24, Java 21 |
 | `android/key.properties` | Release signing config (not committed in upstream) |
-| `ios/Podfile` | CocoaPods config, iOS 13.0 minimum |
+| `ios/Runner.xcodeproj` | iOS 15.0 minimum; native plugins use Swift Package Manager without CocoaPods |
 | `assets/article/` | WebView article renderer: HTML template, CSS, JS, Mercury parser |
-| `test/widget_test.dart` | Default template test (does not pass) |
+| `test/widget_test.dart` | App startup, service navigation, localization and legacy widget regression tests |
 | `.github/` | Issue templates and funding config only; **no CI/CD workflows** |
 
 ## Architecture Notes
@@ -86,6 +85,7 @@ lib/
 - **Article rendering:** A local Jaguar HTTP server (port 9000) serves Flutter assets to a WebView for article display.
 - **Navigation:** Named routes defined in `MyApp.baseRoutes` in `main.dart`.
 - **Localization:** The `S` class in `lib/generated/l10n.dart` — access strings via `S.of(context).keyName`. Source strings are in `lib/l10n/intl_en.arb`.
+- **UI packages:** Use `material_ui` and `cupertino_ui` for design widgets. Their localization delegates are separate from the SDK delegates; `MyApp` bridges legacy widgets still used by `modal_bottom_sheet` and `overlay_dialog`.
 - **No analysis_options.yaml** — the project uses Flutter's default lint rules.
 
 ## Key Conventions
@@ -104,7 +104,3 @@ Before submitting changes, always verify:
 1. `flutter pub get` succeeds
 2. `dart run intl_utils:generate` succeeds (if ARB files were changed)
 3. `flutter analyze` introduces **no new** warnings or errors
-
-## Trust These Instructions
-
-These instructions are validated against the actual repository state. Only search for additional information if something here is incomplete or produces an error.
