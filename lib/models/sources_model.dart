@@ -1,5 +1,6 @@
 import 'package:fluent_reader_lite/models/source.dart';
 import 'package:fluent_reader_lite/utils/global.dart';
+import 'package:fluent_reader_lite/utils/image.dart';
 import 'package:fluent_reader_lite/utils/store.dart';
 import 'package:fluent_reader_lite/utils/utils.dart';
 import 'package:material_ui/material_ui.dart';
@@ -172,7 +173,7 @@ class SourcesModel with ChangeNotifier {
     try {
       url = url.split("/").getRange(0, 3).join("/");
       var uri = Uri.parse(url);
-      var result = await http.get(uri);
+      var result = await http.get(uri, headers: imageRequestHeaders);
       if (result.statusCode == 200) {
         var htmlStr = result.body;
         var dom = parse(htmlStr);

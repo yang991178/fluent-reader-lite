@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:fluent_reader_lite/generated/l10n.dart';
+import 'package:fluent_reader_lite/utils/image.dart';
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:http/http.dart' as http;
@@ -38,7 +39,7 @@ abstract class Utils {
     var flag = false;
     try {
       var uri = Uri.parse(url);
-      var result = await http.get(uri);
+      var result = await http.get(uri, headers: imageRequestHeaders);
       if (result.statusCode == 200) {
         var contentType =
             result.headers["Content-Type"] ?? result.headers["content-type"];
