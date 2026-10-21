@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:fluent_reader_lite/components/cached_image.dart';
 import 'package:fluent_reader_lite/components/dismissible_background.dart';
 import 'package:fluent_reader_lite/components/favicon.dart';
 import 'package:fluent_reader_lite/components/time_text.dart';
@@ -60,7 +60,7 @@ class _ArticleItemState extends State<ArticleItem> {
     widget.openActionSheet(widget.item);
   }
 
-  Widget _imagePlaceholderBuilder(BuildContext context, String _) {
+  Widget _imagePlaceholderBuilder(BuildContext context) {
     return Container(color: CupertinoColors.systemGrey5.resolveFrom(context));
   }
 
@@ -242,12 +242,14 @@ class _ArticleItemState extends State<ArticleItem> {
                                   padding: EdgeInsets.only(left: 4),
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(4),
-                                    child: CachedNetworkImage(
+                                    child: CachedImage(
                                       imageUrl: widget.item.thumb!,
                                       width: 64,
                                       height: 64,
                                       fit: BoxFit.cover,
-                                      placeholder: _imagePlaceholderBuilder,
+                                      placeholderBuilder:
+                                          _imagePlaceholderBuilder,
+                                      errorBuilder: _imagePlaceholderBuilder,
                                     ),
                                   ),
                                 ),

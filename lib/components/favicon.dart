@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:fluent_reader_lite/components/cached_image.dart';
 import 'package:fluent_reader_lite/models/source.dart';
 import 'package:cupertino_ui/cupertino_ui.dart';
 
@@ -14,23 +14,26 @@ class Favicon extends StatelessWidget {
       fontSize: size - 5,
       color: CupertinoColors.systemGrey6,
     );
-    
-    if (source!.iconUrl != null && source!.iconUrl!.length > 0) {
-      return CachedNetworkImage(
-        imageUrl: source!.iconUrl!,
-        width: size,
-        height: size,
-      );
-    } else {
-      return Container(
-        width: size,
-        height: size,
-        color: CupertinoColors.systemGrey.resolveFrom(context),
-        child: Center(child: Text(
-          source!.name.length > 0 ? source!.name[0] : "?",
+
+    Widget fallback(BuildContext context) => Container(
+      width: size,
+      height: size,
+      color: CupertinoColors.systemGrey.resolveFrom(context),
+      child: Center(
+        child: Text(
+          source != null && source!.name.isNotEmpty ? source!.name[0] : "?",
           style: _textStyle,
-        )),
-      );
-    }
+        ),
+      ),
+    );
+
+    final iconUrl = source?.iconUrl;
+    if (iconUrl == null || iconUrl.isEmpty) return fallback(context);
+    return CachedImage(
+      imageUrl: iconUrl,
+      width: size,
+      height: size,
+      errorBuilder: fallback,
+    );
   }
 }
