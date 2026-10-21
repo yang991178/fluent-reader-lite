@@ -11,7 +11,7 @@ import 'package:fluent_reader_lite/models/sync_model.dart';
 import 'package:fluent_reader_lite/utils/db.dart';
 import 'package:fluent_reader_lite/utils/store.dart';
 import 'package:fluent_reader_lite/utils/utils.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:jaguar/serve/server.dart';
 import 'package:jaguar_flutter_asset/jaguar_flutter_asset.dart';
 import 'package:sqflite/sqflite.dart';

@@ -8,7 +8,7 @@ import 'package:fluent_reader_lite/models/source.dart';
 import 'package:fluent_reader_lite/models/sources_model.dart';
 import 'package:fluent_reader_lite/utils/global.dart';
 import 'package:fluent_reader_lite/utils/utils.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 

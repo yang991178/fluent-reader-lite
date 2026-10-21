@@ -5,7 +5,7 @@ import 'package:fluent_reader_lite/generated/l10n.dart';
 import 'package:fluent_reader_lite/models/sources_model.dart';
 import 'package:fluent_reader_lite/utils/colors.dart';
 import 'package:fluent_reader_lite/utils/utils.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:provider/provider.dart';
 
 class SourcesPage extends StatelessWidget {

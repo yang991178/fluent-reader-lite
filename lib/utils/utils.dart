@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:fluent_reader_lite/generated/l10n.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:http/http.dart' as http;
 import 'package:lpinyin/lpinyin.dart';

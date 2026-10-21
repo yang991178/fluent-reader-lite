@@ -6,7 +6,7 @@
 
 import 'package:fluent_reader_lite/utils/colors.dart';
 import 'package:fluent_reader_lite/utils/global.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 
 /// Display a persistent bottom iOS styled toolbar for Cupertino theme
 ///
@@ -48,11 +48,7 @@ class CupertinoToolbar extends StatelessWidget {
     Key? key,
     required this.items,
     required this.body
-  }) : assert(
-        items.every((CupertinoToolbarItem item) => (item.icon != null)) == true,
-        'Every item must have an icon and onPressed defined',
-       ),
-       super(key: key);
+  }) : super(key: key);
 
   /// The interactive items laid out within the toolbar where each item has an icon.
   final List<CupertinoToolbarItem> items;

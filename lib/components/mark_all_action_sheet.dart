@@ -1,7 +1,7 @@
 import 'package:fluent_reader_lite/components/responsive_action_sheet.dart';
 import 'package:fluent_reader_lite/generated/l10n.dart';
 import 'package:fluent_reader_lite/utils/global.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 
 class MarkAllActionSheet extends StatelessWidget {
   final Set<String?>? sids;

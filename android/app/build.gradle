@@ -30,6 +30,7 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     compileSdkVersion 36
+    ndkVersion flutter.ndkVersion
     namespace"me.hyliu.fluent_reader_lite"
 
     compileOptions {

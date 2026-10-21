@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:fluent_reader_lite/utils/store.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 enum ThemeSetting { Default, Light, Dark }
 

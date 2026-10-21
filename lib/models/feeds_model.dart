@@ -2,7 +2,7 @@ import 'package:fluent_reader_lite/models/feed.dart';
 import 'package:fluent_reader_lite/utils/global.dart';
 import 'package:fluent_reader_lite/utils/store.dart';
 import 'package:fluent_reader_lite/utils/utils.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 
 import 'item.dart';
 

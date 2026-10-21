@@ -5,8 +5,7 @@ import 'package:fluent_reader_lite/components/my_list_tile.dart';
 import 'package:fluent_reader_lite/generated/l10n.dart';
 import 'package:fluent_reader_lite/utils/colors.dart';
 import 'package:fluent_reader_lite/utils/utils.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 
 class AboutPage extends StatelessWidget {
   @override
