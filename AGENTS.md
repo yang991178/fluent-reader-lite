@@ -1,4 +1,4 @@
-# Copilot Instructions — Fluent Reader Lite
+# Fluent Reader Lite
 
 ## Repository Overview
 
