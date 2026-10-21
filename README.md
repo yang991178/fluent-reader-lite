@@ -85,7 +85,7 @@ see the [Flutter documentation](https://docs.flutter.dev/).
 ### Developed with
 
 - [Flutter](https://github.com/flutter/flutter)
-- [Mercury Parser](https://github.com/postlight/mercury-parser)
+- [Mercury Parser](https://github.com/jocmp/mercury-parser)
 
 ### License
 

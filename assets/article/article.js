@@ -1,52 +1,51 @@
-function get(name) {
-    if (name = (new RegExp('[?&]' + encodeURIComponent(name) + '=([^&]*)')).exec(location.search))
-        return decodeURIComponent(name[1])
-    return null
-}
-async function getArticle(url) {
-    let article = get("a")
-    if (get("m") === "1") {
-        return (await Mercury.parse(url, {html: article})).content || ""
-    } else {
-        return article
+async function getArticle(data) {
+    if (data.fullContent) {
+        const result = await Mercury.parse(data.url, {
+            html: data.content,
+            // HTML is fetched by Flutter; subsequent browser requests would
+            // require CORS and must not hold up rendering the first page.
+            fetchAllPages: false,
+        })
+        if (result.error || !result.content || !result.content.trim()) {
+            throw new Error("Unable to extract article content")
+        }
+        return result.content
     }
+    return data.content
 }
-document.documentElement.style.fontSize = get("s") + "px"
-let theme = get("t")
-if (theme !== null) document.documentElement.classList.add(theme === "1" ? "light" : "dark")
-let url = get("u")
-getArticle(url).then(article => {
-    let domParser = new DOMParser()
-    let dom = domParser.parseFromString(get("h"), "text/html")
-    dom.getElementsByTagName("article")[0].innerHTML = article
-    let baseUrl = url.split("/").slice(0, 3).join("/")
-    for (let s of dom.getElementsByTagName("script")) {
-        s.parentNode.removeChild(s)
+
+async function renderArticle() {
+    const payload = document.getElementById("article-data")
+    const data = JSON.parse(payload.textContent)
+    payload.remove()
+    document.documentElement.style.fontSize = data.fontSize + "px"
+    if (data.theme !== null) {
+        document.documentElement.classList.add(data.theme === 1 ? "light" : "dark")
     }
-    for (let e of dom.querySelectorAll("*[src]")) {
-        if (e.src && !e.src.startsWith("http")) {
-            if (e.src.startsWith("/")) {
-                e.src = baseUrl + e.src
-            } else if (e.src.startsWith(":")) {
-                e.src = "http" + e.src
-            } else {
-                e.src = baseUrl + "/" + e.src
+
+    const article = await getArticle(data)
+    const dom = new DOMParser().parseFromString(data.header, "text/html")
+    dom.querySelector("article").innerHTML = article
+    for (const script of dom.querySelectorAll("script")) script.remove()
+    for (const element of dom.querySelectorAll("[src], [href]")) {
+        for (const attribute of ["src", "href"]) {
+            const value = element.getAttribute(attribute)
+            if (value) {
+                try {
+                    element.setAttribute(attribute, new URL(value, data.url).href)
+                } catch (_) {
+                    // Leave malformed URLs alone without hiding the article.
+                }
             }
         }
     }
-    for (let e of dom.querySelectorAll("*[href]")) {
-        if (e.href && !e.href.startsWith("http")) {
-            if (e.href.startsWith("/")) {
-                e.href = baseUrl + e.href
-            } else if (e.href.startsWith(":")) {
-                e.href = "http" + e.href
-            } else {
-                e.href = baseUrl + "/" + e.href
-            }
-        }
-    }
-    let main = document.getElementById("main")
+    const main = document.getElementById("main")
     main.innerHTML = dom.body.innerHTML
     main.classList.add("show")
-})
+}
+
+renderArticle().then(
+    () => ArticleStatus.postMessage("success"),
+    () => ArticleStatus.postMessage("failure"),
+)
 

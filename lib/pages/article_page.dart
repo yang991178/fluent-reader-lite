@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:fluent_reader_lite/generated/l10n.dart';
@@ -6,6 +7,7 @@ import 'package:fluent_reader_lite/models/item.dart';
 import 'package:fluent_reader_lite/models/items_model.dart';
 import 'package:fluent_reader_lite/models/source.dart';
 import 'package:fluent_reader_lite/models/sources_model.dart';
+import 'package:fluent_reader_lite/utils/article.dart';
 import 'package:fluent_reader_lite/utils/colors.dart';
 import 'package:fluent_reader_lite/utils/global.dart';
 import 'package:fluent_reader_lite/utils/store.dart';
@@ -42,6 +44,7 @@ class ArticlePageState extends State<ArticlePage> {
   bool? isSourceFeed;
 
   void loadNewItem(String? id, {bool? isSource}) {
+    requestId += 1;
     if (!Global.itemsModel!.getItem(id)!.hasRead) {
       Global.itemsModel!.updateItem(id, read: true);
     }
@@ -55,15 +58,51 @@ class ArticlePageState extends State<ArticlePage> {
   }
 
   WebViewController getNewWebviewController() {
+    final currId = requestId;
     return WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..addJavaScriptChannel(
+        'ArticleStatus',
+        onMessageReceived: (message) {
+          if (_target != SourceOpenTarget.Local &&
+              _target != SourceOpenTarget.FullContent)
+            return;
+          if (message.message == 'success') {
+            _setLoadState(currId, _ArticleLoadState.Success);
+          } else if (message.message == 'failure') {
+            _setLoadState(currId, _ArticleLoadState.Failure);
+          }
+        },
+      )
       ..setNavigationDelegate(
         NavigationDelegate(
-          onPageStarted: _onPageReady,
-          onPageFinished: _onWebpageReady,
-          onNavigationRequest: _onNavigate,
+          onPageStarted: (_) {
+            if (mounted && currId == requestId) _onPageReady();
+          },
+          onPageFinished: (_) {
+            if (mounted && currId == requestId) _onWebpageReady();
+          },
+          onWebResourceError: (error) {
+            if (error.isForMainFrame == true) {
+              _setLoadState(currId, _ArticleLoadState.Failure);
+            }
+          },
+          onNavigationRequest: (request) {
+            if (!mounted || currId != requestId) {
+              return NavigationDecision.prevent;
+            }
+            return _onNavigate(request);
+          },
         ),
       );
+  }
+
+  void _setLoadState(int currId, _ArticleLoadState state) {
+    if (!mounted || currId != requestId) return;
+    setState(() {
+      loaded = state;
+      navigated = state == _ArticleLoadState.Success;
+    });
   }
 
   void loadRequest(Uri uri) {
@@ -83,53 +122,65 @@ class ArticlePageState extends State<ArticlePage> {
   }
 
   void _loadHtml(RSSItem item, RSSSource? source, {loadFull = false}) async {
-    var localUrl = "http://127.0.0.1:9000/article/article.html";
-    var currId = requestId;
-    String a;
-    if (loadFull) {
-      try {
-        var uri = Uri.parse(item.link);
-        var html = (await http.get(uri)).body;
-        a = Uri.encodeComponent(html);
-      } catch (exp) {
-        if (mounted && currId == requestId) {
-          setState(() {
-            loaded = _ArticleLoadState.Failure;
-          });
+    final currId = requestId;
+    try {
+      var content = item.content;
+      if (loadFull) {
+        final response = await http
+            .get(Uri.parse(item.link))
+            .timeout(const Duration(seconds: 30));
+        if (response.statusCode < 200 || response.statusCode >= 300) {
+          throw HttpException('Article request failed: ${response.statusCode}');
         }
-        return;
+        content = decodeArticleResponse(response);
       }
-    } else {
-      a = Uri.encodeComponent(item.content);
+      final template = await rootBundle.loadString(
+        'assets/article/article.html',
+      );
+      if (!mounted || currId != requestId) return;
+      final creator = item.creator;
+      var h =
+          '<p id="source">${htmlEscape.convert(source!.name)}'
+          '${creator != null && creator.isNotEmpty ? ' / ' + htmlEscape.convert(creator) : ''}</p>';
+      h += '<p id="title">${htmlEscape.convert(item.title)}</p>';
+      h +=
+          '<p id="date">${DateFormat.yMd(Localizations.localeOf(context).toString()).add_Hm().format(item.date)}</p>';
+      h += '<article></article>';
+      final document = buildArticleDocument(template, {
+        'content': content,
+        'header': h,
+        'fontSize': Store.getArticleFontSize(),
+        'url': item.link,
+        'fullContent': loadFull,
+        'theme':
+            Platform.isAndroid || Global.globalModel!.getBrightness() != null
+            ? Global.currentBrightness(context).index
+            : null,
+      });
+      setState(() {
+        _controller = getNewWebviewController();
+      });
+      // Pass the document as data rather than expanding it into a navigation
+      // URL, which can exceed WebView limits on large publisher pages.
+      await _controller.loadHtmlString(
+        document,
+        baseUrl: 'http://127.0.0.1:9000/article/',
+      );
+    } catch (_) {
+      _setLoadState(currId, _ArticleLoadState.Failure);
     }
-    if (!mounted || currId != requestId) return;
-    var h =
-        '<p id="source">${source!.name}${(item.creator != null && item.creator!.length > 0) ? ' / ' + item.creator! : ''}</p>';
-    h += '<p id="title">${item.title}</p>';
-    h +=
-        '<p id="date">${DateFormat.yMd(Localizations.localeOf(context).toString()).add_Hm().format(item.date)}</p>';
-    h += '<article></article>';
-    h = Uri.encodeComponent(h);
-    var s = Store.getArticleFontSize();
-    localUrl += "?a=$a&h=$h&s=$s&u=${item.link}&m=${loadFull ? 1 : 0}";
-    if (Platform.isAndroid || Global.globalModel!.getBrightness() != null) {
-      var brightness = Global.currentBrightness(context);
-      localUrl += "&t=${brightness.index}";
-    }
-    loadRequest(Uri.parse(localUrl));
   }
 
-  void _onPageReady(_) async {
+  void _onPageReady() {
+    if (_target == SourceOpenTarget.Local ||
+        _target == SourceOpenTarget.FullContent)
+      return;
     setState(() {
       loaded = _ArticleLoadState.Success;
     });
-    if (_target == SourceOpenTarget.Local ||
-        _target == SourceOpenTarget.FullContent) {
-      navigated = true;
-    }
   }
 
-  void _onWebpageReady(_) {
+  void _onWebpageReady() {
     if (loaded == _ArticleLoadState.Success) navigated = true;
   }
 
@@ -205,7 +256,7 @@ class ArticlePageState extends State<ArticlePage> {
             children: [
               Center(child: CupertinoActivityIndicator()),
               WebViewWidget(
-                key: Key("a-$iid-${_target!.index}"),
+                key: Key("a-$iid-${_target!.index}-$requestId"),
                 controller: _controller,
               ),
               Center(
