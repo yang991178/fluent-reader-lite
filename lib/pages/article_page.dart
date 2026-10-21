@@ -35,7 +35,8 @@ class ArticlePage extends StatefulWidget {
 enum _ArticleLoadState { Loading, Success, Failure }
 
 class ArticlePageState extends State<ArticlePage> {
-  late WebViewController _controller = getNewWebviewController();
+  WebViewController? _controller;
+  Brightness? _brightness;
   int requestId = 0;
   _ArticleLoadState loaded = _ArticleLoadState.Loading;
   bool navigated = false;
@@ -57,9 +58,33 @@ class ArticlePageState extends State<ArticlePage> {
     });
   }
 
-  WebViewController getNewWebviewController() {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final brightness = CupertinoTheme.brightnessOf(context);
+    if (_brightness == brightness) return;
+    _brightness = brightness;
+    _controller?.setBackgroundColor(_backgroundColor);
+    _updateArticleTheme();
+  }
+
+  Color get _backgroundColor => _brightness == Brightness.dark
+      ? CupertinoColors.black
+      : CupertinoColors.white;
+
+  void _updateArticleTheme() {
+    if (_target == SourceOpenTarget.Local ||
+        _target == SourceOpenTarget.FullContent) {
+      _controller?.runJavaScript(
+        'if (typeof setArticleTheme === "function") '
+        'setArticleTheme(${_brightness!.index});',
+      );
+    }
+  }
+
+  Future<WebViewController> getNewWebviewController() async {
     final currId = requestId;
-    return WebViewController()
+    final controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..addJavaScriptChannel(
         'ArticleStatus',
@@ -95,6 +120,9 @@ class ArticlePageState extends State<ArticlePage> {
           },
         ),
       );
+    // Configure the native canvas before attaching or navigating the WebView.
+    await controller.setBackgroundColor(_backgroundColor);
+    return controller;
   }
 
   void _setLoadState(int currId, _ArticleLoadState state) {
@@ -105,16 +133,26 @@ class ArticlePageState extends State<ArticlePage> {
     });
   }
 
-  void loadRequest(Uri uri) {
-    _controller = getNewWebviewController();
-    _controller.loadRequest(uri);
+  void loadRequest(Uri uri) async {
+    final currId = requestId;
+    try {
+      final controller = await getNewWebviewController();
+      if (!mounted || currId != requestId) return;
+      setState(() => _controller = controller);
+      await controller.loadRequest(uri);
+    } catch (_) {
+      _setLoadState(currId, _ArticleLoadState.Failure);
+    }
   }
 
   Future<NavigationDecision> _onNavigate(NavigationRequest request) async {
     if (navigated && request.isMainFrame) {
       final internal = Global.globalModel!.inAppBrowser;
-      await launch(request.url,
-          forceSafariVC: internal, forceWebView: internal);
+      await launch(
+        request.url,
+        forceSafariVC: internal,
+        forceWebView: internal,
+      );
       return NavigationDecision.prevent;
     } else {
       return NavigationDecision.navigate;
@@ -152,17 +190,16 @@ class ArticlePageState extends State<ArticlePage> {
         'fontSize': Store.getArticleFontSize(),
         'url': item.link,
         'fullContent': loadFull,
-        'theme':
-            Platform.isAndroid || Global.globalModel!.getBrightness() != null
-            ? Global.currentBrightness(context).index
-            : null,
+        'theme': _brightness!.index,
       });
+      final controller = await getNewWebviewController();
+      if (!mounted || currId != requestId) return;
       setState(() {
-        _controller = getNewWebviewController();
+        _controller = controller;
       });
       // Pass the document as data rather than expanding it into a navigation
       // URL, which can exceed WebView limits on large publisher pages.
-      await _controller.loadHtmlString(
+      await controller.loadHtmlString(
         document,
         baseUrl: 'http://127.0.0.1:9000/article/',
       );
@@ -181,6 +218,7 @@ class ArticlePageState extends State<ArticlePage> {
   }
 
   void _onWebpageReady() {
+    _updateArticleTheme();
     if (loaded == _ArticleLoadState.Success) navigated = true;
   }
 
@@ -255,10 +293,13 @@ class ArticlePageState extends State<ArticlePage> {
             index: loaded.index,
             children: [
               Center(child: CupertinoActivityIndicator()),
-              WebViewWidget(
-                key: Key("a-$iid-${_target!.index}-$requestId"),
-                controller: _controller,
-              ),
+              if (_controller != null)
+                WebViewWidget(
+                  key: Key("a-$iid-${_target!.index}-$requestId"),
+                  controller: _controller!,
+                )
+              else
+                const SizedBox.shrink(),
               Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -266,7 +307,8 @@ class ArticlePageState extends State<ArticlePage> {
                     Text(
                       S.of(context).wentWrong,
                       style: TextStyle(
-                          color: CupertinoColors.label.resolveFrom(context)),
+                        color: CupertinoColors.label.resolveFrom(context),
+                      ),
                     ),
                     CupertinoButton(
                       child: Text(S.of(context).retry),
@@ -277,7 +319,7 @@ class ArticlePageState extends State<ArticlePage> {
                     ),
                   ],
                 ),
-              )
+              ),
             ],
           ),
           bottom: false,
@@ -310,8 +352,10 @@ class ArticlePageState extends State<ArticlePage> {
                         : S.of(context).markRead,
                     onPressed: () {
                       HapticFeedback.mediumImpact();
-                      Global.itemsModel!
-                          .updateItem(item.id, read: !item.hasRead);
+                      Global.itemsModel!.updateItem(
+                        item.id,
+                        read: !item.hasRead,
+                      );
                     },
                   ),
                   CupertinoToolbarItem(
@@ -323,8 +367,10 @@ class ArticlePageState extends State<ArticlePage> {
                         : S.of(context).unstar,
                     onPressed: () {
                       HapticFeedback.mediumImpact();
-                      Global.itemsModel!
-                          .updateItem(item.id, starred: !item.starred);
+                      Global.itemsModel!.updateItem(
+                        item.id,
+                        starred: !item.starred,
+                      );
                     },
                   ),
                   CupertinoToolbarItem(
@@ -332,16 +378,19 @@ class ArticlePageState extends State<ArticlePage> {
                     semanticLabel: S.of(context).share,
                     onPressed: () {
                       final media = MediaQuery.of(context);
-                      SharePlus.instance.share(ShareParams(
+                      SharePlus.instance.share(
+                        ShareParams(
                           uri: Uri.parse(item.link),
                           sharePositionOrigin: Rect.fromLTWH(
-                              media.size.width -
-                                  ArticlePage
-                                          .state.currentContext!.size!.width /
-                                      2,
-                              media.size.height - media.padding.bottom - 54,
-                              0,
-                              0)));
+                            media.size.width -
+                                ArticlePage.state.currentContext!.size!.width /
+                                    2,
+                            media.size.height - media.padding.bottom - 54,
+                            0,
+                            0,
+                          ),
+                        ),
+                      );
                     },
                   ),
                   CupertinoToolbarItem(
@@ -356,7 +405,8 @@ class ArticlePageState extends State<ArticlePage> {
                   CupertinoToolbarItem(
                     icon: CupertinoIcons.chevron_down,
                     semanticLabel: S.of(context).next,
-                    onPressed: (idx == -1 ||
+                    onPressed:
+                        (idx == -1 ||
                             (idx == feed.iids.length - 1 && feed.allLoaded))
                         ? null
                         : () async {

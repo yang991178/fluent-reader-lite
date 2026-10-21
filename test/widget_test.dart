@@ -8,6 +8,9 @@ import 'package:fluent_reader_lite/models/items_model.dart';
 import 'package:fluent_reader_lite/models/sources_model.dart';
 import 'package:fluent_reader_lite/models/sync_model.dart';
 import 'package:fluent_reader_lite/pages/setup_page.dart';
+import 'package:fluent_reader_lite/pages/item_list_page.dart';
+import 'package:fluent_reader_lite/pages/subscription_list_page.dart';
+import 'package:fluent_reader_lite/pages/tablet_base_page.dart';
 import 'package:fluent_reader_lite/utils/global.dart';
 import 'package:fluent_reader_lite/utils/store.dart';
 import 'package:flutter/cupertino.dart' as legacy_cupertino;
@@ -47,6 +50,72 @@ void main() {
     Global.groupsModel!.dispose();
     Global.syncModel!.dispose();
   });
+
+  for (final size in [const Size(390, 844), const Size(1024, 768)]) {
+    testWidgets('All tabs inherit theme changes at $size', (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      tester.platformDispatcher.platformBrightnessTestValue = Brightness.light;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
+      Global.syncModel!.hasService = true;
+      // Short labels keep the test font within the narrow tablet sidebar.
+      Global.globalModel!.locale = const Locale('zh');
+      Global.feedsModel!.all
+        ..initialized = true
+        ..allLoaded = true;
+
+      await tester.pumpWidget(MyApp());
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(S.current.subscriptions));
+      await tester.pumpAndSettle();
+
+      void expectBrightness(Brightness brightness) {
+        for (final type in [
+          ItemListPage,
+          SubscriptionListPage,
+          if (size.width > 640) TabletBasePage,
+        ]) {
+          final context = tester.element(
+            find.byType(type, skipOffstage: false),
+          );
+          expect(CupertinoTheme.brightnessOf(context), brightness);
+          expect(
+            CupertinoColors.systemBackground.resolveFrom(context).toARGB32(),
+            brightness == Brightness.dark
+                ? CupertinoColors.black.toARGB32()
+                : CupertinoColors.white.toARGB32(),
+          );
+        }
+      }
+
+      // Change the preference from the same settings route used in the report.
+      final context = tester.element(find.byType(SubscriptionListPage));
+      Navigator.of(context, rootNavigator: true).pushNamed('/settings/general');
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text(S.current.dark));
+      await tester.tap(find.text(S.current.dark));
+      await tester.pumpAndSettle();
+      Navigator.of(context, rootNavigator: true).pop();
+      await tester.pumpAndSettle();
+      expectBrightness(Brightness.dark);
+
+      tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
+      Global.globalModel!.theme = ThemeSetting.Light;
+      await tester.pumpAndSettle();
+      expectBrightness(Brightness.light);
+
+      Global.globalModel!.theme = ThemeSetting.Default;
+      await tester.pumpAndSettle();
+      expectBrightness(Brightness.dark);
+      tester.platformDispatcher.platformBrightnessTestValue = Brightness.light;
+      await tester.pumpAndSettle();
+      expectBrightness(Brightness.light);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+  }
 
   for (final locale in S.delegate.supportedLocales) {
     testWidgets('Setup and service navigation work in $locale', (tester) async {

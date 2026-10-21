@@ -72,4 +72,23 @@ void main() {
       expect(document.querySelector('#main')!.innerHtml, isEmpty);
     },
   );
+
+  for (final theme in [0, 1]) {
+    test('Reader has the selected theme before scripts load ($theme)', () {
+      final template = File('assets/article/article.html').readAsStringSync();
+      final document = html.parse(
+        buildArticleDocument(template, {'theme': theme}),
+      );
+      final root = document.documentElement!;
+      expect(root.classes, contains(theme == 1 ? 'light' : 'dark'));
+      expect(
+        root.attributes['style'],
+        contains('background-color: ${theme == 1 ? '#fff' : '#000'}'),
+      );
+      expect(
+        root.attributes['style'],
+        contains('color-scheme: ${theme == 1 ? 'light' : 'dark'}'),
+      );
+    });
+  }
 }
