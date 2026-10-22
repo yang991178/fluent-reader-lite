@@ -11,7 +11,6 @@ import 'package:fluent_reader_lite/utils/global.dart';
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
-import 'package:responsive_builder/responsive_builder.dart';
 import 'package:app_links/app_links.dart';
 
 import 'item_list_page.dart';
@@ -36,6 +35,12 @@ class ScrollTopNotifier with ChangeNotifier {
 class _HomePageState extends State<HomePage> {
   final _scrollTopNotifier = ScrollTopNotifier();
   final _controller = CupertinoTabController();
+  final _articleObserver = _NavigationObserver();
+  final _tabObservers = List.generate(2, (_) => _NavigationObserver());
+  final _heroControllers = List.generate(
+    3,
+    (_) => CupertinoApp.createCupertinoHeroController(),
+  );
   final List<GlobalKey<NavigatorState>> _tabNavigatorKeys = [
     GlobalKey(),
     GlobalKey(),
@@ -82,24 +87,58 @@ class _HomePageState extends State<HomePage> {
   @override
   dispose() {
     _uriSub.cancel();
+    _scrollTopNotifier.dispose();
+    _controller.dispose();
+    _articleObserver.hasPages.dispose();
+    for (final observer in _tabObservers) observer.hasPages.dispose();
+    for (final controller in _heroControllers) controller.dispose();
     super.dispose();
   }
 
-  Widget _constructPage(Widget page, bool isMobile) {
-    return isMobile
-        ? CupertinoPageScaffold(
-            child: page,
-            backgroundColor:
-                CupertinoColors.systemBackground.resolveFrom(context),
-          )
-        : Container(
-            child: page,
-            color: CupertinoColors.systemBackground.resolveFrom(context),
+  Widget _constructPage(BuildContext context, Widget page) {
+    final scrollController = PrimaryScrollController.of(context);
+    final scaffold = CupertinoPageScaffold(
+      backgroundColor: CupertinoColors.systemBackground.resolveFrom(context),
+      child: PrimaryScrollController(controller: scrollController, child: page),
+    );
+    // iOS status-bar events carry no tap location. Disable the sidebar
+    // scaffold's handler on tablets while keeping its list controller.
+    return Global.isTablet(context)
+        ? PrimaryScrollController.none(child: scaffold)
+        : PrimaryScrollController(
+            controller: scrollController,
+            child: scaffold,
           );
   }
 
-  Widget buildLeft(BuildContext context, {isMobile = true}) {
-    final leftTabs = CupertinoTabScaffold(
+  Widget _buildNavigator({
+    required GlobalKey<NavigatorState> navigatorKey,
+    required HeroController heroController,
+    required NavigatorObserver observer,
+    required Map<String, WidgetBuilder> routes,
+  }) {
+    // Handle system Back once at the home level, rather than independently
+    // in each pane as CupertinoTabView does.
+    return HeroControllerScope(
+      controller: heroController,
+      child: Navigator(
+        key: navigatorKey,
+        observers: [observer],
+        onGenerateRoute: (settings) {
+          final builder = routes[settings.name];
+          if (builder == null) return null;
+          if (navigatorKey == Global.articlePanel &&
+              settings.name == Navigator.defaultRouteName) {
+            return _ArticleBaseRoute(builder: builder, settings: settings);
+          }
+          return CupertinoPageRoute(builder: builder, settings: settings);
+        },
+      ),
+    );
+  }
+
+  Widget buildLeft(BuildContext context) {
+    return CupertinoTabScaffold(
       controller: _controller,
       backgroundColor: CupertinoColors.systemBackground,
       tabBar: CupertinoTabBar(
@@ -117,29 +156,23 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       tabBuilder: (context, index) {
-        return CupertinoTabView(
+        return _buildNavigator(
           navigatorKey: _tabNavigatorKeys[index],
+          heroController: _heroControllers[index],
+          observer: _tabObservers[index],
           routes: {
+            '/': (context) {
+              Widget page = index == 0
+                  ? ItemListPage(_scrollTopNotifier)
+                  : SubscriptionListPage(_scrollTopNotifier);
+              return _constructPage(context, page);
+            },
             '/feed': (context) {
               Widget page = ItemListPage(_scrollTopNotifier);
-              return _constructPage(page, isMobile);
+              return _constructPage(context, page);
             },
           },
-          builder: (context) {
-            Widget page = index == 0
-                ? ItemListPage(_scrollTopNotifier)
-                : SubscriptionListPage(_scrollTopNotifier);
-            return _constructPage(page, isMobile);
-          },
         );
-      },
-    );
-    return WillPopScope(
-      child: leftTabs,
-      onWillPop: () async {
-        return !(await _tabNavigatorKeys[_controller.index]
-            .currentState!
-            .maybePop());
       },
     );
   }
@@ -150,44 +183,96 @@ class _HomePageState extends State<HomePage> {
       selector: (context, syncModel) => syncModel.hasService,
       builder: (context, hasService, child) {
         if (!hasService) return SetupPage();
-        return ScreenTypeLayout.builder(
-          breakpoints: ScreenBreakpoints(
-            tablet: 640,
-            watch: 0,
-            desktop: 1600,
-          ),
-          mobile: (context) => buildLeft(context),
-          tablet: (context) {
-            final left = buildLeft(context, isMobile: false);
-            final right = Container(
-                decoration: BoxDecoration(),
-                clipBehavior: Clip.hardEdge,
-                child: CupertinoTabView(
-                  navigatorKey: Global.tabletPanel,
-                  routes: {
-                    "/": (context) => TabletBasePage(),
-                    ...MyApp.baseRoutes,
-                  },
-                ));
-            return Container(
-                color: CupertinoColors.systemBackground.resolveFrom(context),
-                child: Row(
-                  children: [
-                    Container(
-                      constraints: BoxConstraints(maxWidth: 320),
-                      child: left,
+        final isTablet = Global.isTablet(context);
+        return ListenableBuilder(
+          listenable: Listenable.merge([
+            _controller,
+            _articleObserver.hasPages,
+            for (final observer in _tabObservers) observer.hasPages,
+          ]),
+          builder: (context, child) {
+            final hasArticle = _articleObserver.hasPages.value;
+            return PopScope(
+              canPop:
+                  !hasArticle &&
+                  !_tabObservers[_controller.index].hasPages.value,
+              onPopInvokedWithResult: (didPop, result) {
+                if (didPop) return;
+                final navigator = hasArticle
+                    ? Global.articlePanel.currentState
+                    : _tabNavigatorKeys[_controller.index].currentState;
+                navigator?.maybePop(result);
+              },
+              // Keep both navigators in the same place in the widget tree.
+              // Only their bounds change, preserving the reader and WebView.
+              child: Stack(
+                children: [
+                  Positioned(
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    width: isTablet ? 320 : MediaQuery.sizeOf(context).width,
+                    child: ExcludeSemantics(
+                      excluding: !isTablet && hasArticle,
+                      child: buildLeft(context),
                     ),
-                    VerticalDivider(
-                      width: 1,
-                      thickness: 1,
-                      color: CupertinoColors.systemGrey4.resolveFrom(context),
+                  ),
+                  Positioned(
+                    left: 320,
+                    top: 0,
+                    bottom: 0,
+                    width: 1,
+                    child: Offstage(
+                      offstage: !isTablet,
+                      child: VerticalDivider(
+                        width: 1,
+                        thickness: 1,
+                        color: CupertinoColors.systemGrey4.resolveFrom(context),
+                      ),
                     ),
-                    Expanded(child: right),
-                  ],
-                ));
+                  ),
+                  Positioned.fill(
+                    left: isTablet ? 321 : 0,
+                    child: IgnorePointer(
+                      ignoring: !isTablet && !hasArticle,
+                      child: ClipRect(
+                        child: _buildNavigator(
+                          navigatorKey: Global.articlePanel,
+                          heroController: _heroControllers[2],
+                          observer: _articleObserver,
+                          routes: {
+                            '/': (context) => Global.isTablet(context)
+                                ? TabletBasePage()
+                                : const SizedBox.expand(),
+                            ...MyApp.baseRoutes,
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
           },
         );
       },
     );
+  }
+}
+
+class _ArticleBaseRoute extends CupertinoPageRoute<void> {
+  _ArticleBaseRoute({required super.builder, required super.settings});
+
+  // The placeholder is transparent on phones, including its route barrier.
+  @override
+  Color? get barrierColor => null;
+}
+
+class _NavigationObserver extends NavigatorObserver {
+  final hasPages = ValueNotifier(false);
+
+  @override
+  void didChangeTop(Route<dynamic> topRoute, Route<dynamic>? previousTopRoute) {
+    hasPages.value = !topRoute.isFirst;
   }
 }

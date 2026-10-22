@@ -8,7 +8,7 @@ class ResponsiveActionSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!Global.isTablet) return child;
+    if (!Global.isTablet(context)) return child;
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [

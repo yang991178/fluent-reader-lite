@@ -304,7 +304,9 @@ class _ItemListPageState extends State<ItemListPage> {
         Container(
           constraints: BoxConstraints(
             maxWidth:
-                Global.isTablet ? 260 : MediaQuery.of(context).size.width - 60,
+                Global.isTablet(context)
+                    ? 260
+                    : MediaQuery.of(context).size.width - 60,
           ),
           child: title == null
               ? _titleFromFilter()

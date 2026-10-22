@@ -61,7 +61,7 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
 
   void _openGroups() async {
     List<String?>? result;
-    if (Global.isTablet) {
+    if (Global.isTablet(context)) {
       result = await Navigator.of(context).push(CupertinoPageRoute(
         builder: (context) => GroupListPage(),
       ));
@@ -188,7 +188,7 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
         children: [
           Container(
             constraints: BoxConstraints(
-              maxWidth: Global.isTablet
+              maxWidth: Global.isTablet(context)
                   ? 260
                   : MediaQuery.of(context).size.width - 60,
             ),
