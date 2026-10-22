@@ -14,5 +14,12 @@
          This Theme is only used starting with V2 of Flutter's Android embedding. -->
     <style name="NormalTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:webViewStyle">@style/ArticleWebView</item>
+    </style>
+    <style name="ArticleWebView" parent="@android:style/Widget.WebView">
+        <!-- The reader theme can differ from Android's theme. Keep the native
+             thumb visible on both light and dark article backgrounds. -->
+        <item name="android:scrollbarThumbVertical">@drawable/article_scrollbar_thumb</item>
+        <item name="android:scrollbarThumbHorizontal">@drawable/article_scrollbar_thumb</item>
     </style>
 </resources>

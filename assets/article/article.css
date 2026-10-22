@@ -94,7 +94,6 @@ article {
 }
 article * {
     max-width: 100%;
-    overflow: hidden;
 }
 article img {
     height: auto;
@@ -123,9 +122,6 @@ article blockquote {
 }
 article ul, article menu, article dir {
     padding-inline-start: 24px;
-}
-article li {
-    overflow: visible;
 }
 article pre {
     white-space: pre-wrap;

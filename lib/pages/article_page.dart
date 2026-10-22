@@ -14,6 +14,7 @@ import 'package:fluent_reader_lite/utils/store.dart';
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -64,13 +65,21 @@ class ArticlePageState extends State<ArticlePage> {
     final brightness = CupertinoTheme.brightnessOf(context);
     if (_brightness == brightness) return;
     _brightness = brightness;
-    _controller?.setBackgroundColor(_backgroundColor);
+    if (_controller != null) _setWebViewBackground(_controller!);
     _updateArticleTheme();
   }
 
   Color get _backgroundColor => _brightness == Brightness.dark
       ? CupertinoColors.black
       : CupertinoColors.white;
+
+  Future<void> _setWebViewBackground(WebViewController controller) async {
+    // On iOS setBackgroundColor makes WKWebView non-opaque, which makes
+    // WebKit choose a black scroll indicator even over a dark document.
+    // Keep it opaque and let the HTML's first-paint background set the theme.
+    if (defaultTargetPlatform == TargetPlatform.iOS) return;
+    await controller.setBackgroundColor(_backgroundColor);
+  }
 
   void _updateArticleTheme() {
     if (_target == SourceOpenTarget.Local ||
@@ -120,8 +129,8 @@ class ArticlePageState extends State<ArticlePage> {
           },
         ),
       );
-    // Configure the native canvas before attaching or navigating the WebView.
-    await controller.setBackgroundColor(_backgroundColor);
+    // Configure the canvas before attaching or navigating the WebView.
+    await _setWebViewBackground(controller);
     return controller;
   }
 

@@ -1,3 +1,4 @@
+import 'package:fluent_reader_lite/components/my_action_sheet_action.dart';
 import 'package:fluent_reader_lite/components/responsive_action_sheet.dart';
 import 'package:fluent_reader_lite/generated/l10n.dart';
 import 'package:fluent_reader_lite/utils/global.dart';
@@ -22,25 +23,25 @@ class MarkAllActionSheet extends StatelessWidget {
     final sheet = CupertinoActionSheet(
       title: Text(S.of(context).markAll),
       actions: [
-        CupertinoActionSheetAction(
+        MyActionSheetAction(
           isDestructiveAction: true,
           child: Text(S.of(context).allArticles),
           onPressed: () { _markAll(context); },
         ),
-        CupertinoActionSheetAction(
+        MyActionSheetAction(
           child: Text(S.of(context).daysAgo(1)),
           onPressed: () { _markAll(context, date: _offset(1)); },
         ),
-        CupertinoActionSheetAction(
+        MyActionSheetAction(
           child: Text(S.of(context).daysAgo(3)),
           onPressed: () { _markAll(context, date: _offset(3)); },
         ),
-        CupertinoActionSheetAction(
+        MyActionSheetAction(
           child: Text(S.of(context).daysAgo(7)),
           onPressed: () { _markAll(context, date: _offset(7)); },
         ),
       ],
-      cancelButton: CupertinoActionSheetAction(
+      cancelButton: MyActionSheetAction(
         child: Text(S.of(context).cancel),
         onPressed: () { 
           Navigator.of(context, rootNavigator: true).pop();
