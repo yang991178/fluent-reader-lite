@@ -13,6 +13,7 @@ import 'package:fluent_reader_lite/pages/tablet_base_page.dart';
 import 'package:fluent_reader_lite/utils/global.dart';
 import 'package:fluent_reader_lite/utils/store.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -294,58 +295,75 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
-  testWidgets('Article canvas stays themed on open, next, previous and retry', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(390, 844);
-    tester.view.devicePixelRatio = 1;
-    tester.platformDispatcher.platformBrightnessTestValue = Brightness.light;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
-    Global.globalModel!.theme = ThemeSetting.Dark;
-    await tester.pumpWidget(MyApp());
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Article 0'));
+  testWidgets(
+    'Article canvas stays themed on open, next, previous and retry',
+    (tester) async {
+      final nativeBackground = defaultTargetPlatform != TargetPlatform.iOS;
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      tester.platformDispatcher.platformBrightnessTestValue = Brightness.light;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
+      Global.globalModel!.theme = ThemeSetting.Dark;
+      await tester.pumpWidget(MyApp());
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Article 0'));
 
-    Future<_TestController> finishArticle(int count, String status) async {
-      for (var i = 0; i < 20; i++) {
-        await tester.pump(const Duration(milliseconds: 50));
-        if (platform.controllers.length == count &&
-            platform.controllers.last.document != null)
-          break;
+      Future<_TestController> finishArticle(int count, String status) async {
+        for (var i = 0; i < 20; i++) {
+          await tester.pump(const Duration(milliseconds: 50));
+          if (platform.controllers.length == count &&
+              platform.controllers.last.document != null)
+            break;
+        }
+        expect(platform.controllers, hasLength(count));
+        final controller = platform.controllers.last;
+        expect(controller.document, contains('class="dark"'));
+        expect(
+          controller.backgroundAtLoad,
+          nativeBackground ? CupertinoColors.black : null,
+        );
+        controller.status!.onMessageReceived(
+          JavaScriptMessage(message: status),
+        );
+        await tester.pump(const Duration(milliseconds: 500));
+        expect(tester.takeException(), isNull);
+        return controller;
       }
-      expect(platform.controllers, hasLength(count));
-      final controller = platform.controllers.last;
-      expect(controller.document, contains('class="dark"'));
-      expect(controller.backgroundAtLoad, CupertinoColors.black);
-      controller.status!.onMessageReceived(JavaScriptMessage(message: status));
-      await tester.pump(const Duration(milliseconds: 500));
-      expect(tester.takeException(), isNull);
-      return controller;
-    }
 
-    await finishArticle(1, 'success');
-    await tester.tap(find.bySemanticsLabel(S.current.next));
-    await finishArticle(2, 'success');
-    await tester.tap(find.bySemanticsLabel(S.current.prev));
-    await finishArticle(3, 'failure');
-    await tester.tap(find.text(S.current.retry));
-    final controller = await finishArticle(4, 'success');
+      await finishArticle(1, 'success');
+      await tester.tap(find.bySemanticsLabel(S.current.next));
+      await finishArticle(2, 'success');
+      await tester.tap(find.bySemanticsLabel(S.current.prev));
+      await finishArticle(3, 'failure');
+      await tester.tap(find.text(S.current.retry));
+      final controller = await finishArticle(4, 'success');
 
-    Global.globalModel!.theme = ThemeSetting.Light;
-    await tester.pump();
-    expect(controller.background, CupertinoColors.white);
-    expect(controller.scripts.last, contains('setArticleTheme(1)'));
-    expect(platform.controllers, hasLength(4));
+      Global.globalModel!.theme = ThemeSetting.Light;
+      await tester.pump();
+      expect(
+        controller.background,
+        nativeBackground ? CupertinoColors.white : null,
+      );
+      expect(controller.scripts.last, contains('setArticleTheme(1)'));
+      expect(platform.controllers, hasLength(4));
 
-    Global.globalModel!.theme = ThemeSetting.Default;
-    tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
-    await tester.pump();
-    expect(controller.background, CupertinoColors.black);
-    expect(controller.scripts.last, contains('setArticleTheme(0)'));
-    await tester.pumpWidget(const SizedBox.shrink());
-  });
+      Global.globalModel!.theme = ThemeSetting.Default;
+      tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
+      await tester.pump();
+      expect(
+        controller.background,
+        nativeBackground ? CupertinoColors.black : null,
+      );
+      expect(controller.scripts.last, contains('setArticleTheme(0)'));
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+    variant: TargetPlatformVariant({
+      TargetPlatform.android,
+      TargetPlatform.iOS,
+    }),
+  );
 }
 
 Future<void> finishArticle(
@@ -445,8 +463,9 @@ class _TestWebViewWidget extends PlatformWebViewWidget {
     final controller = params.controller as _TestController;
     expect(
       controller.background,
-      isNotNull,
-      reason: 'Set the native canvas color before attaching the WebView',
+      defaultTargetPlatform == TargetPlatform.iOS ? isNull : isNotNull,
+      reason:
+          'Keep iOS opaque; configure other native canvases before attaching',
     );
     return const SizedBox.expand();
   }

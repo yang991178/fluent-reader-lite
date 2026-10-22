@@ -1,6 +1,7 @@
 import 'package:fluent_reader_lite/components/article_item.dart';
 import 'package:fluent_reader_lite/components/badge.dart';
 import 'package:fluent_reader_lite/components/mark_all_action_sheet.dart';
+import 'package:fluent_reader_lite/components/my_action_sheet_action.dart';
 import 'package:fluent_reader_lite/components/responsive_action_sheet.dart';
 import 'package:fluent_reader_lite/components/sync_control.dart';
 import 'package:fluent_reader_lite/generated/l10n.dart';
@@ -96,7 +97,7 @@ class _ItemListPageState extends State<ItemListPage> {
           final sheet = CupertinoActionSheet(
             title: Text(S.of(context).filter),
             actions: [
-              CupertinoActionSheetAction(
+              MyActionSheetAction(
                 child: Row(children: [
                   Icon(CupertinoIcons.today),
                   Text(S.of(context).allArticles),
@@ -108,7 +109,7 @@ class _ItemListPageState extends State<ItemListPage> {
                   _onScrollTop();
                 },
               ),
-              CupertinoActionSheetAction(
+              MyActionSheetAction(
                 child: Row(children: [
                   Icon(Icons.radio_button_checked),
                   Text(S.of(context).unreadOnly),
@@ -120,7 +121,7 @@ class _ItemListPageState extends State<ItemListPage> {
                   _onScrollTop();
                 },
               ),
-              CupertinoActionSheetAction(
+              MyActionSheetAction(
                 child: Row(children: [
                   Icon(CupertinoIcons.star_fill),
                   Text(S.of(context).starredOnly),
@@ -132,7 +133,7 @@ class _ItemListPageState extends State<ItemListPage> {
                   _onScrollTop();
                 },
               ),
-              CupertinoActionSheetAction(
+              MyActionSheetAction(
                 isDestructiveAction: true,
                 child: Row(children: [
                   Icon(CupertinoIcons.search,
@@ -148,7 +149,7 @@ class _ItemListPageState extends State<ItemListPage> {
                 },
               ),
               if (feed.search.length > 0)
-                CupertinoActionSheetAction(
+                MyActionSheetAction(
                   isDestructiveAction: true,
                   child: Row(children: [
                     Icon(CupertinoIcons.clear_fill,
@@ -163,7 +164,7 @@ class _ItemListPageState extends State<ItemListPage> {
                   },
                 ),
             ],
-            cancelButton: CupertinoActionSheetAction(
+            cancelButton: MyActionSheetAction(
               child: Text(S.of(context).cancel),
               onPressed: () {
                 Navigator.of(context, rootNavigator: true).pop();
@@ -196,7 +197,7 @@ class _ItemListPageState extends State<ItemListPage> {
       builder: (context) {
         final sheet = CupertinoActionSheet(
           actions: [
-            CupertinoActionSheetAction(
+            MyActionSheetAction(
               child: Row(children: [
                 Icon(item.hasRead
                     ? Icons.radio_button_checked
@@ -211,7 +212,7 @@ class _ItemListPageState extends State<ItemListPage> {
                 Global.itemsModel!.updateItem(item.id, read: !item.hasRead);
               },
             ),
-            CupertinoActionSheetAction(
+            MyActionSheetAction(
               child: Row(children: [
                 Icon(item.starred
                     ? CupertinoIcons.star
@@ -224,7 +225,7 @@ class _ItemListPageState extends State<ItemListPage> {
                 Global.itemsModel!.updateItem(item.id, starred: !item.starred);
               },
             ),
-            CupertinoActionSheetAction(
+            MyActionSheetAction(
               child: Row(children: [
                 Icon(CupertinoIcons.arrow_up),
                 Text(S.of(context).markAbove),
@@ -236,7 +237,7 @@ class _ItemListPageState extends State<ItemListPage> {
                     date: item.date, before: false);
               },
             ),
-            CupertinoActionSheetAction(
+            MyActionSheetAction(
               child: Row(children: [
                 Icon(CupertinoIcons.arrow_down),
                 Text(S.of(context).markBelow),
@@ -248,7 +249,7 @@ class _ItemListPageState extends State<ItemListPage> {
                     .markAllRead(getFeed()!.sids!, date: item.date);
               },
             ),
-            CupertinoActionSheetAction(
+            MyActionSheetAction(
               child: Row(children: [
                 Icon(CupertinoIcons.share),
                 Text(S.of(context).share),
@@ -265,7 +266,7 @@ class _ItemListPageState extends State<ItemListPage> {
               },
             ),
           ],
-          cancelButton: CupertinoActionSheetAction(
+          cancelButton: MyActionSheetAction(
             child: Text(S.of(context).cancel),
             onPressed: () {
               Navigator.of(context, rootNavigator: true).pop();
