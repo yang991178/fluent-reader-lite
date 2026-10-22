@@ -27,7 +27,7 @@ abstract class Global {
   static ServiceHandler? service;
   static Database? db;
   static Jaguar? server;
-  static final GlobalKey<NavigatorState> tabletPanel = GlobalKey();
+  static final GlobalKey<NavigatorState> articlePanel = GlobalKey();
 
   static void init() {
     assert(!_initialized);
@@ -82,11 +82,11 @@ abstract class Global {
         MediaQuery.of(context).platformBrightness;
   }
 
-  static bool get isTablet => tabletPanel.currentWidget != null;
+  static bool isTablet(BuildContext context) =>
+      MediaQuery.sizeOf(context).width > 640;
 
   static NavigatorState? responsiveNavigator(BuildContext context) {
-    return tabletPanel.currentWidget != null
-        ? Global.tabletPanel.currentState
-        : Navigator.of(context, rootNavigator: true);
+    return articlePanel.currentState ??
+        Navigator.of(context, rootNavigator: true);
   }
 }

@@ -33,7 +33,8 @@ class _GroupListPageState extends State<GroupListPage> {
     final navigationBar = CupertinoSliverNavigationBar(
       largeTitle: Text(S.of(context).groups),
       automaticallyImplyLeading: false,
-      backgroundColor: Global.isTablet ? CupertinoColors.systemBackground : null,
+      backgroundColor:
+          Global.isTablet(context) ? CupertinoColors.systemBackground : null,
       leading: CupertinoButton(
         padding: EdgeInsets.zero,
         child: Text(S.of(context).cancel),

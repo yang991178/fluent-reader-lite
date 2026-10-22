@@ -72,7 +72,7 @@ class CupertinoToolbar extends StatelessWidget {
           child: SafeArea(
             top: false,
             child: SizedBox(
-              height: Global.isTablet ? 50.0 : 44.0,
+              height: Global.isTablet(context) ? 50.0 : 44.0,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: _createButtons()
