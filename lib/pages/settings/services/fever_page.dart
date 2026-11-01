@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:fluent_reader_lite/components/reader_page_scaffold.dart';
 import 'package:crypto/crypto.dart';
 import 'package:fluent_reader_lite/components/list_tile_group.dart';
 import 'package:fluent_reader_lite/components/my_list_tile.dart';
@@ -254,7 +255,7 @@ class _FeverPageState extends State<FeverPage> {
         ], title: "");
       },
     );
-    final page = CupertinoPageScaffold(
+    final page = ReaderPageScaffold(
       backgroundColor: MyColors.background,
       navigationBar: CupertinoNavigationBar(
         middle: Text("Fever API"),

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:fluent_reader_lite/components/reader_page_scaffold.dart';
 import 'package:fluent_reader_lite/components/list_tile_group.dart';
 import 'package:fluent_reader_lite/components/my_list_tile.dart';
 import 'package:fluent_reader_lite/generated/l10n.dart';
@@ -322,7 +323,7 @@ class _InoreaderPageState extends State<InoreaderPage> {
         ], title: "");
       },
     );
-    final page = CupertinoPageScaffold(
+    final page = ReaderPageScaffold(
       backgroundColor: MyColors.background,
       navigationBar: CupertinoNavigationBar(
         middle: Text("Inoreader"),

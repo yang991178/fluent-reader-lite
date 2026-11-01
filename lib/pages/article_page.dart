@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:fluent_reader_lite/components/reader_page_scaffold.dart';
 import 'package:fluent_reader_lite/generated/l10n.dart';
 import 'package:fluent_reader_lite/models/feeds_model.dart';
 import 'package:fluent_reader_lite/models/item.dart';
@@ -333,7 +334,8 @@ class ArticlePageState extends State<ArticlePage> {
           ),
           bottom: false,
         );
-        return CupertinoPageScaffold(
+        return ReaderPageScaffold(
+          keepMiddle: true,
           navigationBar: CupertinoNavigationBar(
             backgroundColor: CupertinoColors.systemBackground,
             middle: CupertinoSlidingSegmentedControl(

@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:fluent_reader_lite/components/ios_bar_layout.dart';
+import 'package:fluent_reader_lite/components/reader_page_scaffold.dart';
 import 'package:fluent_reader_lite/generated/l10n.dart';
 import 'package:fluent_reader_lite/main.dart';
 import 'package:fluent_reader_lite/models/services/service_import.dart';
@@ -97,13 +99,16 @@ class _HomePageState extends State<HomePage> {
 
   Widget _constructPage(BuildContext context, Widget page) {
     final scrollController = PrimaryScrollController.of(context);
-    final scaffold = CupertinoPageScaffold(
+    final scaffold = ReaderPageScaffold(
       backgroundColor: CupertinoColors.systemBackground.resolveFrom(context),
       child: PrimaryScrollController(controller: scrollController, child: page),
     );
-    // iOS status-bar events carry no tap location. Disable the sidebar
-    // scaffold's handler on tablets while keeping its list controller.
-    return Global.isTablet(context)
+    // Status-bar events carry no tap location, so Duo's shared-row buttons can
+    // also trigger them. Keep the controller on the list (including explicit
+    // tab scroll-to-top), but hide it from the scaffold's automatic handler.
+    final sharedStatusRow =
+        IosBarLayoutScope.maybeOf(context)?.row(context) != null;
+    return Global.isTablet(context) || sharedStatusRow
         ? PrimaryScrollController.none(child: scaffold)
         : PrimaryScrollController(
             controller: scrollController,
@@ -179,6 +184,13 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    final layout = IosBarLayoutScope.maybeOf(context)?.layout;
+    final equalSplit =
+        layout?.size == size &&
+        layout?.division != null &&
+        size.width > size.height;
+    final sidebarWidth = equalSplit ? (size.width - 1) / 2 : 320.0;
     return Selector<SyncModel, bool>(
       selector: (context, syncModel) => syncModel.hasService,
       builder: (context, hasService, child) {
@@ -211,14 +223,23 @@ class _HomePageState extends State<HomePage> {
                     left: 0,
                     top: 0,
                     bottom: 0,
-                    width: isTablet ? 320 : MediaQuery.sizeOf(context).width,
+                    width: isTablet ? sidebarWidth : size.width,
                     child: ExcludeSemantics(
                       excluding: !isTablet && hasArticle,
-                      child: buildLeft(context),
+                      child: IosBarLayoutScope.pane(
+                        context,
+                        bounds: Rect.fromLTWH(
+                          0,
+                          0,
+                          isTablet ? sidebarWidth : size.width,
+                          MediaQuery.sizeOf(context).height,
+                        ),
+                        child: buildLeft(context),
+                      ),
                     ),
                   ),
                   Positioned(
-                    left: 320,
+                    left: sidebarWidth,
                     top: 0,
                     bottom: 0,
                     width: 1,
@@ -232,20 +253,30 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   Positioned.fill(
-                    left: isTablet ? 321 : 0,
+                    left: isTablet ? sidebarWidth + 1 : 0,
                     child: IgnorePointer(
                       ignoring: !isTablet && !hasArticle,
                       child: ClipRect(
-                        child: _buildNavigator(
-                          navigatorKey: Global.articlePanel,
-                          heroController: _heroControllers[2],
-                          observer: _articleObserver,
-                          routes: {
-                            '/': (context) => Global.isTablet(context)
-                                ? TabletBasePage()
-                                : const SizedBox.expand(),
-                            ...MyApp.baseRoutes,
-                          },
+                        child: IosBarLayoutScope.pane(
+                          context,
+                          bounds: Rect.fromLTWH(
+                            isTablet ? sidebarWidth + 1 : 0,
+                            0,
+                            MediaQuery.sizeOf(context).width -
+                                (isTablet ? sidebarWidth + 1 : 0),
+                            MediaQuery.sizeOf(context).height,
+                          ),
+                          child: _buildNavigator(
+                            navigatorKey: Global.articlePanel,
+                            heroController: _heroControllers[2],
+                            observer: _articleObserver,
+                            routes: {
+                              '/': (context) => Global.isTablet(context)
+                                  ? TabletBasePage()
+                                  : const SizedBox.expand(),
+                              ...MyApp.baseRoutes,
+                            },
+                          ),
                         ),
                       ),
                     ),
