@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 
 import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:material_ui/material_ui.dart' show VerticalDivider;
 import 'package:fluent_reader_lite/generated/l10n.dart';
 import 'package:fluent_reader_lite/main.dart';
 import 'package:fluent_reader_lite/models/feed.dart';
@@ -143,6 +144,250 @@ void main() {
       await tester.pumpWidget(const SizedBox.shrink());
     });
   }
+
+  testWidgets(
+    'Duo shared status row preserves the reader across folds and rotations',
+    (tester) async {
+      const channel = 'me.hyliu.fluent_reader_lite/ios_bar_layout';
+      const codec = StandardMethodCodec();
+      final messenger =
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+      messenger.setMockMethodCallHandler(
+        const MethodChannel(channel),
+        (_) async => null,
+      );
+      addTearDown(
+        () => messenger.setMockMethodCallHandler(
+          const MethodChannel(channel),
+          null,
+        ),
+      );
+      tester.view.devicePixelRatio = 1;
+      tester.view.padding = const FakeViewPadding(top: 82, bottom: 34);
+      tester.view.viewPadding = const FakeViewPadding(top: 82, bottom: 34);
+      tester.view.physicalSize = const Size(466, 678);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetPadding);
+      addTearDown(tester.view.resetViewPadding);
+      Future<void> updateLayout(
+        Size size, {
+        bool partiallyOpen = false,
+        bool liveActivity = false,
+      }) async {
+        tester.view.physicalSize = size;
+        await messenger.handlePlatformMessage(
+          channel,
+          codec.encodeSuccessEnvelope({
+            'width': size.width,
+            'height': size.height,
+            'topInset': 82.0,
+            'toolbar': [
+              16.0,
+              26.0,
+              size.width - (liveActivity ? 300 : 172),
+              44.0,
+            ],
+            'division': partiallyOpen
+                ? [size.width / 2 - 8, 0.0, 16.0, size.height]
+                : null,
+          }),
+          (_) {},
+        );
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+      }
+
+      await tester.pumpWidget(MyApp());
+      await tester.pumpAndSettle();
+      await updateLayout(const Size(466, 678));
+      await tester.tap(find.text('Article 0'));
+      await finishArticle(tester, platform, 1);
+      final articleState = ArticlePage.state.currentState!;
+      final webView = tester.element(find.byType(WebViewWidget));
+      for (final size in [
+        const Size(951, 669),
+        const Size(669, 951),
+        const Size(466, 678),
+      ]) {
+        await updateLayout(size);
+        expect(ArticlePage.state.currentState, same(articleState));
+        expect(tester.element(find.byType(WebViewWidget)), same(webView));
+        expect(platform.controllers, hasLength(1));
+        for (final label in [
+          S.current.rssText,
+          S.current.loadFull,
+          S.current.loadWebpage,
+        ]) {
+          final control = find.bySemanticsLabel(label);
+          final bounds = tester.getRect(control);
+          final portraitPane = size == const Size(669, 951);
+          expect(bounds.center.dy, portraitPane ? 104 : 48);
+          expect(
+            bounds.right,
+            lessThanOrEqualTo(size.width - (portraitPane ? 16 : 156)),
+          );
+        }
+        expect(tester.takeException(), isNull);
+      }
+      for (final partiallyOpen in [true, false, true]) {
+        await updateLayout(const Size(951, 669), partiallyOpen: partiallyOpen);
+        final divider = tester.getRect(find.byType(VerticalDivider));
+        final sidebar = tester.getSize(find.byType(ItemListPage).first);
+        expect(sidebar.width, partiallyOpen ? 475 : 320);
+        expect(divider.left, sidebar.width);
+        expect(
+          tester.getSize(find.byType(ArticlePage)).width,
+          partiallyOpen ? 475 : 630,
+        );
+        expect(ArticlePage.state.currentState, same(articleState));
+        expect(tester.element(find.byType(WebViewWidget)), same(webView));
+        expect(platform.controllers, hasLength(1));
+      }
+      await updateLayout(
+        const Size(669, 951),
+        partiallyOpen: true,
+        liveActivity: true,
+      );
+      expect(tester.getSize(find.byType(ItemListPage).first).width, 320);
+      final selector = find.byType(CupertinoSlidingSegmentedControl<int>);
+      expect(tester.getCenter(selector).dy, 104);
+      expect(
+        tester.getTopLeft(find.byType(WebViewWidget)).dy,
+        greaterThanOrEqualTo(126),
+      );
+      expect(tester.element(find.byType(WebViewWidget)), same(webView));
+      expect(platform.controllers, hasLength(1));
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.byType(CupertinoNavigationBarBackButton));
+      await tester.pumpAndSettle();
+      expect(find.byType(ArticlePage), findsNothing);
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.iOS),
+  );
+
+  testWidgets('Duo toolbar taps preserve feed offsets and tab scroll-to-top', (
+    tester,
+  ) async {
+    const channel = 'me.hyliu.fluent_reader_lite/ios_bar_layout';
+    final messenger =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(
+      const MethodChannel(channel),
+      (_) async => null,
+    );
+    addTearDown(
+      () => messenger.setMockMethodCallHandler(
+        const MethodChannel(channel),
+        null,
+      ),
+    );
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetPadding);
+    addTearDown(tester.view.resetViewPadding);
+    Future<void> geometry({bool duo = true}) async {
+      final size = duo ? const Size(466, 678) : const Size(390, 844);
+      final top = duo ? 82.0 : 62.0;
+      tester.view.physicalSize = size;
+      tester.view.padding = FakeViewPadding(top: top, bottom: 34);
+      tester.view.viewPadding = FakeViewPadding(top: top, bottom: 34);
+      await messenger.handlePlatformMessage(
+        channel,
+        const StandardMethodCodec().encodeSuccessEnvelope({
+          'width': size.width,
+          'height': size.height,
+          'topInset': top,
+          'toolbar': duo ? [16.0, 26.0, 250.0, 44.0] : [0.0, 62.0, 390.0, 44.0],
+        }),
+        (_) {},
+      );
+      await tester.pumpAndSettle();
+    }
+
+    final template = Global.itemsModel!.getItem('0')!;
+    final items = List.generate(
+      30,
+      (index) => template.clone()
+        ..id = '$index'
+        ..title = 'Article $index',
+    );
+    Global.itemsModel!.loadItems(items);
+    Global.feedsModel!.all.iids = items.map((item) => item.id).toList();
+    tester.view.physicalSize = const Size(466, 678);
+    tester.view.padding = const FakeViewPadding(top: 82, bottom: 34);
+    tester.view.viewPadding = const FakeViewPadding(top: 82, bottom: 34);
+    await tester.pumpWidget(MyApp());
+    await geometry();
+    final list = tester.element(find.byType(ItemListPage));
+    final controller = PrimaryScrollController.of(list);
+    Future<void> checkActions(ScrollController controller) async {
+      for (final label in [S.current.filter, S.current.markAll]) {
+        controller.jumpTo(500);
+        await tester.pump();
+        // iOS can deliver the locationless status-bar event before the button
+        // tap opens its modal; the scrolling animation must never start.
+        tester.simulateStatusBarTap();
+        await tester.tap(
+          find.byIcon(
+            label == S.current.filter
+                ? CupertinoIcons.line_horizontal_3_decrease_circle
+                : CupertinoIcons.checkmark_circle,
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(controller.offset, 500);
+        expect(find.byType(CupertinoActionSheet), findsOneWidget);
+        Navigator.of(
+          tester.element(find.byType(CupertinoActionSheet)),
+          rootNavigator: true,
+        ).pop();
+        await tester.pumpAndSettle();
+        expect(controller.offset, 500);
+      }
+    }
+
+    await checkActions(controller);
+    await tester.tap(find.text(S.current.feed));
+    await tester.pumpAndSettle();
+    expect(controller.offset, 0);
+
+    await tester.tap(find.text(S.current.subscriptions));
+    await tester.pumpAndSettle();
+    Global.feedsModel!.source = RSSFeed(sids: {'fixture'})
+      ..iids = items.map((item) => item.id).toList()
+      ..initialized = true
+      ..allLoaded = true;
+    final subscriptions = tester.element(find.byType(SubscriptionListPage));
+    Navigator.of(subscriptions).pushNamed('/feed', arguments: 'Test source');
+    await tester.pumpAndSettle();
+    final sourceList = tester.element(find.byType(ItemListPage));
+    final sourceController = PrimaryScrollController.of(sourceList);
+    await checkActions(sourceController);
+    await tester.tap(find.text(S.current.subscriptions));
+    await tester.pumpAndSettle();
+    expect(sourceController.offset, 0);
+    Navigator.of(sourceList).pop();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(S.current.feed));
+    await tester.pumpAndSettle();
+
+    controller.jumpTo(500);
+    await tester.pump();
+    await geometry(duo: false);
+    expect(
+      PrimaryScrollController.of(tester.element(find.byType(ItemListPage))),
+      same(controller),
+    );
+    expect(controller.offset, 500);
+    tester.simulateStatusBarTap();
+    await tester.pumpAndSettle();
+    expect(controller.offset, 0);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+  }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
 
   testWidgets(
     'Tablet status-bar taps preserve the list with and without articles',

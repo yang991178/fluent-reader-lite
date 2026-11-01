@@ -1,3 +1,4 @@
+import 'package:fluent_reader_lite/components/reader_page_scaffold.dart';
 import 'package:fluent_reader_lite/components/list_tile_group.dart';
 import 'package:fluent_reader_lite/components/my_list_tile.dart';
 import 'package:fluent_reader_lite/generated/l10n.dart';
@@ -31,7 +32,7 @@ class _GeneralPageState extends State<GeneralPage> {
   }
 
   @override
-  Widget build(BuildContext context) => CupertinoPageScaffold(
+  Widget build(BuildContext context) => ReaderPageScaffold(
         backgroundColor: MyColors.background,
         navigationBar: CupertinoNavigationBar(
           middle: Text(S.of(context).general),

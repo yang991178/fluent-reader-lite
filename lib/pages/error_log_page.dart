@@ -1,3 +1,4 @@
+import 'package:fluent_reader_lite/components/reader_page_scaffold.dart';
 import 'package:fluent_reader_lite/components/list_tile_group.dart';
 import 'package:fluent_reader_lite/generated/l10n.dart';
 import 'package:fluent_reader_lite/utils/colors.dart';
@@ -10,7 +11,7 @@ class ErrorLogPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final errorLog = Store.getErrorLog();
-    return CupertinoPageScaffold(
+    return ReaderPageScaffold(
       backgroundColor: MyColors.background,
       navigationBar: CupertinoNavigationBar(
         middle: Text(S.of(context).errorLog),

@@ -1,3 +1,4 @@
+import 'package:fluent_reader_lite/components/reader_page_scaffold.dart';
 import 'package:fluent_reader_lite/components/article_item.dart';
 import 'package:fluent_reader_lite/components/badge.dart';
 import 'package:fluent_reader_lite/components/mark_all_action_sheet.dart';
@@ -91,101 +92,125 @@ class _ItemListPageState extends State<ItemListPage> {
 
   void _openFilterModal() {
     showCupertinoModalPopup(
-        context: context,
-        builder: (context) {
-          final feed = getFeed()!;
-          final sheet = CupertinoActionSheet(
-            title: Text(S.of(context).filter),
-            actions: [
-              MyActionSheetAction(
-                child: Row(children: [
+      context: context,
+      builder: (context) {
+        final feed = getFeed()!;
+        final sheet = CupertinoActionSheet(
+          title: Text(S.of(context).filter),
+          actions: [
+            MyActionSheetAction(
+              child: Row(
+                children: [
                   Icon(CupertinoIcons.today),
                   Text(S.of(context).allArticles),
                   _iconPadding,
-                ], mainAxisAlignment: MainAxisAlignment.spaceBetween),
-                onPressed: () {
-                  Navigator.of(context, rootNavigator: true).pop();
-                  feed.setFilter(FilterType.All);
-                  _onScrollTop();
-                },
+                ],
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
               ),
-              MyActionSheetAction(
-                child: Row(children: [
+              onPressed: () {
+                Navigator.of(context, rootNavigator: true).pop();
+                feed.setFilter(FilterType.All);
+                _onScrollTop();
+              },
+            ),
+            MyActionSheetAction(
+              child: Row(
+                children: [
                   Icon(Icons.radio_button_checked),
                   Text(S.of(context).unreadOnly),
                   _iconPadding,
-                ], mainAxisAlignment: MainAxisAlignment.spaceBetween),
-                onPressed: () {
-                  Navigator.of(context, rootNavigator: true).pop();
-                  feed.setFilter(FilterType.Unread);
-                  _onScrollTop();
-                },
+                ],
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
               ),
-              MyActionSheetAction(
-                child: Row(children: [
+              onPressed: () {
+                Navigator.of(context, rootNavigator: true).pop();
+                feed.setFilter(FilterType.Unread);
+                _onScrollTop();
+              },
+            ),
+            MyActionSheetAction(
+              child: Row(
+                children: [
                   Icon(CupertinoIcons.star_fill),
                   Text(S.of(context).starredOnly),
                   _iconPadding,
-                ], mainAxisAlignment: MainAxisAlignment.spaceBetween),
+                ],
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              ),
+              onPressed: () {
+                Navigator.of(context, rootNavigator: true).pop();
+                feed.setFilter(FilterType.Starred);
+                _onScrollTop();
+              },
+            ),
+            MyActionSheetAction(
+              isDestructiveAction: true,
+              child: Row(
+                children: [
+                  Icon(
+                    CupertinoIcons.search,
+                    color: CupertinoColors.destructiveRed,
+                  ),
+                  Text(
+                    feed.search.length > 0
+                        ? S.of(context).editKeyword
+                        : S.of(context).search,
+                  ),
+                  _iconPadding,
+                ],
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              ),
+              onPressed: () {
+                Navigator.of(context, rootNavigator: true).pop();
+                _editSearchKeyword();
+              },
+            ),
+            if (feed.search.length > 0)
+              MyActionSheetAction(
+                isDestructiveAction: true,
+                child: Row(
+                  children: [
+                    Icon(
+                      CupertinoIcons.clear_fill,
+                      color: CupertinoColors.destructiveRed,
+                    ),
+                    Text(S.of(context).clearSearch),
+                    _iconPadding,
+                  ],
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                ),
                 onPressed: () {
                   Navigator.of(context, rootNavigator: true).pop();
-                  feed.setFilter(FilterType.Starred);
+                  feed.performSearch("");
                   _onScrollTop();
                 },
               ),
-              MyActionSheetAction(
-                isDestructiveAction: true,
-                child: Row(children: [
-                  Icon(CupertinoIcons.search,
-                      color: CupertinoColors.destructiveRed),
-                  Text(feed.search.length > 0
-                      ? S.of(context).editKeyword
-                      : S.of(context).search),
-                  _iconPadding,
-                ], mainAxisAlignment: MainAxisAlignment.spaceBetween),
-                onPressed: () {
-                  Navigator.of(context, rootNavigator: true).pop();
-                  _editSearchKeyword();
-                },
-              ),
-              if (feed.search.length > 0)
-                MyActionSheetAction(
-                  isDestructiveAction: true,
-                  child: Row(children: [
-                    Icon(CupertinoIcons.clear_fill,
-                        color: CupertinoColors.destructiveRed),
-                    Text(S.of(context).clearSearch),
-                    _iconPadding,
-                  ], mainAxisAlignment: MainAxisAlignment.spaceBetween),
-                  onPressed: () {
-                    Navigator.of(context, rootNavigator: true).pop();
-                    feed.performSearch("");
-                    _onScrollTop();
-                  },
-                ),
-            ],
-            cancelButton: MyActionSheetAction(
-              child: Text(S.of(context).cancel),
-              onPressed: () {
-                Navigator.of(context, rootNavigator: true).pop();
-              },
-            ),
-          );
-          return ResponsiveActionSheet(sheet);
-        });
+          ],
+          cancelButton: MyActionSheetAction(
+            child: Text(S.of(context).cancel),
+            onPressed: () {
+              Navigator.of(context, rootNavigator: true).pop();
+            },
+          ),
+        );
+        return ResponsiveActionSheet(sheet);
+      },
+    );
   }
 
   void _editSearchKeyword() async {
-    String? keyword = await Navigator.of(context).push(CupertinoPageRoute(
-      builder: (context) => TextEditorPage(
-        S.of(context).editKeyword,
-        (v) => v.trim().length > 0,
-        saveText: S.of(context).search,
-        initialValue: getFeed()!.search,
-        navigationBarColor: CupertinoColors.systemBackground,
-        autocorrect: true,
+    String? keyword = await Navigator.of(context).push(
+      CupertinoPageRoute(
+        builder: (context) => TextEditorPage(
+          S.of(context).editKeyword,
+          (v) => v.trim().length > 0,
+          saveText: S.of(context).search,
+          initialValue: getFeed()!.search,
+          navigationBarColor: CupertinoColors.systemBackground,
+          autocorrect: true,
+        ),
       ),
-    ));
+    );
     if (keyword == null) return;
     getFeed()!.performSearch(keyword);
     _onScrollTop();
@@ -198,71 +223,105 @@ class _ItemListPageState extends State<ItemListPage> {
         final sheet = CupertinoActionSheet(
           actions: [
             MyActionSheetAction(
-              child: Row(children: [
-                Icon(item.hasRead
-                    ? Icons.radio_button_checked
-                    : Icons.radio_button_unchecked),
-                Text(item.hasRead
-                    ? S.of(context).markUnread
-                    : S.of(context).markRead),
-                _iconPadding,
-              ], mainAxisAlignment: MainAxisAlignment.spaceBetween),
+              child: Row(
+                children: [
+                  Icon(
+                    item.hasRead
+                        ? Icons.radio_button_checked
+                        : Icons.radio_button_unchecked,
+                  ),
+                  Text(
+                    item.hasRead
+                        ? S.of(context).markUnread
+                        : S.of(context).markRead,
+                  ),
+                  _iconPadding,
+                ],
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              ),
               onPressed: () {
                 Navigator.of(context, rootNavigator: true).pop();
                 Global.itemsModel!.updateItem(item.id, read: !item.hasRead);
               },
             ),
             MyActionSheetAction(
-              child: Row(children: [
-                Icon(item.starred
-                    ? CupertinoIcons.star
-                    : CupertinoIcons.star_fill),
-                Text(item.starred ? S.of(context).unstar : S.of(context).star),
-                _iconPadding,
-              ], mainAxisAlignment: MainAxisAlignment.spaceBetween),
+              child: Row(
+                children: [
+                  Icon(
+                    item.starred
+                        ? CupertinoIcons.star
+                        : CupertinoIcons.star_fill,
+                  ),
+                  Text(
+                    item.starred ? S.of(context).unstar : S.of(context).star,
+                  ),
+                  _iconPadding,
+                ],
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              ),
               onPressed: () {
                 Navigator.of(context, rootNavigator: true).pop();
                 Global.itemsModel!.updateItem(item.id, starred: !item.starred);
               },
             ),
             MyActionSheetAction(
-              child: Row(children: [
-                Icon(CupertinoIcons.arrow_up),
-                Text(S.of(context).markAbove),
-                _iconPadding,
-              ], mainAxisAlignment: MainAxisAlignment.spaceBetween),
+              child: Row(
+                children: [
+                  Icon(CupertinoIcons.arrow_up),
+                  Text(S.of(context).markAbove),
+                  _iconPadding,
+                ],
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              ),
               onPressed: () {
                 Navigator.of(context, rootNavigator: true).pop();
-                Global.itemsModel!.markAllRead(getFeed()!.sids!,
-                    date: item.date, before: false);
+                Global.itemsModel!.markAllRead(
+                  getFeed()!.sids!,
+                  date: item.date,
+                  before: false,
+                );
               },
             ),
             MyActionSheetAction(
-              child: Row(children: [
-                Icon(CupertinoIcons.arrow_down),
-                Text(S.of(context).markBelow),
-                _iconPadding,
-              ], mainAxisAlignment: MainAxisAlignment.spaceBetween),
+              child: Row(
+                children: [
+                  Icon(CupertinoIcons.arrow_down),
+                  Text(S.of(context).markBelow),
+                  _iconPadding,
+                ],
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              ),
               onPressed: () {
                 Navigator.of(context, rootNavigator: true).pop();
-                Global.itemsModel!
-                    .markAllRead(getFeed()!.sids!, date: item.date);
+                Global.itemsModel!.markAllRead(
+                  getFeed()!.sids!,
+                  date: item.date,
+                );
               },
             ),
             MyActionSheetAction(
-              child: Row(children: [
-                Icon(CupertinoIcons.share),
-                Text(S.of(context).share),
-                _iconPadding,
-              ], mainAxisAlignment: MainAxisAlignment.spaceBetween),
+              child: Row(
+                children: [
+                  Icon(CupertinoIcons.share),
+                  Text(S.of(context).share),
+                  _iconPadding,
+                ],
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              ),
               onPressed: () {
                 Navigator.of(context, rootNavigator: true).pop();
                 final media = MediaQuery.of(context);
-                SharePlus.instance.share(ShareParams(
-                  uri: Uri.parse(item.link),
-                  sharePositionOrigin: Rect.fromLTWH(
-                      160, media.size.height - media.padding.bottom, 0, 0),
-                ));
+                SharePlus.instance.share(
+                  ShareParams(
+                    uri: Uri.parse(item.link),
+                    sharePositionOrigin: Rect.fromLTWH(
+                      160,
+                      media.size.height - media.padding.bottom,
+                      0,
+                      0,
+                    ),
+                  ),
+                );
               },
             ),
           ],
@@ -279,22 +338,22 @@ class _ItemListPageState extends State<ItemListPage> {
   }
 
   Widget _titleFromFilter() => Consumer<FeedsModel>(
-        builder: (context, feedsModel, child) {
-          String text;
-          switch (getFeed()!.filterType) {
-            case FilterType.Unread:
-              text = S.of(context).unread;
-              break;
-            case FilterType.Starred:
-              text = S.of(context).starred;
-              break;
-            default:
-              text = S.of(context).all;
-              break;
-          }
-          return Text(text, overflow: TextOverflow.ellipsis);
-        },
-      );
+    builder: (context, feedsModel, child) {
+      String text;
+      switch (getFeed()!.filterType) {
+        case FilterType.Unread:
+          text = S.of(context).unread;
+          break;
+        case FilterType.Starred:
+          text = S.of(context).starred;
+          break;
+        default:
+          text = S.of(context).all;
+          break;
+      }
+      return Text(text, overflow: TextOverflow.ellipsis);
+    },
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -304,17 +363,13 @@ class _ItemListPageState extends State<ItemListPage> {
       children: [
         Container(
           constraints: BoxConstraints(
-            maxWidth:
-                Global.isTablet(context)
-                    ? 260
-                    : MediaQuery.of(context).size.width - 60,
+            maxWidth: Global.isTablet(context)
+                ? 260
+                : MediaQuery.of(context).size.width - 60,
           ),
           child: title == null
               ? _titleFromFilter()
-              : Text(
-                  title,
-                  overflow: TextOverflow.ellipsis,
-                ),
+              : Text(title, overflow: TextOverflow.ellipsis),
         ),
         Consumer<SourcesModel>(
           builder: (context, sourcesModel, child) {
@@ -335,15 +390,17 @@ class _ItemListPageState extends State<ItemListPage> {
         ),
       ],
     );
-    final navigationBar = CupertinoSliverNavigationBar(
+    final navigationBar = ReaderSliverNavigationBar(
+      CupertinoSliverNavigationBar(
         stretch: false,
         heroTag: title != null ? "source" : "all",
         transitionBetweenRoutes: true,
         backgroundColor: CupertinoColors.systemBackground,
         largeTitle: titleWidget,
-        trailing: Container(
-          transform: Matrix4.translationValues(12, 0, 0),
-          child: Row(mainAxisSize: MainAxisSize.min, children: [
+        padding: const EdgeInsetsDirectional.only(start: 0, end: 0),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
             CupertinoButton(
               padding: EdgeInsets.zero,
               child: Icon(
@@ -368,15 +425,20 @@ class _ItemListPageState extends State<ItemListPage> {
                 );
               },
             ),
-          ]),
-        ));
+          ],
+        ),
+      ),
+    );
     final subscriptionList = Consumer<FeedsModel>(
       builder: (context, feedsModel, child) {
         var feed = getFeed()!;
         return SliverList(
           delegate: SliverChildBuilderDelegate((content, index) {
-            return Selector2<ItemsModel, SourcesModel,
-                Tuple2<RSSItem, RSSSource?>>(
+            return Selector2<
+              ItemsModel,
+              SourcesModel,
+              Tuple2<RSSItem, RSSSource?>
+            >(
               selector: (context, itemsModel, sourcesModel) {
                 var item = itemsModel.getItem(feed.iids[index])!;
                 var source = sourcesModel.getSource(item.source);
@@ -389,32 +451,40 @@ class _ItemListPageState extends State<ItemListPage> {
         );
       },
     );
-    final loadMoreIndicator =
-        Consumer<FeedsModel>(builder: (context, feedsModel, child) {
-      var feed = getFeed()!;
-      return SliverToBoxAdapter(
+    final loadMoreIndicator = Consumer<FeedsModel>(
+      builder: (context, feedsModel, child) {
+        var feed = getFeed()!;
+        return SliverToBoxAdapter(
           child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 20),
-        child: Center(
-            child: feed.allLoaded
-                ? Text(S.of(context).allLoaded,
-                    style: TextStyle(
-                      color: CupertinoColors.tertiaryLabel.resolveFrom(context),
-                    ))
-                : CupertinoActivityIndicator()),
-      ));
-    });
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: Center(
+              child: feed.allLoaded
+                  ? Text(
+                      S.of(context).allLoaded,
+                      style: TextStyle(
+                        color: CupertinoColors.tertiaryLabel.resolveFrom(
+                          context,
+                        ),
+                      ),
+                    )
+                  : CupertinoActivityIndicator(),
+            ),
+          ),
+        );
+      },
+    );
     return NotificationListener<ScrollNotification>(
       onNotification: _onScroll,
       child: CupertinoScrollbar(
-          child: CustomScrollView(
-        slivers: [
-          navigationBar,
-          SyncControl(),
-          subscriptionList,
-          loadMoreIndicator,
-        ],
-      )),
+        child: CustomScrollView(
+          slivers: [
+            navigationBar,
+            SyncControl(),
+            subscriptionList,
+            loadMoreIndicator,
+          ],
+        ),
+      ),
     );
   }
 }

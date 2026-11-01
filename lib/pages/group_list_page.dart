@@ -1,3 +1,4 @@
+import 'package:fluent_reader_lite/components/reader_page_scaffold.dart';
 import 'package:fluent_reader_lite/components/badge.dart';
 import 'package:fluent_reader_lite/components/dismissible_background.dart';
 import 'package:fluent_reader_lite/components/mark_all_action_sheet.dart';
@@ -30,7 +31,7 @@ class _GroupListPageState extends State<GroupListPage> {
 
   @override
   Widget build(BuildContext context) {
-    final navigationBar = CupertinoSliverNavigationBar(
+    final navigationBar = ReaderSliverNavigationBar(CupertinoSliverNavigationBar(
       largeTitle: Text(S.of(context).groups),
       automaticallyImplyLeading: false,
       backgroundColor:
@@ -40,7 +41,7 @@ class _GroupListPageState extends State<GroupListPage> {
         child: Text(S.of(context).cancel),
         onPressed: () { Navigator.of(context).pop(); }, minimumSize: Size(36, 36),
       ),
-    );
+    ));
     final allSources = Consumer<SourcesModel>(
       builder: (context, sourcesModel, child) {
         var count = _unreadCount(sourcesModel.getSources());
@@ -108,7 +109,7 @@ class _GroupListPageState extends State<GroupListPage> {
     final padding = SliverToBoxAdapter(child: Padding(
       padding: EdgeInsets.only(bottom: 80),
     ),);
-    return CupertinoPageScaffold(
+    return ReaderPageScaffold(
       backgroundColor: CupertinoColors.systemBackground,
       child: CupertinoScrollbar(child: CustomScrollView(
         slivers: [

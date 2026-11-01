@@ -1,4 +1,5 @@
 import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:fluent_reader_lite/components/reader_page_scaffold.dart';
 import 'package:fluent_reader_lite/generated/l10n.dart';
 import 'package:fluent_reader_lite/main.dart';
 import 'package:fluent_reader_lite/models/feeds_model.dart';
@@ -50,6 +51,113 @@ void main() {
     Global.groupsModel!.dispose();
     Global.syncModel!.dispose();
   });
+
+  testWidgets(
+    'Duo keeps the subscription toggle with trailing actions and a large title',
+    (tester) async {
+      final semantics = tester.ensureSemantics();
+      const channel = 'me.hyliu.fluent_reader_lite/ios_bar_layout';
+      final messenger =
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+      messenger.setMockMethodCallHandler(
+        const MethodChannel(channel),
+        (_) async => null,
+      );
+      addTearDown(
+        () => messenger.setMockMethodCallHandler(
+          const MethodChannel(channel),
+          null,
+        ),
+      );
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(466, 678);
+      tester.view.padding = const FakeViewPadding(top: 82, bottom: 34);
+      tester.view.viewPadding = const FakeViewPadding(top: 82, bottom: 34);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetPadding);
+      addTearDown(tester.view.resetViewPadding);
+      Global.syncModel!.hasService = true;
+      Global.feedsModel!.all
+        ..initialized = true
+        ..allLoaded = true;
+      await tester.pumpWidget(MyApp());
+      await tester.pumpAndSettle();
+      Future<void> sendGeometry(List<double>? toolbar) async {
+        await messenger.handlePlatformMessage(
+          channel,
+          const StandardMethodCodec().encodeSuccessEnvelope({
+            'width': 466.0,
+            'height': 678.0,
+            'topInset': 82.0,
+            'toolbar': toolbar,
+          }),
+          (_) {},
+        );
+        await tester.pumpAndSettle();
+      }
+
+      await sendGeometry([16, 26, 250, 44]);
+      await tester.tap(find.text(S.current.subscriptions));
+      await tester.pumpAndSettle();
+      final toggle = find.byIcon(Icons.radio_button_unchecked);
+      final markAll = find.byIcon(CupertinoIcons.checkmark_circle);
+      final settings = find.byIcon(CupertinoIcons.settings);
+      expect(tester.widget<Icon>(toggle).semanticLabel, S.current.unreadOnly);
+      expect(tester.getCenter(toggle).dy, 48);
+      expect(tester.getCenter(markAll).dy, 48);
+      expect(tester.getCenter(settings).dy, 48);
+      expect(
+        tester.getRect(toggle).right,
+        lessThan(tester.getRect(markAll).left),
+      );
+      expect(
+        tester.getRect(markAll).right,
+        lessThan(tester.getRect(settings).left),
+      );
+      expect(tester.getRect(settings).right, lessThan(280));
+      final title = find.descendant(
+        of: find.byType(ReaderSliverNavigationBar),
+        matching: find.text(S.current.subscriptions),
+      );
+      expect(tester.getTopLeft(title).dy, greaterThan(82));
+      expect(DefaultTextStyle.of(tester.element(title)).style.fontSize, 34);
+      // The narrowest frame captured with a compact Live Activity must leave
+      // all three subscription actions and the Groups button reachable.
+      await sendGeometry([2.3333333333333335, 26, 211, 44]);
+      final groupsButton = find
+          .ancestor(
+            of: find.text(S.current.groups),
+            matching: find.byType(CupertinoButton),
+          )
+          .first;
+      expect(groupsButton.hitTestable(), findsOneWidget);
+      for (final icon in [toggle, markAll, settings]) {
+        expect(icon.hitTestable(), findsOneWidget);
+        expect(tester.getCenter(icon).dy, 48);
+        expect(tester.getRect(icon).right, lessThan(213.33333333333334));
+      }
+      expect(tester.getTopLeft(title).dy, greaterThan(82));
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      expect(Store.sp.getBool(StoreKeys.UNREAD_SUBS_ONLY), isTrue);
+      // Returning to ordinary geometry removes only the Duo-specific button.
+      await sendGeometry(null);
+      expect(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is Icon &&
+              widget.semanticLabel == S.current.allSubscriptions,
+        ),
+        findsNothing,
+      );
+      expect(find.byType(CupertinoSliverNavigationBar), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      semantics.dispose();
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.iOS),
+  );
 
   for (final size in [const Size(390, 844), const Size(1024, 768)]) {
     testWidgets('All tabs inherit theme changes at $size', (tester) async {

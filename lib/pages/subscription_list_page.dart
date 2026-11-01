@@ -1,3 +1,5 @@
+import 'package:fluent_reader_lite/components/ios_bar_layout.dart';
+import 'package:fluent_reader_lite/components/reader_page_scaffold.dart';
 import 'package:fluent_reader_lite/components/badge.dart';
 import 'package:fluent_reader_lite/components/mark_all_action_sheet.dart';
 import 'package:fluent_reader_lite/components/my_list_tile.dart';
@@ -62,9 +64,8 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
   void _openGroups() async {
     List<String?>? result;
     if (Global.isTablet(context)) {
-      result = await Navigator.of(context).push(CupertinoPageRoute(
-        builder: (context) => GroupListPage(),
-      ));
+      result = await Navigator.of(context)
+          .push(CupertinoPageRoute(builder: (context) => GroupListPage()));
     } else {
       setState(() {
         transitioning = true;
@@ -138,49 +139,55 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
 
   Widget _buildUnreadTip() {
     return SliverToBoxAdapter(
-        child: Container(
-      padding: EdgeInsets.all(16),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: EdgeInsets.all(12),
-          color: CupertinoColors.secondarySystemBackground.resolveFrom(context),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: EdgeInsets.only(right: 12),
-                child: Icon(Icons.radio_button_checked),
-              ),
-              Flexible(
+      child: Container(
+        padding: EdgeInsets.all(16),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: EdgeInsets.all(12),
+            color: CupertinoColors.secondarySystemBackground.resolveFrom(
+              context,
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(right: 12),
+                  child: Icon(Icons.radio_button_checked),
+                ),
+                Flexible(
                   child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    S.of(context).unreadSourceTip,
-                    style: TextStyle(
-                      color: CupertinoColors.label.resolveFrom(context),
-                      fontWeight: FontWeight.bold,
-                    ),
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        S.of(context).unreadSourceTip,
+                        style: TextStyle(
+                          color: CupertinoColors.label.resolveFrom(context),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Padding(padding: EdgeInsets.only(bottom: 6)),
+                      CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        child: Text(S.of(context).confirm),
+                        onPressed: _dismissTip,
+                        minimumSize: Size(28, 28),
+                      ),
+                    ],
                   ),
-                  Padding(padding: EdgeInsets.only(bottom: 6)),
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    child: Text(S.of(context).confirm),
-                    onPressed: _dismissTip,
-                    minimumSize: Size(28, 28),
-                  ),
-                ],
-              )),
-            ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
-    ));
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final sharedStatusRow =
+        IosBarLayoutScope.maybeOf(context)?.row(context) != null;
     final titleWidget = GestureDetector(
       onLongPress: _toggleUnreadOnly,
       child: Row(
@@ -197,7 +204,7 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          if (unreadOnly)
+          if (unreadOnly && !sharedStatusRow)
             Padding(
               padding: EdgeInsets.only(left: 4),
               child: Icon(Icons.radio_button_checked, size: 18),
@@ -205,7 +212,8 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
         ],
       ),
     );
-    final navigationBar = CupertinoSliverNavigationBar(
+    final navigationBar = ReaderSliverNavigationBar(
+      CupertinoSliverNavigationBar(
         stretch: false,
         largeTitle: titleWidget,
         heroTag: "subscriptions",
@@ -214,35 +222,48 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
             ? MyColors.tileBackground
             : CupertinoColors.systemBackground,
         leading: CupertinoButton(
-          padding: EdgeInsets.zero,
+          padding: EdgeInsets.symmetric(horizontal: 12),
           child: Text(S.of(context).groups),
           onPressed: _openGroups,
           minimumSize: Size(36, 36),
         ),
-        trailing: Container(
-          transform: Matrix4.translationValues(12, 0, 0),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
+        padding: const EdgeInsetsDirectional.only(start: 0, end: 0),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (sharedStatusRow)
               CupertinoButton(
                 padding: EdgeInsets.zero,
+                onPressed: _toggleUnreadOnly,
                 child: Icon(
-                  CupertinoIcons.checkmark_circle,
-                  semanticLabel: S.of(context).markAll,
+                  unreadOnly
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_unchecked,
+                  semanticLabel: unreadOnly
+                      ? S.of(context).allSubscriptions
+                      : S.of(context).unreadOnly,
                 ),
-                onPressed: _openMarkAllModal,
               ),
-              CupertinoButton(
-                padding: EdgeInsets.zero,
-                child: Icon(
-                  CupertinoIcons.settings,
-                  semanticLabel: S.of(context).settings,
-                ),
-                onPressed: _openSettings,
+            CupertinoButton(
+              padding: EdgeInsets.zero,
+              child: Icon(
+                CupertinoIcons.checkmark_circle,
+                semanticLabel: S.of(context).markAll,
               ),
-            ],
-          ),
-        ));
+              onPressed: _openMarkAllModal,
+            ),
+            CupertinoButton(
+              padding: EdgeInsets.zero,
+              child: Icon(
+                CupertinoIcons.settings,
+                semanticLabel: S.of(context).settings,
+              ),
+              onPressed: _openSettings,
+            ),
+          ],
+        ),
+      ),
+    );
     final sourcesList = Consumer<SourcesModel>(
       builder: (context, sourcesModel, child) {
         List<RSSSource?> sources;
@@ -305,31 +326,38 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
       },
     );
     return CupertinoScrollbar(
-        child: CustomScrollView(slivers: [
-      navigationBar,
-      SyncControl(),
-      if (Global.sourcesModel!.showUnreadTip) _buildUnreadTip(),
-      if (sids != null && sids!.length > 0)
-        Consumer<SourcesModel>(
-          builder: (context, sourcesModel, child) {
-            var count = sids!
-                .map((sid) => sourcesModel.getSource(sid))
-                .fold(0, (dynamic c, s) => c + s!.unreadCount);
-            return SliverToBoxAdapter(
-                child: MyListTile(
-              title: Text(S.of(context).allArticles),
-              trailing: count > 0 ? Badge(count) : null,
-              trailingChevron: false,
-              onTap: () async {
-                await Global.feedsModel!.initSourcesFeed(sids!.toList());
-                Navigator.of(context).pushNamed("/feed", arguments: title);
+      child: CustomScrollView(
+        slivers: [
+          navigationBar,
+          SyncControl(),
+          if (Global.sourcesModel!.showUnreadTip &&
+              IosBarLayoutScope.maybeOf(context)?.row(context) == null)
+            _buildUnreadTip(),
+          if (sids != null && sids!.length > 0)
+            Consumer<SourcesModel>(
+              builder: (context, sourcesModel, child) {
+                var count = sids!
+                    .map((sid) => sourcesModel.getSource(sid))
+                    .fold(0, (dynamic c, s) => c + s!.unreadCount);
+                return SliverToBoxAdapter(
+                  child: MyListTile(
+                    title: Text(S.of(context).allArticles),
+                    trailing: count > 0 ? Badge(count) : null,
+                    trailingChevron: false,
+                    onTap: () async {
+                      await Global.feedsModel!.initSourcesFeed(sids!.toList());
+                      Navigator.of(context)
+                          .pushNamed("/feed", arguments: title);
+                    },
+                    background: CupertinoColors.systemBackground,
+                  ),
+                );
               },
-              background: CupertinoColors.systemBackground,
-            ));
-          },
-        ),
-      sourcesList,
-      syncInfo,
-    ]));
+            ),
+          sourcesList,
+          syncInfo,
+        ],
+      ),
+    );
   }
 }

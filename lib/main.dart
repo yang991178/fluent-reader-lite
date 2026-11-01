@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:fluent_reader_lite/components/ios_bar_layout.dart';
 import 'package:fluent_reader_lite/models/service.dart';
 import 'package:fluent_reader_lite/pages/article_page.dart';
 import 'package:fluent_reader_lite/pages/error_log_page.dart';
@@ -151,7 +152,7 @@ class MyApp extends StatelessWidget {
             );
             app = Theme(
               data: ThemeData(brightness: CupertinoTheme.brightnessOf(context)),
-              child: app,
+              child: IosBarLayoutProvider(child: app),
             );
             final mediaQueryData = MediaQuery.of(context);
             final textScale = Global.globalModel!.textScale;
