@@ -12,6 +12,7 @@ class IosBarLayout {
     required this.topInset,
     this.toolbar,
     this.division,
+    this.avoidsWindowControls = false,
   });
 
   factory IosBarLayout.fromEvent(dynamic event) {
@@ -31,12 +32,16 @@ class IosBarLayout {
       topInset: (event['topInset'] as num).toDouble(),
       division: rect(event['division']),
       toolbar: rect(event['toolbar']),
+      avoidsWindowControls: event['avoidsWindowControls'] == true,
     );
   }
 
   final Size size;
   final double topInset;
   final Rect? toolbar;
+
+  /// Whether UIKit reserves horizontal space for iPad window controls.
+  final bool avoidsWindowControls;
 
   /// The active vertical fold region reported by UIKit, if it divides the view.
   final Rect? division;
@@ -125,18 +130,17 @@ class IosBarLayoutScope extends InheritedWidget {
       return null;
     }
     final toolbar = data.toolbar;
-    // UIKit places a normal iPhone/iPad toolbar below the status area. On Duo
-    // it fits inside that area, even when a compact Live Activity crosses the
-    // screen midpoint. Expanded activities remain temporary system overlays.
+    // Use a custom row for Duo's shared status area or a bar that must avoid
+    // iPad window controls. Ordinary navigation bars retain Cupertino layout.
     if (toolbar == null ||
         toolbar.isEmpty ||
         toolbar.height < kMinInteractiveDimensionCupertino ||
         toolbar.top < 0 ||
-        toolbar.bottom > data.topInset) {
+        (toolbar.bottom > data.topInset && !data.avoidsWindowControls)) {
       return null;
     }
     return IosNavigationRow(
-      data.topInset,
+      math.max(data.topInset, toolbar.bottom),
       math.max(media.padding.left, toolbar.left - bounds.left),
       math.max(media.padding.right, bounds.right - toolbar.right),
       toolbar.center.dy,

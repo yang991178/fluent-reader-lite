@@ -1,3 +1,4 @@
+import 'package:fluent_reader_lite/components/responsive_action_sheet.dart';
 import 'package:fluent_reader_lite/components/ios_bar_layout.dart';
 import 'package:fluent_reader_lite/components/reader_page_scaffold.dart';
 import 'package:fluent_reader_lite/components/badge.dart';
@@ -103,7 +104,7 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
   }
 
   void _openMarkAllModal() {
-    showCupertinoModalPopup(
+    showResponsiveActionSheet(
       context: context,
       builder: (context) =>
           MarkAllActionSheet(sids == null ? {} : Set.from(sids!)),
@@ -227,7 +228,7 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
           onPressed: _openGroups,
           minimumSize: Size(36, 36),
         ),
-        padding: const EdgeInsetsDirectional.only(start: 0, end: 0),
+        padding: EdgeInsetsDirectional.zero,
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

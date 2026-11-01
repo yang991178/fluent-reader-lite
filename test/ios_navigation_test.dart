@@ -52,6 +52,85 @@ void main() {
   }
 
   testWidgets(
+    'Windowed iPad navigation avoids controls without moving its body',
+    (tester) async {
+      const size = Size(902, 671.5);
+      await sizeView(tester, size);
+      var taps = 0;
+      final page = ReaderPageScaffold(
+        keepMiddle: true,
+        navigationBar: CupertinoNavigationBar(
+          leading: CupertinoButton(
+            padding: EdgeInsets.zero,
+            onPressed: () => taps++,
+            child: const Icon(CupertinoIcons.sidebar_left),
+          ),
+          middle: const SizedBox(width: 180, height: 32, key: Key('selector')),
+          trailing: CupertinoButton(
+            padding: EdgeInsets.zero,
+            onPressed: () => taps++,
+            child: const Icon(CupertinoIcons.fullscreen),
+          ),
+        ),
+        child: const SafeArea(child: SizedBox.expand(key: Key('body'))),
+      );
+      Element? originalBody;
+      for (final (left, keyboard) in [
+        (66.0, 0.0),
+        (128.0, 200.0),
+        (66.0, 0.0),
+      ]) {
+        // Native geometry captured while the iPad window was floating. This
+        // bar sits below the top safe area, beside the window controls.
+        final toolbar = Rect.fromLTWH(left, 10, 892.5 - left, 44);
+        await tester.pumpWidget(
+          _host(
+            page,
+            size: size,
+            top: 10,
+            keyboard: keyboard,
+            layout: IosBarLayout(
+              size: size,
+              topInset: 10,
+              toolbar: toolbar,
+              avoidsWindowControls: true,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final leading = find.ancestor(
+          of: find.byIcon(CupertinoIcons.sidebar_left),
+          matching: find.byType(CupertinoButton),
+        );
+        final trailing = find.ancestor(
+          of: find.byIcon(CupertinoIcons.fullscreen),
+          matching: find.byType(CupertinoButton),
+        );
+        expect(tester.getRect(leading).left, greaterThanOrEqualTo(left));
+        expect(
+          tester.getRect(trailing).right,
+          lessThanOrEqualTo(toolbar.right),
+        );
+        expect(tester.getCenter(leading).dy, 32);
+        expect(tester.getCenter(find.byKey(const Key('selector'))).dy, 32);
+        final body = tester.getRect(find.byKey(const Key('body')));
+        expect(body.top, 54);
+        expect(body.bottom, size.height - (keyboard > 0 ? keyboard : 34));
+        originalBody ??= tester.element(find.byKey(const Key('body')));
+        expect(
+          tester.element(find.byKey(const Key('body'))),
+          same(originalBody),
+        );
+        await tester.tap(leading);
+        await tester.tap(trailing);
+        expect(tester.takeException(), isNull);
+      }
+      expect(taps, 6);
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.iOS),
+  );
+
+  testWidgets(
     'Corner row prioritizes tappable actions and hides a crowded title',
     (tester) async {
       await sizeView(tester, _cover);

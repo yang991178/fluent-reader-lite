@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:fluent_reader_lite/components/article_focus_controls.dart';
+import 'package:fluent_reader_lite/components/article_focus_scope.dart';
 import 'package:fluent_reader_lite/components/reader_page_scaffold.dart';
 import 'package:fluent_reader_lite/generated/l10n.dart';
 import 'package:fluent_reader_lite/models/feeds_model.dart';
@@ -37,6 +39,7 @@ class ArticlePage extends StatefulWidget {
 enum _ArticleLoadState { Loading, Success, Failure }
 
 class ArticlePageState extends State<ArticlePage> {
+  final _shareButtonKey = GlobalKey();
   WebViewController? _controller;
   Brightness? _brightness;
   int requestId = 0;
@@ -47,6 +50,7 @@ class ArticlePageState extends State<ArticlePage> {
   bool? isSourceFeed;
 
   void loadNewItem(String? id, {bool? isSource}) {
+    ArticleFocusScope.maybeOf(context)?.showArticle();
     requestId += 1;
     if (!Global.itemsModel!.getItem(id)!.hasRead) {
       Global.itemsModel!.updateItem(id, read: true);
@@ -260,6 +264,7 @@ class ArticlePageState extends State<ArticlePage> {
 
   @override
   Widget build(BuildContext context) {
+    final focus = ArticleFocusScope.maybeOf(context);
     final Tuple2<String, bool>? arguments =
         ModalRoute.of(context)!.settings.arguments as Tuple2<String, bool>?;
     if (iid == null) iid = arguments!.item1;
@@ -302,7 +307,11 @@ class ArticlePageState extends State<ArticlePage> {
           child: IndexedStack(
             index: loaded.index,
             children: [
-              Center(child: CupertinoActivityIndicator()),
+              Center(
+                child: CupertinoActivityIndicator(
+                  animating: loaded == _ArticleLoadState.Loading,
+                ),
+              ),
               if (_controller != null)
                 WebViewWidget(
                   key: Key("a-$iid-${_target!.index}-$requestId"),
@@ -334,106 +343,123 @@ class ArticlePageState extends State<ArticlePage> {
           ),
           bottom: false,
         );
-        return ReaderPageScaffold(
-          keepMiddle: true,
-          navigationBar: CupertinoNavigationBar(
-            backgroundColor: CupertinoColors.systemBackground,
-            middle: CupertinoSlidingSegmentedControl(
-              children: viewOptions,
-              onValueChanged: (dynamic v) {
-                _setOpenTarget(source, target: SourceOpenTarget.values[v]);
-                _loadOpenTarget(item, source);
-              },
-              groupValue: _target!.index,
+        return PopScope(
+          canPop: focus?.enabled != true || focus!.listVisible,
+          onPopInvokedWithResult: (didPop, result) {
+            if (!didPop && focus?.enabled == true) focus!.showList();
+          },
+          child: ReaderPageScaffold(
+            keepMiddle: true,
+            navigationBar: CupertinoNavigationBar(
+              padding: EdgeInsetsDirectional.zero,
+              backgroundColor: CupertinoColors.systemBackground,
+              leading: focus?.enabled == true
+                  ? ArticlePaneButton(onPressed: focus!.showList)
+                  : null,
+              trailing: focus?.available == true
+                  ? ArticleFocusToggle(
+                      enabled: focus!.enabled,
+                      onPressed: focus.toggle,
+                    )
+                  : null,
+              middle: CupertinoSlidingSegmentedControl(
+                children: viewOptions,
+                onValueChanged: (dynamic v) {
+                  _setOpenTarget(source, target: SourceOpenTarget.values[v]);
+                  _loadOpenTarget(item, source);
+                },
+                groupValue: _target!.index,
+              ),
             ),
-          ),
-          child: Consumer<FeedsModel>(
-            child: body,
-            builder: (context, feedsModel, child) {
-              final feed = isSourceFeed! ? feedsModel.source! : feedsModel.all;
-              var idx = feed.iids.indexOf(iid);
-              return CupertinoToolbar(
-                items: [
-                  CupertinoToolbarItem(
-                    icon: item.hasRead
-                        ? CupertinoIcons.circle
-                        : CupertinoIcons.smallcircle_fill_circle,
-                    semanticLabel: item.hasRead
-                        ? S.of(context).markUnread
-                        : S.of(context).markRead,
-                    onPressed: () {
-                      HapticFeedback.mediumImpact();
-                      Global.itemsModel!.updateItem(
-                        item.id,
-                        read: !item.hasRead,
-                      );
-                    },
-                  ),
-                  CupertinoToolbarItem(
-                    icon: item.starred
-                        ? CupertinoIcons.star_fill
-                        : CupertinoIcons.star,
-                    semanticLabel: item.starred
-                        ? S.of(context).star
-                        : S.of(context).unstar,
-                    onPressed: () {
-                      HapticFeedback.mediumImpact();
-                      Global.itemsModel!.updateItem(
-                        item.id,
-                        starred: !item.starred,
-                      );
-                    },
-                  ),
-                  CupertinoToolbarItem(
-                    icon: CupertinoIcons.share,
-                    semanticLabel: S.of(context).share,
-                    onPressed: () {
-                      final media = MediaQuery.of(context);
-                      SharePlus.instance.share(
-                        ShareParams(
-                          uri: Uri.parse(item.link),
-                          sharePositionOrigin: Rect.fromLTWH(
-                            media.size.width -
-                                ArticlePage.state.currentContext!.size!.width /
-                                    2,
-                            media.size.height - media.padding.bottom - 54,
-                            0,
-                            0,
+            child: Consumer<FeedsModel>(
+              child: body,
+              builder: (context, feedsModel, child) {
+                final feed = isSourceFeed!
+                    ? feedsModel.source!
+                    : feedsModel.all;
+                var idx = feed.iids.indexOf(iid);
+                return CupertinoToolbar(
+                  items: [
+                    CupertinoToolbarItem(
+                      icon: item.hasRead
+                          ? CupertinoIcons.circle
+                          : CupertinoIcons.smallcircle_fill_circle,
+                      semanticLabel: item.hasRead
+                          ? S.of(context).markUnread
+                          : S.of(context).markRead,
+                      onPressed: () {
+                        HapticFeedback.mediumImpact();
+                        Global.itemsModel!.updateItem(
+                          item.id,
+                          read: !item.hasRead,
+                        );
+                      },
+                    ),
+                    CupertinoToolbarItem(
+                      icon: item.starred
+                          ? CupertinoIcons.star_fill
+                          : CupertinoIcons.star,
+                      semanticLabel: item.starred
+                          ? S.of(context).star
+                          : S.of(context).unstar,
+                      onPressed: () {
+                        HapticFeedback.mediumImpact();
+                        Global.itemsModel!.updateItem(
+                          item.id,
+                          starred: !item.starred,
+                        );
+                      },
+                    ),
+                    CupertinoToolbarItem(
+                      key: _shareButtonKey,
+                      icon: CupertinoIcons.share,
+                      semanticLabel: S.of(context).share,
+                      onPressed: () {
+                        final button =
+                            _shareButtonKey.currentContext!.findRenderObject()
+                                as RenderBox;
+                        SharePlus.instance.share(
+                          ShareParams(
+                            uri: Uri.parse(item.link),
+                            sharePositionOrigin:
+                                button.localToGlobal(Offset.zero) & button.size,
                           ),
-                        ),
-                      );
-                    },
-                  ),
-                  CupertinoToolbarItem(
-                    icon: CupertinoIcons.chevron_up,
-                    semanticLabel: S.of(context).prev,
-                    onPressed: idx <= 0
-                        ? null
-                        : () {
-                            loadNewItem(feed.iids[idx - 1]);
-                          },
-                  ),
-                  CupertinoToolbarItem(
-                    icon: CupertinoIcons.chevron_down,
-                    semanticLabel: S.of(context).next,
-                    onPressed:
-                        (idx == -1 ||
-                            (idx == feed.iids.length - 1 && feed.allLoaded))
-                        ? null
-                        : () async {
-                            if (idx == feed.iids.length - 1) {
-                              await feed.loadMore();
-                            }
-                            idx = feed.iids.indexOf(iid);
-                            if (idx != feed.iids.length - 1) {
-                              loadNewItem(feed.iids[idx + 1]);
-                            }
-                          },
-                  ),
-                ],
-                body: child!,
-              );
-            },
+                        );
+                      },
+                    ),
+                  ],
+                  trailingItems: [
+                    CupertinoToolbarItem(
+                      icon: CupertinoIcons.chevron_up,
+                      semanticLabel: S.of(context).prev,
+                      onPressed: idx <= 0
+                          ? null
+                          : () {
+                              loadNewItem(feed.iids[idx - 1]);
+                            },
+                    ),
+                    CupertinoToolbarItem(
+                      icon: CupertinoIcons.chevron_down,
+                      semanticLabel: S.of(context).next,
+                      onPressed:
+                          (idx == -1 ||
+                              (idx == feed.iids.length - 1 && feed.allLoaded))
+                          ? null
+                          : () async {
+                              if (idx == feed.iids.length - 1) {
+                                await feed.loadMore();
+                              }
+                              idx = feed.iids.indexOf(iid);
+                              if (idx != feed.iids.length - 1) {
+                                loadNewItem(feed.iids[idx + 1]);
+                              }
+                            },
+                    ),
+                  ],
+                  body: child!,
+                );
+              },
+            ),
           ),
         );
       },

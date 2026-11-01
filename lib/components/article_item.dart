@@ -1,4 +1,5 @@
 import 'package:fluent_reader_lite/components/cached_image.dart';
+import 'package:fluent_reader_lite/components/article_focus_scope.dart';
 import 'package:fluent_reader_lite/components/dismissible_background.dart';
 import 'package:fluent_reader_lite/components/favicon.dart';
 import 'package:fluent_reader_lite/components/time_text.dart';
@@ -40,6 +41,7 @@ class _ArticleItemState extends State<ArticleItem> {
     if (widget.source!.openTarget == SourceOpenTarget.External) {
       launch(widget.item.link, forceSafariVC: false, forceWebView: false);
     } else {
+      ArticleFocusScope.maybeOf(context)?.showArticle();
       var isSource = Navigator.of(context).canPop();
       if (ArticlePage.state.currentWidget != null) {
         ArticlePage.state.currentState!.loadNewItem(

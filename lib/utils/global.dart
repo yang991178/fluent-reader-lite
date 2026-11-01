@@ -82,8 +82,10 @@ abstract class Global {
         MediaQuery.of(context).platformBrightness;
   }
 
+  static const tabletBreakpoint = 640.0;
+
   static bool isTablet(BuildContext context) =>
-      MediaQuery.sizeOf(context).width > 640;
+      MediaQuery.sizeOf(context).width > tabletBreakpoint;
 
   static NavigatorState? responsiveNavigator(BuildContext context) {
     return articlePanel.currentState ??

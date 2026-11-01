@@ -6,8 +6,8 @@ import 'package:flutter/rendering.dart';
 
 import 'ios_bar_layout.dart';
 
-/// Retains Cupertino's keyboard, scrolling and safe-area behavior. Only the
-/// navigation bar's top inset changes when UIKit reports a corner status area.
+/// Retains Cupertino's keyboard, scrolling and safe-area behavior while
+/// adapting navigation to UIKit's status-area and window-control frames.
 class ReaderPageScaffold extends StatelessWidget {
   const ReaderPageScaffold({
     super.key,
@@ -365,15 +365,14 @@ class _RenderAdaptiveToolbar extends RenderBox
     final config = configuration;
     final row = config.row;
     final width = constraints.maxWidth;
-    final toolbarWidth = math.max(0.0, width - row.left - row.right);
+    var toolbarWidth = math.max(0.0, width - row.left - row.right);
+    var toolbarLeft = row.left;
+    var toolbarCenterY = row.centerY;
+    var height = row.height;
     final toolbar = firstChild!, middle = lastChild!;
     toolbar.layout(
       BoxConstraints.tightFor(width: toolbarWidth, height: 44),
       parentUsesSize: true,
-    );
-    (toolbar.parentData as BoxParentData).offset = Offset(
-      row.left,
-      row.centerY - 22,
     );
     final naturalMiddle = middle.getDryLayout(
       const BoxConstraints(maxHeight: 44),
@@ -382,11 +381,27 @@ class _RenderAdaptiveToolbar extends RenderBox
     // Resetting numbers in a layout callback leaves them zero on fold updates
     // whose button constraints did not change.
     final leading =
-        config.measurements.width(config.measurements.leading, toolbarWidth) +
+        config.measurements.width(config.measurements.leading, width) +
         config.leadingPadding;
     final trailing =
-        config.measurements.width(config.measurements.trailing, toolbarWidth) +
+        config.measurements.width(config.measurements.trailing, width) +
         config.trailingPadding;
+    // A Live Activity can leave too little of the shared row for both edge
+    // buttons. Move the toolbar below it so the buttons never overlap.
+    if (config.keepMiddle && leading + trailing > toolbarWidth) {
+      toolbarWidth = width;
+      toolbarLeft = 0;
+      toolbarCenterY = row.height + 22;
+      height += 44;
+      toolbar.layout(
+        BoxConstraints.tightFor(width: toolbarWidth, height: 44),
+        parentUsesSize: true,
+      );
+    }
+    (toolbar.parentData as BoxParentData).offset = Offset(
+      toolbarLeft,
+      toolbarCenterY - 22,
+    );
     final fits =
         naturalMiddle.width <=
         math.max(0.0, toolbarWidth - leading - trailing - 12);
@@ -395,7 +410,6 @@ class _RenderAdaptiveToolbar extends RenderBox
     final visibilityChanged = _showMiddle != showMiddle;
     _showMiddle = showMiddle;
     if (visibilityChanged) markNeedsSemanticsUpdate();
-    var height = row.height;
     if (overflow) {
       middle.layout(
         BoxConstraints(maxWidth: math.max(0.0, width - 32), maxHeight: 44),
@@ -426,8 +440,8 @@ class _RenderAdaptiveToolbar extends RenderBox
           ? start
           : toolbarWidth - middle.size.width - start;
       (middle.parentData as BoxParentData).offset = Offset(
-        row.left + x,
-        row.centerY - middle.size.height / 2,
+        toolbarLeft + x,
+        toolbarCenterY - middle.size.height / 2,
       );
     }
     size = constraints.constrain(Size(width, height));
