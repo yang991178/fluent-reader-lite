@@ -1,3 +1,4 @@
+import 'package:fluent_reader_lite/components/responsive_action_sheet.dart';
 import 'package:fluent_reader_lite/components/reader_page_scaffold.dart';
 import 'package:fluent_reader_lite/components/badge.dart';
 import 'package:fluent_reader_lite/components/dismissible_background.dart';
@@ -95,7 +96,7 @@ class _GroupListPageState extends State<GroupListPage> {
               confirmDismiss: (_) async {
                 HapticFeedback.mediumImpact();
                 Set<String> sids = Set.from(group!);
-                showCupertinoModalPopup(
+                showResponsiveActionSheet(
                   context: context,
                   builder: (context) => MarkAllActionSheet(sids),
                 );

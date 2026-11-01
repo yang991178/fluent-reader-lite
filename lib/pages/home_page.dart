@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:fluent_reader_lite/components/article_focus_scope.dart';
+import 'package:fluent_reader_lite/components/reader_pane_layout.dart';
 import 'package:fluent_reader_lite/components/ios_bar_layout.dart';
 import 'package:fluent_reader_lite/components/reader_page_scaffold.dart';
 import 'package:fluent_reader_lite/generated/l10n.dart';
@@ -10,6 +12,7 @@ import 'package:fluent_reader_lite/pages/setup_page.dart';
 import 'package:fluent_reader_lite/pages/subscription_list_page.dart';
 import 'package:fluent_reader_lite/pages/tablet_base_page.dart';
 import 'package:fluent_reader_lite/utils/global.dart';
+import 'package:fluent_reader_lite/utils/store.dart';
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
@@ -34,7 +37,11 @@ class ScrollTopNotifier with ChangeNotifier {
   }
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _listReveal;
+  bool _focusMode = Store.sp.getBool(StoreKeys.ARTICLE_FOCUS_MODE) ?? false;
+  bool _dragStartedOpen = false;
   final _scrollTopNotifier = ScrollTopNotifier();
   final _controller = CupertinoTabController();
   final _articleObserver = _NavigationObserver();
@@ -82,6 +89,11 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    _listReveal = AnimationController(
+      vsync: this,
+      value: _focusMode ? 1 : 0,
+      duration: const Duration(milliseconds: 250),
+    );
     final appLinks = AppLinks();
     _uriSub = appLinks.uriLinkStream.listen(_uriStreamListener);
   }
@@ -89,13 +101,39 @@ class _HomePageState extends State<HomePage> {
   @override
   dispose() {
     _uriSub.cancel();
+    _listReveal.dispose();
     _scrollTopNotifier.dispose();
     _controller.dispose();
     _articleObserver.hasPages.dispose();
-    for (final observer in _tabObservers) observer.hasPages.dispose();
+    for (final observer in _tabObservers) {
+      observer.hasPages.dispose();
+    }
     for (final controller in _heroControllers) controller.dispose();
     super.dispose();
   }
+
+  void _toggleFocus() {
+    setState(() => _focusMode = !_focusMode);
+    _listReveal.value = 0;
+    Store.sp.setBool(StoreKeys.ARTICLE_FOCUS_MODE, _focusMode);
+  }
+
+  void _showList() => _listReveal.animateTo(1, curve: Curves.easeOutCubic);
+
+  void _showArticle() => _listReveal.animateTo(0, curve: Curves.easeOutCubic);
+
+  void _startPaneDrag(DragStartDetails details) {
+    _dragStartedOpen = _listReveal.value > 0.5;
+    _listReveal.stop();
+  }
+
+  void _endPaneDrag(DragEndDetails details) {
+    final velocity = details.primaryVelocity ?? 0;
+    final open = velocity.abs() > 300 ? velocity > 0 : _listReveal.value > 0.5;
+    open ? _showList() : _showArticle();
+  }
+
+  void _cancelPaneDrag() => _dragStartedOpen ? _showList() : _showArticle();
 
   Widget _constructPage(BuildContext context, Widget page) {
     final scrollController = PrimaryScrollController.of(context);
@@ -185,12 +223,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
-    final layout = IosBarLayoutScope.maybeOf(context)?.layout;
-    final equalSplit =
-        layout?.size == size &&
-        layout?.division != null &&
-        size.width > size.height;
-    final sidebarWidth = equalSplit ? (size.width - 1) / 2 : 320.0;
+    final sidebarWidth = readerListPaneWidth(context, focusMode: _focusMode);
     return Selector<SyncModel, bool>(
       selector: (context, syncModel) => syncModel.hasService,
       builder: (context, hasService, child) {
@@ -199,89 +232,188 @@ class _HomePageState extends State<HomePage> {
         return ListenableBuilder(
           listenable: Listenable.merge([
             _controller,
+            _listReveal,
             _articleObserver.hasPages,
             for (final observer in _tabObservers) observer.hasPages,
           ]),
           builder: (context, child) {
             final hasArticle = _articleObserver.hasPages.value;
-            return PopScope(
-              canPop:
-                  !hasArticle &&
-                  !_tabObservers[_controller.index].hasPages.value,
-              onPopInvokedWithResult: (didPop, result) {
-                if (didPop) return;
-                final navigator = hasArticle
-                    ? Global.articlePanel.currentState
-                    : _tabNavigatorKeys[_controller.index].currentState;
-                navigator?.maybePop(result);
-              },
-              // Keep both navigators in the same place in the widget tree.
-              // Only their bounds change, preserving the reader and WebView.
-              child: Stack(
-                children: [
-                  Positioned(
-                    left: 0,
-                    top: 0,
-                    bottom: 0,
-                    width: isTablet ? sidebarWidth : size.width,
-                    child: ExcludeSemantics(
-                      excluding: !isTablet && hasArticle,
-                      child: IosBarLayoutScope.pane(
-                        context,
-                        bounds: Rect.fromLTWH(
-                          0,
-                          0,
-                          isTablet ? sidebarWidth : size.width,
-                          MediaQuery.sizeOf(context).height,
-                        ),
-                        child: buildLeft(context),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    left: sidebarWidth,
-                    top: 0,
-                    bottom: 0,
-                    width: 1,
-                    child: Offstage(
-                      offstage: !isTablet,
-                      child: VerticalDivider(
-                        width: 1,
-                        thickness: 1,
-                        color: CupertinoColors.systemGrey4.resolveFrom(context),
-                      ),
-                    ),
-                  ),
-                  Positioned.fill(
-                    left: isTablet ? sidebarWidth + 1 : 0,
-                    child: IgnorePointer(
-                      ignoring: !isTablet && !hasArticle,
-                      child: ClipRect(
+            final focused = isTablet && _focusMode;
+            final reveal = focused ? _listReveal.value : 0.0;
+            final articleLeft = isTablet
+                ? (focused ? reveal * (sidebarWidth + 1) : sidebarWidth + 1)
+                : 0.0;
+            final listLeft = focused ? articleLeft - sidebarWidth - 1 : 0.0;
+            final articleWidth = focused
+                ? size.width
+                : size.width - articleLeft;
+            final hideList =
+                (!isTablet && hasArticle) || (focused && reveal == 0);
+            final revealBaseOnBack = focused && !hasArticle && reveal < 1;
+            void updatePaneDrag(DragUpdateDetails details) {
+              _listReveal.value += details.delta.dx / (sidebarWidth + 1);
+            }
+
+            return ArticleFocusScope(
+              available: isTablet,
+              preferred: _focusMode,
+              listVisible: reveal > 0,
+              toggle: _toggleFocus,
+              showList: _showList,
+              showArticle: _showArticle,
+              child: PopScope(
+                canPop:
+                    !hasArticle &&
+                    !_tabObservers[_controller.index].hasPages.value &&
+                    !revealBaseOnBack,
+                onPopInvokedWithResult: (didPop, result) {
+                  if (didPop) return;
+                  if (revealBaseOnBack) {
+                    _showList();
+                    return;
+                  }
+                  final navigator = hasArticle
+                      ? Global.articlePanel.currentState
+                      : _tabNavigatorKeys[_controller.index].currentState;
+                  navigator?.maybePop(result);
+                },
+                // Keep both navigators in the same place in the widget tree.
+                // Only their bounds change, preserving the reader and WebView.
+                child: Stack(
+                  children: [
+                    Positioned(
+                      left: listLeft,
+                      top: 0,
+                      bottom: 0,
+                      width: isTablet ? sidebarWidth : size.width,
+                      child: ExcludeSemantics(
+                        excluding: hideList,
                         child: IosBarLayoutScope.pane(
                           context,
                           bounds: Rect.fromLTWH(
-                            isTablet ? sidebarWidth + 1 : 0,
                             0,
-                            MediaQuery.sizeOf(context).width -
-                                (isTablet ? sidebarWidth + 1 : 0),
+                            0,
+                            isTablet ? sidebarWidth : size.width,
                             MediaQuery.sizeOf(context).height,
                           ),
-                          child: _buildNavigator(
-                            navigatorKey: Global.articlePanel,
-                            heroController: _heroControllers[2],
-                            observer: _articleObserver,
-                            routes: {
-                              '/': (context) => Global.isTablet(context)
-                                  ? TabletBasePage()
-                                  : const SizedBox.expand(),
-                              ...MyApp.baseRoutes,
-                            },
+                          child: buildLeft(context),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      left: listLeft + sidebarWidth,
+                      top: 0,
+                      bottom: 0,
+                      width: 1,
+                      child: Offstage(
+                        offstage: !isTablet || (focused && reveal == 0),
+                        child: VerticalDivider(
+                          width: 1,
+                          thickness: 1,
+                          color: CupertinoColors.systemGrey4.resolveFrom(
+                            context,
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                    Positioned(
+                      left: articleLeft,
+                      width: articleWidth,
+                      top: 0,
+                      bottom: 0,
+                      child: IgnorePointer(
+                        ignoring: !isTablet && !hasArticle,
+                        child: ExcludeSemantics(
+                          excluding: focused && reveal > 0,
+                          child: ClipRect(
+                            child: IosBarLayoutScope.pane(
+                              context,
+                              // Panning translates the whole page. Keep its
+                              // unpanned frame so the header does not reflow.
+                              bounds: Rect.fromLTWH(
+                                focused ? 0 : articleLeft,
+                                0,
+                                articleWidth,
+                                MediaQuery.sizeOf(context).height,
+                              ),
+                              child: _buildNavigator(
+                                navigatorKey: Global.articlePanel,
+                                heroController: _heroControllers[2],
+                                observer: _articleObserver,
+                                routes: {
+                                  '/': (context) => Global.isTablet(context)
+                                      ? TabletBasePage()
+                                      : const SizedBox.expand(),
+                                  ...MyApp.baseRoutes,
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Cover the native WebView as well as its toolbars so the
+                    // first tap returns to reading without activating content.
+                    if (focused)
+                      Positioned(
+                        left: articleLeft,
+                        right: 0,
+                        top: 0,
+                        bottom: 0,
+                        child: IgnorePointer(
+                          ignoring: reveal == 0,
+                          child: ExcludeSemantics(
+                            excluding: reveal == 0,
+                            child: Semantics(
+                              button: true,
+                              label: S.of(context).showArticle,
+                              child: GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: _showArticle,
+                                onHorizontalDragStart: _startPaneDrag,
+                                onHorizontalDragUpdate: updatePaneDrag,
+                                onHorizontalDragEnd: _endPaneDrag,
+                                onHorizontalDragCancel: _cancelPaneDrag,
+                                child: ColoredBox(
+                                  color: CupertinoColors.black.withValues(
+                                    alpha: 0.08 * reveal,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    if (focused)
+                      Positioned(
+                        key: const ValueKey('article-focus-edge'),
+                        left: 0,
+                        // Leave the navigation buttons tappable when the
+                        // header has no horizontal padding.
+                        top:
+                            IosBarLayoutScope.maybeOf(context)
+                                ?.row(context)
+                                ?.height ??
+                            MediaQuery.paddingOf(context).top +
+                                kMinInteractiveDimensionCupertino,
+                        bottom: 0,
+                        width: 24 + MediaQuery.paddingOf(context).left,
+                        child: IgnorePointer(
+                          ignoring: reveal == 1,
+                          child: GestureDetector(
+                            excludeFromSemantics: true,
+                            // Stop the native WebView receiving this pointer;
+                            // a translucent strip lets WebKit take the swipe.
+                            behavior: HitTestBehavior.opaque,
+                            onHorizontalDragStart: _startPaneDrag,
+                            onHorizontalDragUpdate: updatePaneDrag,
+                            onHorizontalDragEnd: _endPaneDrag,
+                            onHorizontalDragCancel: _cancelPaneDrag,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
             );
           },

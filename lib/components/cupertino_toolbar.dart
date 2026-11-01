@@ -47,11 +47,15 @@ class CupertinoToolbar extends StatelessWidget {
   CupertinoToolbar({
     Key? key,
     required this.items,
-    required this.body
+    this.trailingItems = const [],
+    required this.body,
   }) : super(key: key);
 
   /// The interactive items laid out within the toolbar where each item has an icon.
   final List<CupertinoToolbarItem> items;
+
+  /// Actions placed at the opposite edge when this pane is wide enough.
+  final List<CupertinoToolbarItem> trailingItems;
 
   /// The body displayed above the toolbar.
   final Widget body;
@@ -60,42 +64,76 @@ class CupertinoToolbar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        Expanded(
-          child: body
-        ),
+        Expanded(child: body),
         Container(
           decoration: BoxDecoration(
             border: Border(
-              top: BorderSide(color: MyColors.barDivider.resolveFrom(context), width: 0.0)
-            )
+              top: BorderSide(
+                color: MyColors.barDivider.resolveFrom(context),
+                width: 0.0,
+              ),
+            ),
           ),
-          child: SafeArea(
-            top: false,
-            child: SizedBox(
-              height: Global.isTablet(context) ? 50.0 : 44.0,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: _createButtons()
-              )
-            )
-          )
-        )
-      ]
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final grouped =
+                  constraints.maxWidth > Global.tabletBreakpoint &&
+                  trailingItems.isNotEmpty;
+              return SafeArea(
+                top: false,
+                child: SizedBox(
+                  height: Global.isTablet(context) ? 50.0 : 44.0,
+                  child: grouped
+                      ? Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Row(
+                            children: [
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                spacing: 8,
+                                children: _createButtons(items),
+                              ),
+                              const Spacer(),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                spacing: 8,
+                                children: _createButtons(trailingItems),
+                              ),
+                            ],
+                          ),
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: _createButtons([
+                            ...items,
+                            ...trailingItems,
+                          ]),
+                        ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
-  List<Widget> _createButtons() {
+  List<Widget> _createButtons(List<CupertinoToolbarItem> items) {
     final List<Widget> children = <Widget>[];
     for (int i = 0; i < items.length; i += 1) {
-      children.add(CupertinoButton(
-        padding: EdgeInsets.zero,
-        child: Icon(
-          items[i].icon,
-          // color: CupertinoColors.systemBlue,
-          semanticLabel: items[i].semanticLabel,
+      children.add(
+        CupertinoButton(
+          key: items[i].key,
+          padding: EdgeInsets.zero,
+          minimumSize: const Size.square(44),
+          child: Icon(
+            items[i].icon,
+            // color: CupertinoColors.systemBlue,
+            semanticLabel: items[i].semanticLabel,
+          ),
+          onPressed: items[i].onPressed,
         ),
-        onPressed: items[i].onPressed
-      ));
+      );
     }
     return children;
   }
@@ -107,10 +145,13 @@ class CupertinoToolbarItem {
   ///
   /// The argument [icon] should not be null.
   const CupertinoToolbarItem({
+    this.key,
     required this.icon,
     this.onPressed,
-    this.semanticLabel
+    this.semanticLabel,
   });
+
+  final Key? key;
 
   /// The icon of the item.
   ///

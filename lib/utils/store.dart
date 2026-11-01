@@ -30,6 +30,7 @@ abstract class StoreKeys {
 
   // Reading preferences
   static const ARTICLE_FONT_SIZE = "articleFontSize";
+  static const ARTICLE_FOCUS_MODE = "articleFocusMode";
 
   // Syncing
   static const SYNC_SERVICE = "syncService";

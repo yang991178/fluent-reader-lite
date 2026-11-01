@@ -1,3 +1,4 @@
+import 'package:fluent_reader_lite/components/responsive_action_sheet.dart';
 import 'package:fluent_reader_lite/components/dismissible_background.dart';
 import 'package:fluent_reader_lite/components/favicon.dart';
 import 'package:fluent_reader_lite/components/mark_all_action_sheet.dart';
@@ -34,7 +35,7 @@ class _SubscriptionItemState extends State<SubscriptionItem> {
   Future<bool> _onDismiss(DismissDirection direction) async {
     HapticFeedback.mediumImpact();
     if (direction == DismissDirection.startToEnd) {
-      showCupertinoModalPopup(
+      showResponsiveActionSheet(
         context: context,
         builder: (context) => MarkAllActionSheet({widget.source.id}),
       );

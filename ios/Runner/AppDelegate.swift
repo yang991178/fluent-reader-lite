@@ -15,6 +15,15 @@ import UIKit
   }
 }
 
+@objc(ReaderSceneDelegate)
+class ReaderSceneDelegate: FlutterSceneDelegate {
+  @available(iOS 26.0, *)
+  override func preferredWindowingControlStyle(for scene: UIWindowScene)
+    -> UIWindowScene.WindowingControlStyle {
+    .minimal
+  }
+}
+
 // Keep Flutter's horizontal navigation and the system status area on one axis.
 // UIKit's toolbar frame accounts for camera/status UI and Live Activities.
 @objc(ReaderViewController)
@@ -70,6 +79,16 @@ class ReaderViewController: FlutterViewController, FlutterStreamHandler {
     guard let sink = layoutSink, isViewLoaded else { return }
     var toolbar: [CGFloat]?
     var division: [CGFloat]?
+    var avoidsWindowControls = false
+    if #available(iOS 26.0, *) {
+      // Custom bars must adapt horizontally around iPad's window controls.
+      let insets = view.edgeInsets(for: .safeArea(cornerAdaptation: .horizontal))
+      let safe = view.safeAreaInsets
+      avoidsWindowControls = insets.left > safe.left + 1 || insets.right > safe.right + 1
+      if avoidsWindowControls {
+        toolbar = [insets.left, safe.top, view.bounds.width - insets.left - insets.right, 44]
+      }
+    }
     if #available(iOS 27.1, *) {
       // Layout follows active reserved regions, not the raw hinge status or
       // angle. Querying in updateProperties subscribes to region changes.
@@ -93,6 +112,7 @@ class ReaderViewController: FlutterViewController, FlutterStreamHandler {
       "width": view.bounds.width, "height": view.bounds.height,
       "topInset": view.safeAreaInsets.top, "toolbar": toolbar ?? NSNull(),
       "division": division ?? NSNull(),
+      "avoidsWindowControls": avoidsWindowControls,
     ]
     guard lastLayout != layout else { return }
     lastLayout = layout

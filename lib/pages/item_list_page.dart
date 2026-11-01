@@ -82,7 +82,7 @@ class _ItemListPageState extends State<ItemListPage> {
   }
 
   void _openMarkAllModal() {
-    showCupertinoModalPopup(
+    showResponsiveActionSheet(
       context: context,
       builder: (context) => MarkAllActionSheet(getFeed()!.sids),
     );
@@ -90,8 +90,11 @@ class _ItemListPageState extends State<ItemListPage> {
 
   static const _iconPadding = Padding(padding: EdgeInsets.only(left: 24));
 
+  static Widget _actionLabel(String label) =>
+      Expanded(child: Text(label, textAlign: TextAlign.center));
+
   void _openFilterModal() {
-    showCupertinoModalPopup(
+    showResponsiveActionSheet(
       context: context,
       builder: (context) {
         final feed = getFeed()!;
@@ -102,7 +105,7 @@ class _ItemListPageState extends State<ItemListPage> {
               child: Row(
                 children: [
                   Icon(CupertinoIcons.today),
-                  Text(S.of(context).allArticles),
+                  _actionLabel(S.of(context).allArticles),
                   _iconPadding,
                 ],
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -117,7 +120,7 @@ class _ItemListPageState extends State<ItemListPage> {
               child: Row(
                 children: [
                   Icon(Icons.radio_button_checked),
-                  Text(S.of(context).unreadOnly),
+                  _actionLabel(S.of(context).unreadOnly),
                   _iconPadding,
                 ],
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -132,7 +135,7 @@ class _ItemListPageState extends State<ItemListPage> {
               child: Row(
                 children: [
                   Icon(CupertinoIcons.star_fill),
-                  Text(S.of(context).starredOnly),
+                  _actionLabel(S.of(context).starredOnly),
                   _iconPadding,
                 ],
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -151,7 +154,7 @@ class _ItemListPageState extends State<ItemListPage> {
                     CupertinoIcons.search,
                     color: CupertinoColors.destructiveRed,
                   ),
-                  Text(
+                  _actionLabel(
                     feed.search.length > 0
                         ? S.of(context).editKeyword
                         : S.of(context).search,
@@ -174,7 +177,7 @@ class _ItemListPageState extends State<ItemListPage> {
                       CupertinoIcons.clear_fill,
                       color: CupertinoColors.destructiveRed,
                     ),
-                    Text(S.of(context).clearSearch),
+                    _actionLabel(S.of(context).clearSearch),
                     _iconPadding,
                   ],
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -193,7 +196,7 @@ class _ItemListPageState extends State<ItemListPage> {
             },
           ),
         );
-        return ResponsiveActionSheet(sheet);
+        return sheet;
       },
     );
   }
@@ -217,7 +220,7 @@ class _ItemListPageState extends State<ItemListPage> {
   }
 
   void _openActionSheet(RSSItem item) {
-    showCupertinoModalPopup(
+    showResponsiveActionSheet(
       context: context,
       builder: (context) {
         final sheet = CupertinoActionSheet(
@@ -230,7 +233,7 @@ class _ItemListPageState extends State<ItemListPage> {
                         ? Icons.radio_button_checked
                         : Icons.radio_button_unchecked,
                   ),
-                  Text(
+                  _actionLabel(
                     item.hasRead
                         ? S.of(context).markUnread
                         : S.of(context).markRead,
@@ -252,7 +255,7 @@ class _ItemListPageState extends State<ItemListPage> {
                         ? CupertinoIcons.star
                         : CupertinoIcons.star_fill,
                   ),
-                  Text(
+                  _actionLabel(
                     item.starred ? S.of(context).unstar : S.of(context).star,
                   ),
                   _iconPadding,
@@ -268,7 +271,7 @@ class _ItemListPageState extends State<ItemListPage> {
               child: Row(
                 children: [
                   Icon(CupertinoIcons.arrow_up),
-                  Text(S.of(context).markAbove),
+                  _actionLabel(S.of(context).markAbove),
                   _iconPadding,
                 ],
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -286,7 +289,7 @@ class _ItemListPageState extends State<ItemListPage> {
               child: Row(
                 children: [
                   Icon(CupertinoIcons.arrow_down),
-                  Text(S.of(context).markBelow),
+                  _actionLabel(S.of(context).markBelow),
                   _iconPadding,
                 ],
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -303,7 +306,7 @@ class _ItemListPageState extends State<ItemListPage> {
               child: Row(
                 children: [
                   Icon(CupertinoIcons.share),
-                  Text(S.of(context).share),
+                  _actionLabel(S.of(context).share),
                   _iconPadding,
                 ],
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -332,7 +335,7 @@ class _ItemListPageState extends State<ItemListPage> {
             },
           ),
         );
-        return ResponsiveActionSheet(sheet);
+        return sheet;
       },
     );
   }
@@ -397,7 +400,7 @@ class _ItemListPageState extends State<ItemListPage> {
         transitionBetweenRoutes: true,
         backgroundColor: CupertinoColors.systemBackground,
         largeTitle: titleWidget,
-        padding: const EdgeInsetsDirectional.only(start: 0, end: 0),
+        padding: EdgeInsetsDirectional.zero,
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

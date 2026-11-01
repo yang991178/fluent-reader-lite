@@ -2,6 +2,9 @@ html, body {
     font-family: sans-serif;
 }
 html {
+    /* Keep the selected size when an iPhone viewport widens on unfold. */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
     overflow: hidden scroll;
     margin: 16px 24px 32px;
 }
