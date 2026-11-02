@@ -252,7 +252,7 @@ class _HomePageState extends State<HomePage>
                 : size.width - articleLeft;
             final hideList =
                 (!isTablet && hasArticle) || (focused && reveal == 0);
-            final revealBaseOnBack = focused && !hasArticle && reveal < 1;
+            final revealListOnBack = focused && reveal < 1;
             void updatePaneDrag(DragUpdateDetails details) {
               _listReveal.value += details.delta.dx / (sidebarWidth + 1);
             }
@@ -268,10 +268,12 @@ class _HomePageState extends State<HomePage>
                 canPop:
                     !hasArticle &&
                     !_tabObservers[_controller.index].hasPages.value &&
-                    !revealBaseOnBack,
+                    !revealListOnBack,
                 onPopInvokedWithResult: (didPop, result) {
                   if (didPop) return;
-                  if (revealBaseOnBack) {
+                  // Handle pane navigation before forwarding Back to a nested
+                  // route, including while the list is still opening.
+                  if (revealListOnBack) {
                     _showList();
                     return;
                   }

@@ -909,6 +909,115 @@ void main() {
   );
 
   testWidgets(
+    'Android system back gestures reveal the focus list before closing the reader',
+    (tester) async {
+      await Store.sp.setBool(StoreKeys.ARTICLE_FOCUS_MODE, true);
+      tester.view.physicalSize = const Size(1024, 768);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final messenger =
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+      final platformCalls = <MethodCall>[];
+      messenger.setMockMethodCallHandler(SystemChannels.platform, (call) async {
+        platformCalls.add(call);
+        return null;
+      });
+      addTearDown(
+        () => messenger.setMockMethodCallHandler(SystemChannels.platform, null),
+      );
+      Future<void> back(String method, {int edge = 0}) async {
+        await messenger.handlePlatformMessage(
+          SystemChannels.backGesture.name,
+          const StandardMethodCodec().encodeMethodCall(
+            MethodCall(method, {
+              'touchOffset': [edge == 0 ? 0.0 : 1024.0, 300.0],
+              'progress': method == 'updateBackGestureProgress' ? 0.5 : 0.0,
+              'swipeEdge': edge,
+            }),
+          ),
+          (_) {},
+        );
+      }
+
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpWidget(MyApp());
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Article 0'));
+      await finishArticle(tester, platform, 1);
+      final reader = ArticlePage.state.currentState!;
+      final view = tester.element(find.byType(WebViewWidget));
+      expect(
+        platformCalls
+            .where(
+              (call) =>
+                  call.method == 'SystemNavigator.setFrameworkHandlesBack',
+            )
+            .last
+            .arguments,
+        isTrue,
+        reason:
+            'Android must deliver Back to Flutter instead of leaving the app',
+      );
+      await back('startBackGesture');
+      await back('updateBackGestureProgress');
+      await back('cancelBackGesture');
+      await tester.pumpAndSettle();
+      expect(tester.getTopLeft(find.byType(ArticlePage)), Offset.zero);
+      expect(ArticlePage.state.currentState, same(reader));
+
+      await back('startBackGesture');
+      await back('commitBackGesture');
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.pump();
+      expect(
+        tester.getTopLeft(find.byType(ArticlePage)).dx,
+        inExclusiveRange(0, 376),
+      );
+      // Repeated Back while the pane is still opening must finish revealing
+      // the list rather than dispose the article and its native WebView.
+      await back('startBackGesture', edge: 1);
+      await back('commitBackGesture', edge: 1);
+      await tester.pumpAndSettle();
+      expect(tester.getTopLeft(find.byType(ArticlePage)).dx, 376);
+      expect(ArticlePage.state.currentState, same(reader));
+      expect(tester.element(find.byType(WebViewWidget)), same(view));
+      expect(platform.controllers, hasLength(1));
+
+      await back('startBackGesture', edge: 1);
+      await back('commitBackGesture', edge: 1);
+      await tester.pumpAndSettle();
+      expect(find.byType(ArticlePage), findsNothing);
+
+      // The empty focus pane also reveals the list on Back.
+      await tester.tap(find.bySemanticsLabel(S.current.showArticle));
+      await tester.pumpAndSettle();
+      await back('startBackGesture');
+      await back('commitBackGesture');
+      await tester.pumpAndSettle();
+      expect(tester.getTopLeft(find.byType(TabletBasePage)).dx, 376);
+      expect(
+        platformCalls.where((call) => call.method == 'SystemNavigator.pop'),
+        isEmpty,
+      );
+
+      // A folded phone keeps ordinary Back navigation.
+      await tester.tap(find.text('Article 1'));
+      await finishArticle(tester, platform, 2);
+      tester.view.physicalSize = const Size(390, 844);
+      await tester.pumpAndSettle();
+      await back('startBackGesture');
+      await back('commitBackGesture');
+      await tester.pumpAndSettle();
+      expect(find.byType(ArticlePage), findsNothing);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.android),
+  );
+
+  testWidgets(
     'Duo shared status row preserves the reader across folds and rotations',
     (tester) async {
       const channel = 'me.hyliu.fluent_reader_lite/ios_bar_layout';

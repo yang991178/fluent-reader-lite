@@ -29,6 +29,7 @@ import 'package:tuple/tuple.dart';
 import 'package:fluent_reader_lite/components/cupertino_toolbar.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 typedef ArticleSelection = ({String? itemId, RSSFeed feed});
 
@@ -136,7 +137,16 @@ class ArticlePageState extends State<ArticlePage> {
 
   Future<WebViewController> getNewWebviewController() async {
     final currId = requestId;
-    final controller = WebViewController()
+    final params = WebViewPlatform.instance is WebKitWebViewPlatform
+        ? WebKitWebViewControllerCreationParams(
+            allowsInlineMediaPlayback: true,
+            mediaTypesRequiringUserAction: const {
+              PlaybackMediaTypes.audio,
+              PlaybackMediaTypes.video,
+            },
+          )
+        : const PlatformWebViewControllerCreationParams();
+    final controller = WebViewController.fromPlatformCreationParams(params)
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..addJavaScriptChannel(
         'ArticleStatus',
