@@ -12,6 +12,7 @@ import 'package:fluent_reader_lite/models/item.dart';
 import 'package:fluent_reader_lite/models/items_model.dart';
 import 'package:fluent_reader_lite/models/source.dart';
 import 'package:fluent_reader_lite/models/sources_model.dart';
+import 'package:fluent_reader_lite/pages/article_page.dart';
 import 'package:fluent_reader_lite/pages/settings/text_editor_page.dart';
 import 'package:fluent_reader_lite/utils/global.dart';
 import 'package:cupertino_ui/cupertino_ui.dart';
@@ -364,15 +365,17 @@ class _ItemListPageState extends State<ItemListPage> {
     final titleWidget = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          constraints: BoxConstraints(
-            maxWidth: Global.isTablet(context)
-                ? 260
-                : MediaQuery.of(context).size.width - 60,
+        Flexible(
+          child: Container(
+            constraints: BoxConstraints(
+              maxWidth: Global.isTablet(context)
+                  ? 260
+                  : MediaQuery.of(context).size.width - 60,
+            ),
+            child: title == null
+                ? _titleFromFilter()
+                : Text(title, overflow: TextOverflow.ellipsis),
           ),
-          child: title == null
-              ? _titleFromFilter()
-              : Text(title, overflow: TextOverflow.ellipsis),
         ),
         Consumer<SourcesModel>(
           builder: (context, sourcesModel, child) {
@@ -435,22 +438,41 @@ class _ItemListPageState extends State<ItemListPage> {
     final subscriptionList = Consumer<FeedsModel>(
       builder: (context, feedsModel, child) {
         var feed = getFeed()!;
-        return SliverList(
-          delegate: SliverChildBuilderDelegate((content, index) {
-            return Selector2<
-              ItemsModel,
-              SourcesModel,
-              Tuple2<RSSItem, RSSSource?>
-            >(
-              selector: (context, itemsModel, sourcesModel) {
-                var item = itemsModel.getItem(feed.iids[index])!;
-                var source = sourcesModel.getSource(item.source);
-                return Tuple2(item, source);
-              },
-              builder: (context, tuple, child) =>
-                  ArticleItem(tuple.item1, tuple.item2, _openActionSheet),
+        return ValueListenableBuilder<ArticleSelection?>(
+          valueListenable: ArticlePage.selection,
+          builder: (context, selection, child) {
+            final selectedId = identical(selection?.feed, feed)
+                ? selection?.itemId
+                : null;
+            return SliverList(
+              delegate: SliverChildBuilderDelegate((content, index) {
+                final selected =
+                    selectedId != null && feed.iids[index] == selectedId;
+                final nextSelected =
+                    selectedId != null &&
+                    index + 1 < feed.iids.length &&
+                    feed.iids[index + 1] == selectedId;
+                return Selector2<
+                  ItemsModel,
+                  SourcesModel,
+                  Tuple2<RSSItem, RSSSource?>
+                >(
+                  selector: (context, itemsModel, sourcesModel) {
+                    var item = itemsModel.getItem(feed.iids[index])!;
+                    var source = sourcesModel.getSource(item.source);
+                    return Tuple2(item, source);
+                  },
+                  builder: (context, tuple, child) => ArticleItem(
+                    tuple.item1,
+                    tuple.item2,
+                    _openActionSheet,
+                    selected: selected,
+                    hideSeparator: selected || nextSelected,
+                  ),
+                );
+              }, childCount: feed.iids.length),
             );
-          }, childCount: feed.iids.length),
+          },
         );
       },
     );

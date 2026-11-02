@@ -5,6 +5,7 @@ import 'package:fluent_reader_lite/components/article_focus_controls.dart';
 import 'package:fluent_reader_lite/components/article_focus_scope.dart';
 import 'package:fluent_reader_lite/components/reader_page_scaffold.dart';
 import 'package:fluent_reader_lite/generated/l10n.dart';
+import 'package:fluent_reader_lite/models/feed.dart';
 import 'package:fluent_reader_lite/models/feeds_model.dart';
 import 'package:fluent_reader_lite/models/item.dart';
 import 'package:fluent_reader_lite/models/items_model.dart';
@@ -27,8 +28,20 @@ import 'package:fluent_reader_lite/components/cupertino_toolbar.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+typedef ArticleSelection = ({String? itemId, RSSFeed feed});
+
 class ArticlePage extends StatefulWidget {
   static final GlobalKey<ArticlePageState> state = GlobalKey();
+  static final _selection = ValueNotifier<ArticleSelection?>(null);
+  static ValueListenable<ArticleSelection?> get selection => _selection;
+
+  // Route creation and disposal can happen during a build. Publish the active
+  // article after the frame so the list can safely update its selection.
+  static void _scheduleSelectionUpdate() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _selection.value = state.currentState?._selection;
+    });
+  }
 
   ArticlePage() : super(key: state);
 
@@ -48,6 +61,14 @@ class ArticlePageState extends State<ArticlePage> {
   SourceOpenTarget? _target;
   String? iid;
   bool? isSourceFeed;
+  late RSSFeed _feed;
+
+  ArticleSelection get _selection => (itemId: iid, feed: _feed);
+
+  void _setFeed(bool isSource) {
+    isSourceFeed = isSource;
+    _feed = isSource ? Global.feedsModel!.source! : Global.feedsModel!.all;
+  }
 
   void loadNewItem(String? id, {bool? isSource}) {
     ArticleFocusScope.maybeOf(context)?.showArticle();
@@ -60,18 +81,33 @@ class ArticlePageState extends State<ArticlePage> {
       loaded = _ArticleLoadState.Loading;
       navigated = false;
       _target = null;
-      if (isSource != null) isSourceFeed = isSource;
+      if (isSource != null) _setFeed(isSource);
     });
+    ArticlePage._selection.value = _selection;
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    if (iid == null) {
+      final arguments =
+          ModalRoute.of(context)!.settings.arguments as Tuple2<String, bool>;
+      iid = arguments.item1;
+      _setFeed(arguments.item2);
+      ArticlePage._scheduleSelectionUpdate();
+    }
     final brightness = CupertinoTheme.brightnessOf(context);
     if (_brightness == brightness) return;
     _brightness = brightness;
     if (_controller != null) _setWebViewBackground(_controller!);
     _updateArticleTheme();
+  }
+
+  @override
+  void dispose() {
+    requestId += 1;
+    ArticlePage._scheduleSelectionUpdate();
+    super.dispose();
   }
 
   Color get _backgroundColor => _brightness == Brightness.dark
@@ -265,10 +301,6 @@ class ArticlePageState extends State<ArticlePage> {
   @override
   Widget build(BuildContext context) {
     final focus = ArticleFocusScope.maybeOf(context);
-    final Tuple2<String, bool>? arguments =
-        ModalRoute.of(context)!.settings.arguments as Tuple2<String, bool>?;
-    if (iid == null) iid = arguments!.item1;
-    if (isSourceFeed == null) isSourceFeed = arguments!.item2;
     final resolvedDarkGrey = MyColors.dynamicDarkGrey.resolveFrom(context);
     final viewOptions = {
       0: Padding(
@@ -374,9 +406,7 @@ class ArticlePageState extends State<ArticlePage> {
             child: Consumer<FeedsModel>(
               child: body,
               builder: (context, feedsModel, child) {
-                final feed = isSourceFeed!
-                    ? feedsModel.source!
-                    : feedsModel.all;
+                final feed = _feed;
                 var idx = feed.iids.indexOf(iid);
                 return CupertinoToolbar(
                   items: [

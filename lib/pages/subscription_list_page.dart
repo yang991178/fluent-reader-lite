@@ -63,7 +63,7 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
   }
 
   void _openGroups() async {
-    List<String?>? result;
+    GroupListSelection? result;
     if (Global.isTablet(context)) {
       result = await Navigator.of(context)
           .push(CupertinoPageRoute(builder: (context) => GroupListPage()));
@@ -79,28 +79,31 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
     }
     if (!mounted) return;
     if (result != null) {
-      _onScrollTop();
-      if (result.length == 0) {
-        setState(() {
-          title = null;
-          sids = null;
-        });
-      } else if (result.length > 1) {
-        setState(() {
-          title = S.of(context).uncategorized;
-          sids = Global.groupsModel!.uncategorized;
-        });
+      if (result.openArticles) {
+        await _openGroupArticles(result.sourceIds, result.title);
       } else {
+        _onScrollTop();
         setState(() {
-          title = result![0];
-          sids = Global.groupsModel!.groups[title];
+          title = result!.title;
+          sids = result.sourceIds;
         });
       }
     }
     await Future.delayed(Duration(milliseconds: 300));
+    if (!mounted) return;
     setState(() {
       transitioning = false;
     });
+  }
+
+  Future<void> _openGroupArticles(
+    List<String?>? sourceIds,
+    String? feedTitle,
+  ) async {
+    if (sourceIds == null || sourceIds.isEmpty) return;
+    await Global.feedsModel!.initSourcesFeed(sourceIds);
+    if (!mounted) return;
+    Navigator.of(context).pushNamed("/feed", arguments: feedTitle);
   }
 
   void _openMarkAllModal() {
@@ -194,15 +197,17 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            constraints: BoxConstraints(
-              maxWidth: Global.isTablet(context)
-                  ? 260
-                  : MediaQuery.of(context).size.width - 60,
-            ),
-            child: Text(
-              title ?? S.of(context).subscriptions,
-              overflow: TextOverflow.ellipsis,
+          Flexible(
+            child: Container(
+              constraints: BoxConstraints(
+                maxWidth: Global.isTablet(context)
+                    ? 260
+                    : MediaQuery.of(context).size.width - 60,
+              ),
+              child: Text(
+                title ?? S.of(context).subscriptions,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ),
           if (unreadOnly && !sharedStatusRow)
@@ -342,14 +347,15 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
                     .fold(0, (dynamic c, s) => c + s!.unreadCount);
                 return SliverToBoxAdapter(
                   child: MyListTile(
-                    title: Text(S.of(context).allArticles),
+                    title: Flexible(
+                      child: Text(
+                        S.of(context).allArticles,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                     trailing: count > 0 ? Badge(count) : null,
                     trailingChevron: false,
-                    onTap: () async {
-                      await Global.feedsModel!.initSourcesFeed(sids!.toList());
-                      Navigator.of(context)
-                          .pushNamed("/feed", arguments: title);
-                    },
+                    onTap: () => _openGroupArticles(sids, title),
                     background: CupertinoColors.systemBackground,
                   ),
                 );
