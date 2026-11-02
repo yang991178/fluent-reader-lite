@@ -35,6 +35,10 @@ async function renderArticle() {
     const dom = new DOMParser().parseFromString(data.header, "text/html")
     dom.querySelector("article").innerHTML = article
     for (const script of dom.querySelectorAll("script")) script.remove()
+    // WebKit also requires this attribute to keep article videos inline.
+    for (const video of dom.querySelectorAll("video")) {
+        video.setAttribute("playsinline", "")
+    }
     for (const element of dom.querySelectorAll("[src], [href]")) {
         for (const attribute of ["src", "href"]) {
             const value = element.getAttribute(attribute)
