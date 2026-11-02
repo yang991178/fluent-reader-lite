@@ -4,9 +4,10 @@
  * See LICENSE for distribution and usage details.
  */
 
-import 'package:fluent_reader_lite/utils/colors.dart';
 import 'package:fluent_reader_lite/utils/global.dart';
 import 'package:cupertino_ui/cupertino_ui.dart';
+
+import 'reader_bar.dart';
 
 /// Display a persistent bottom iOS styled toolbar for Cupertino theme
 ///
@@ -62,18 +63,30 @@ class CupertinoToolbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final toolbarHeight = Global.isTablet(context) ? 50.0 : 44.0;
+    final underlap = readerBarBlurEnabled
+        ? toolbarHeight + MediaQuery.paddingOf(context).bottom
+        : 0.0;
     return Column(
       children: <Widget>[
-        Expanded(child: body),
-        Container(
-          decoration: BoxDecoration(
-            border: Border(
-              top: BorderSide(
-                color: MyColors.barDivider.resolveFrom(context),
-                width: 0.0,
+        Expanded(
+          child: MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              padding: MediaQuery.paddingOf(context).copyWith(
+                bottom: readerBarBlurEnabled
+                    ? 0
+                    : MediaQuery.paddingOf(context).bottom,
               ),
             ),
+            child: ReaderBarUnderlap(
+              insets: EdgeInsets.only(bottom: underlap),
+              child: body,
+            ),
           ),
+        ),
+        ReaderBarBackground(
+          color: readerBarColor(context),
+          border: Border(top: readerBarBorder(context).bottom),
           child: LayoutBuilder(
             builder: (context, constraints) {
               final grouped =
@@ -82,7 +95,7 @@ class CupertinoToolbar extends StatelessWidget {
               return SafeArea(
                 top: false,
                 child: SizedBox(
-                  height: Global.isTablet(context) ? 50.0 : 44.0,
+                  height: toolbarHeight,
                   child: grouped
                       ? Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),

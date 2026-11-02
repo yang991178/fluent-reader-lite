@@ -5,6 +5,19 @@ import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:flutter/rendering.dart';
 
 import 'ios_bar_layout.dart';
+import 'reader_bar.dart';
+
+Border? _resolvedNavigationBorder(BuildContext context, Border? border) {
+  if (border == null || border.runtimeType != Border) return border;
+  BorderSide resolve(BorderSide side) =>
+      side.copyWith(color: CupertinoDynamicColor.resolve(side.color, context));
+  return Border(
+    top: resolve(border.top),
+    right: resolve(border.right),
+    bottom: resolve(border.bottom),
+    left: resolve(border.left),
+  );
+}
 
 /// Retains Cupertino's keyboard, scrolling and safe-area behavior while
 /// adapting navigation to UIKit's status-area and window-control frames.
@@ -15,6 +28,7 @@ class ReaderPageScaffold extends StatelessWidget {
     this.backgroundColor,
     this.resizeToAvoidBottomInset = true,
     this.keepMiddle = false,
+    this.underlapNavigationBar = false,
     required this.child,
   });
 
@@ -23,6 +37,9 @@ class ReaderPageScaffold extends StatelessWidget {
   final bool resizeToAvoidBottomInset;
   // Interactive content, such as the reader's view selector, is not a title.
   final bool keepMiddle;
+
+  /// Paint below the header while retaining the original body layout bounds.
+  final bool underlapNavigationBar;
   final Widget child;
 
   @override
@@ -38,34 +55,87 @@ class ReaderPageScaffold extends StatelessWidget {
     // Keep the body at the same keyed position across fold/rotation changes.
     // The header measures its center in the same layout pass as the body, so an
     // overflowing selector can add a row without clipping or a deferred resize.
-    return MediaQuery(
-      data: MediaQuery.of(context).removePadding(removeTop: row != null),
-      child: CupertinoPageScaffold(
-        navigationBar: row == null ? navigationBar : null,
-        backgroundColor: backgroundColor,
-        resizeToAvoidBottomInset: resizeToAvoidBottomInset,
-        child: Column(
-          children: [
-            if (row != null)
-              MediaQuery.withNoTextScaling(
-                child: _CornerNavigationBar(
-                  navigationBar: navigationBar!,
-                  row: row,
-                  keepMiddle: keepMiddle,
+    final underlap = underlapNavigationBar && readerBarBlurEnabled;
+    final keyboard = resizeToAvoidBottomInset
+        ? MediaQuery.viewInsetsOf(context).bottom
+        : 0.0;
+    return LayoutBuilder(
+      builder: (context, pageConstraints) => MediaQuery(
+        data: MediaQuery.of(context).removePadding(removeTop: row != null),
+        child: CupertinoPageScaffold(
+          navigationBar: row == null
+              ? (underlap
+                    ? _ObstructingNavigationBar(navigationBar!)
+                    : navigationBar)
+              : null,
+          backgroundColor: backgroundColor,
+          resizeToAvoidBottomInset: resizeToAvoidBottomInset,
+          child: Column(
+            // Paint the header last so the body's upward underlap stays behind it.
+            verticalDirection: VerticalDirection.up,
+            children: [
+              Expanded(
+                key: const ValueKey('reader-body'),
+                child: Semantics(
+                  sortKey: row == null ? null : const OrdinalSortKey(1),
+                  child: LayoutBuilder(
+                    builder: (context, bodyConstraints) {
+                      final top = underlap
+                          ? math.max(
+                              0.0,
+                              pageConstraints.maxHeight -
+                                  keyboard -
+                                  bodyConstraints.maxHeight,
+                            )
+                          : 0.0;
+                      return ReaderBarUnderlap(
+                        insets: EdgeInsets.only(top: top),
+                        child: child,
+                      );
+                    },
+                  ),
                 ),
               ),
-            Expanded(key: const ValueKey('reader-body'), child: child),
-          ],
+              if (row != null)
+                MediaQuery.withNoTextScaling(
+                  child: Semantics(
+                    sortKey: const OrdinalSortKey(0),
+                    child: _CornerNavigationBar(
+                      navigationBar: navigationBar!,
+                      row: row,
+                      keepMiddle: keepMiddle,
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
+// Retain the scaffold's original body bounds while drawing a translucent bar.
+class _ObstructingNavigationBar extends StatelessWidget
+    implements ObstructingPreferredSizeWidget {
+  const _ObstructingNavigationBar(this.bar);
+  final CupertinoNavigationBar bar;
+  @override
+  Size get preferredSize => bar.preferredSize;
+  @override
+  bool shouldFullyObstruct(BuildContext context) => true;
+  @override
+  Widget build(BuildContext context) => bar;
+}
+
 /// Keeps the expanding large title below Duo's shared status/navigation row.
 class ReaderSliverNavigationBar extends StatelessWidget {
   const ReaderSliverNavigationBar(this.navigationBar, {super.key});
   final CupertinoSliverNavigationBar navigationBar;
+
+  double persistentHeight(BuildContext context) =>
+      IosBarLayoutScope.maybeOf(context)?.row(context)?.height ??
+      MediaQuery.paddingOf(context).top + kMinInteractiveDimensionCupertino;
 
   @override
   Widget build(BuildContext context) {
@@ -103,47 +173,68 @@ class _CornerHeaderDelegate extends SliverPersistentHeaderDelegate {
     final color =
         CupertinoDynamicColor.maybeResolve(bar.backgroundColor, context) ??
         CupertinoTheme.of(context).barBackgroundColor;
+    // Match Cupertino's scroll-under divider: reveal it over the first ten
+    // points after the large-title area has fully collapsed.
+    final borderProgress = ((shrinkOffset - largeTitleHeight) / 10).clamp(
+      0.0,
+      1.0,
+    );
     return ClipRect(
-      child: ColoredBox(
+      child: ReaderBarBackground(
         color: color,
+        border: Border.lerp(
+          null,
+          _resolvedNavigationBorder(context, bar.border),
+          borderProgress,
+        ),
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Positioned(
-              top: row.height - shrinkOffset.clamp(0, largeTitleHeight),
-              left: 0,
-              right: 0,
-              height: largeTitleHeight,
-              child: Padding(
-                padding: const EdgeInsetsDirectional.only(
-                  start: 16,
-                  end: 16,
-                  bottom: 8,
-                ),
-                child: Align(
-                  alignment: AlignmentDirectional.bottomStart,
-                  child: IgnorePointer(
-                    ignoring: !showLargeTitle,
-                    child: AnimatedOpacity(
-                      opacity: showLargeTitle ? 1 : 0,
-                      duration: const Duration(milliseconds: 150),
-                      child: Semantics(
-                        header: true,
-                        child: MediaQuery.withClampedTextScaling(
-                          minScaleFactor: 1,
-                          maxScaleFactor: 1.235,
-                          child: DefaultTextStyle(
-                            style: CupertinoTheme.of(context)
-                                .textTheme
-                                .navLargeTitleTextStyle,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            child: bar.largeTitle!,
+            Positioned.fill(
+              top: row.height,
+              child: ClipRect(
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Positioned(
+                      top: -shrinkOffset,
+                      left: 0,
+                      right: 0,
+                      height: largeTitleHeight,
+                      child: Padding(
+                        padding: const EdgeInsetsDirectional.only(
+                          start: 16,
+                          end: 16,
+                          bottom: 8,
+                        ),
+                        child: Align(
+                          alignment: AlignmentDirectional.bottomStart,
+                          child: IgnorePointer(
+                            ignoring: !showLargeTitle,
+                            child: AnimatedOpacity(
+                              opacity: showLargeTitle ? 1 : 0,
+                              duration: const Duration(milliseconds: 150),
+                              child: Semantics(
+                                header: true,
+                                child: MediaQuery.withClampedTextScaling(
+                                  minScaleFactor: 1,
+                                  maxScaleFactor: 1.235,
+                                  child: DefaultTextStyle(
+                                    style: CupertinoTheme.of(context)
+                                        .textTheme
+                                        .navLargeTitleTextStyle,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    child: bar.largeTitle!,
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
               ),
             ),
@@ -167,6 +258,7 @@ class _CornerHeaderDelegate extends SliverPersistentHeaderDelegate {
                   padding: bar.padding,
                   transitionBetweenRoutes: false,
                 ),
+                blurBackground: false,
               ),
             ),
           ],
@@ -184,10 +276,12 @@ class _CornerNavigationBar extends StatelessWidget {
     required this.navigationBar,
     required this.row,
     this.keepMiddle = false,
+    this.blurBackground = true,
   });
   final CupertinoNavigationBar navigationBar;
   final IosNavigationRow row;
   final bool keepMiddle;
+  final bool blurBackground;
 
   @override
   Widget build(BuildContext context) {
@@ -217,13 +311,48 @@ class _CornerNavigationBar extends StatelessWidget {
       }
     }
     final measurements = _ToolbarMeasurements();
-    return ColoredBox(
-      color: color,
+    final direction = Directionality.of(context);
+    final edgePadding =
+        (padding ?? const EdgeInsetsDirectional.symmetric(horizontal: 16))
+            .resolve(direction);
+    final hasLeftAction = direction == TextDirection.ltr
+        ? leading != null
+        : bar.trailing != null;
+    final hasRightAction = direction == TextDirection.ltr
+        ? bar.trailing != null
+        : leading != null;
+    // The shared status toolbar includes UIKit's standard 16-point margins.
+    // Replace those margins with the bar's requested padding, including the
+    // smaller inset used by back buttons and trailing icon buttons.
+    final toolbarRow = IosNavigationRow(
+      row.height,
+      math.max(
+        0,
+        row.left -
+            (hasLeftAction
+                ? (row.sharesStatusArea ? 16 : edgePadding.left)
+                : 0),
+      ),
+      math.max(
+        0,
+        row.right -
+            (hasRightAction
+                ? (row.sharesStatusArea ? 16 : edgePadding.right)
+                : 0),
+      ),
+      row.centerY,
+    );
+    return ReaderBarBackground(
+      color: blurBackground ? color : CupertinoColors.transparent,
+      blur: blurBackground && bar.enableBackgroundFilterBlur,
+      border: blurBackground
+          ? _resolvedNavigationBorder(context, bar.border)
+          : null,
       child: _AdaptiveToolbar(
-        row: row,
+        row: toolbarRow,
         measurements: measurements,
         keepMiddle: keepMiddle,
-        textDirection: Directionality.of(context),
+        textDirection: direction,
         leadingPadding: leading == null ? 0 : padding?.start ?? 16,
         trailingPadding: bar.trailing == null ? 0 : padding?.end ?? 16,
         toolbar: MediaQuery(
@@ -246,10 +375,16 @@ class _CornerNavigationBar extends StatelessWidget {
                     child: bar.trailing!,
                   ),
             border: null,
-            backgroundColor: color,
+            // The full adaptive header owns the background. This inner bar
+            // only lays out buttons; another tint/filter produces a solid strip.
+            backgroundColor: CupertinoColors.transparent,
             automaticBackgroundVisibility: false,
-            enableBackgroundFilterBlur: bar.enableBackgroundFilterBlur,
-            brightness: bar.brightness,
+            enableBackgroundFilterBlur: false,
+            brightness:
+                bar.brightness ??
+                (color.computeLuminance() < 0.179
+                    ? Brightness.dark
+                    : Brightness.light),
             padding: padding,
             transitionBetweenRoutes: false,
           ),

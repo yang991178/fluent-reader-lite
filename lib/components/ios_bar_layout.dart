@@ -13,6 +13,7 @@ class IosBarLayout {
     this.toolbar,
     this.division,
     this.avoidsWindowControls = false,
+    this.reduceTransparency = false,
   });
 
   factory IosBarLayout.fromEvent(dynamic event) {
@@ -33,6 +34,7 @@ class IosBarLayout {
       division: rect(event['division']),
       toolbar: rect(event['toolbar']),
       avoidsWindowControls: event['avoidsWindowControls'] == true,
+      reduceTransparency: event['reduceTransparency'] == true,
     );
   }
 
@@ -42,6 +44,7 @@ class IosBarLayout {
 
   /// Whether UIKit reserves horizontal space for iPad window controls.
   final bool avoidsWindowControls;
+  final bool reduceTransparency;
 
   /// The active vertical fold region reported by UIKit, if it divides the view.
   final Rect? division;
@@ -144,6 +147,7 @@ class IosBarLayoutScope extends InheritedWidget {
       math.max(media.padding.left, toolbar.left - bounds.left),
       math.max(media.padding.right, bounds.right - toolbar.right),
       toolbar.center.dy,
+      sharesStatusArea: toolbar.bottom <= data.topInset,
     );
   }
 
@@ -153,9 +157,16 @@ class IosBarLayoutScope extends InheritedWidget {
 }
 
 class IosNavigationRow {
-  const IosNavigationRow(this.height, this.left, this.right, this.centerY);
+  const IosNavigationRow(
+    this.height,
+    this.left,
+    this.right,
+    this.centerY, {
+    this.sharesStatusArea = false,
+  });
   final double height;
   final double left;
   final double right;
   final double centerY;
+  final bool sharesStatusArea;
 }

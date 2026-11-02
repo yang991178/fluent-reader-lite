@@ -107,6 +107,11 @@ void main() {
       expect(tester.getCenter(toggle).dy, 48);
       expect(tester.getCenter(markAll).dy, 48);
       expect(tester.getCenter(settings).dy, 48);
+      final groups = find.ancestor(
+        of: find.text(S.current.groups),
+        matching: find.byType(CupertinoButton),
+      );
+      expect(tester.getRect(groups).left, 16);
       expect(
         tester.getRect(toggle).right,
         lessThan(tester.getRect(markAll).left),
@@ -135,14 +140,14 @@ void main() {
       for (final icon in [toggle, markAll, settings]) {
         expect(icon.hitTestable(), findsOneWidget);
         expect(tester.getCenter(icon).dy, 48);
-        expect(tester.getRect(icon).right, lessThan(213.33333333333334));
+        expect(tester.getRect(icon).right, lessThan(213.33333333333334 + 16));
       }
       expect(tester.getTopLeft(title).dy, greaterThan(82));
       await tester.tap(toggle);
       await tester.pumpAndSettle();
       expect(Store.sp.getBool(StoreKeys.UNREAD_SUBS_ONLY), isTrue);
       // Returning to ordinary geometry removes only the Duo-specific button.
-      await sendGeometry(null);
+      await sendGeometry([18, 82, 430, 44]);
       expect(
         find.byWidgetPredicate(
           (widget) =>
@@ -151,6 +156,28 @@ void main() {
         ),
         findsNothing,
       );
+      // A custom iPad row avoids window controls without sharing status UI.
+      await messenger.handlePlatformMessage(
+        channel,
+        const StandardMethodCodec().encodeSuccessEnvelope({
+          'width': 466.0,
+          'height': 678.0,
+          'topInset': 82.0,
+          'toolbar': [66.0, 82.0, 384.0, 44.0],
+          'avoidsWindowControls': true,
+        }),
+        (_) {},
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is Icon &&
+              widget.semanticLabel == S.current.allSubscriptions,
+        ),
+        findsNothing,
+      );
+      await sendGeometry([18, 82, 430, 44]);
       expect(find.byType(CupertinoSliverNavigationBar), findsOneWidget);
       expect(tester.takeException(), isNull);
       semantics.dispose();
