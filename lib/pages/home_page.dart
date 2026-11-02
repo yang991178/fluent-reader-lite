@@ -4,6 +4,7 @@ import 'package:fluent_reader_lite/components/article_focus_scope.dart';
 import 'package:fluent_reader_lite/components/reader_pane_layout.dart';
 import 'package:fluent_reader_lite/components/ios_bar_layout.dart';
 import 'package:fluent_reader_lite/components/reader_page_scaffold.dart';
+import 'package:fluent_reader_lite/components/reader_bar.dart';
 import 'package:fluent_reader_lite/generated/l10n.dart';
 import 'package:fluent_reader_lite/main.dart';
 import 'package:fluent_reader_lite/models/services/service_import.dart';
@@ -145,7 +146,8 @@ class _HomePageState extends State<HomePage>
     // also trigger them. Keep the controller on the list (including explicit
     // tab scroll-to-top), but hide it from the scaffold's automatic handler.
     final sharedStatusRow =
-        IosBarLayoutScope.maybeOf(context)?.row(context) != null;
+        IosBarLayoutScope.maybeOf(context)?.row(context)?.sharesStatusArea ==
+        true;
     return Global.isTablet(context) || sharedStatusRow
         ? PrimaryScrollController.none(child: scaffold)
         : PrimaryScrollController(
@@ -185,7 +187,8 @@ class _HomePageState extends State<HomePage>
       controller: _controller,
       backgroundColor: CupertinoColors.systemBackground,
       tabBar: CupertinoTabBar(
-        backgroundColor: CupertinoColors.systemBackground,
+        backgroundColor: readerBarColor(context),
+        border: Border(top: readerBarBorder(context).bottom),
         onTap: _scrollTopNotifier.onTap,
         items: [
           BottomNavigationBarItem(
@@ -281,6 +284,15 @@ class _HomePageState extends State<HomePage>
                 // Only their bounds change, preserving the reader and WebView.
                 child: Stack(
                   children: [
+                    // Give blur kernels a matching background beyond the pane
+                    // edge before either pane is drawn.
+                    Positioned.fill(
+                      child: ColoredBox(
+                        color: CupertinoColors.systemBackground.resolveFrom(
+                          context,
+                        ),
+                      ),
+                    ),
                     Positioned(
                       left: listLeft,
                       top: 0,

@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:fluent_reader_lite/components/article_focus_controls.dart';
 import 'package:fluent_reader_lite/components/article_focus_scope.dart';
 import 'package:fluent_reader_lite/components/reader_page_scaffold.dart';
+import 'package:fluent_reader_lite/components/reader_bar.dart';
+import 'package:fluent_reader_lite/components/reader_webview.dart';
 import 'package:fluent_reader_lite/generated/l10n.dart';
 import 'package:fluent_reader_lite/models/feed.dart';
 import 'package:fluent_reader_lite/models/feeds_model.dart';
@@ -336,42 +338,56 @@ class ArticlePageState extends State<ArticlePage> {
           _loadOpenTarget(item, source);
         }
         final body = SafeArea(
-          child: IndexedStack(
-            index: loaded.index,
-            children: [
-              Center(
-                child: CupertinoActivityIndicator(
-                  animating: loaded == _ArticleLoadState.Loading,
-                ),
-              ),
-              if (_controller != null)
-                WebViewWidget(
-                  key: Key("a-$iid-${_target!.index}-$requestId"),
-                  controller: _controller!,
-                )
-              else
-                const SizedBox.shrink(),
-              Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      S.of(context).wentWrong,
-                      style: TextStyle(
-                        color: CupertinoColors.label.resolveFrom(context),
+          top: !readerBarBlurEnabled,
+          child: Builder(
+            builder: (context) {
+              final insets = readerBarBlurEnabled
+                  ? MediaQuery.paddingOf(context)
+                  : EdgeInsets.zero;
+              return IndexedStack(
+                index: loaded.index,
+                children: [
+                  Padding(
+                    padding: insets,
+                    child: Center(
+                      child: CupertinoActivityIndicator(
+                        animating: loaded == _ArticleLoadState.Loading,
                       ),
                     ),
-                    CupertinoButton(
-                      child: Text(S.of(context).retry),
-                      onPressed: () {
-                        _loadOpenTarget(item, source);
-                        setState(() {});
-                      },
+                  ),
+                  if (_controller != null)
+                    ReaderWebView(
+                      viewKey: Key("a-$iid-${_target!.index}-$requestId"),
+                      controller: _controller!,
+                    )
+                  else
+                    const SizedBox.shrink(),
+                  Padding(
+                    padding: insets,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            S.of(context).wentWrong,
+                            style: TextStyle(
+                              color: CupertinoColors.label.resolveFrom(context),
+                            ),
+                          ),
+                          CupertinoButton(
+                            child: Text(S.of(context).retry),
+                            onPressed: () {
+                              _loadOpenTarget(item, source);
+                              setState(() {});
+                            },
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
-                ),
-              ),
-            ],
+                  ),
+                ],
+              );
+            },
           ),
           bottom: false,
         );
@@ -382,9 +398,12 @@ class ArticlePageState extends State<ArticlePage> {
           },
           child: ReaderPageScaffold(
             keepMiddle: true,
+            underlapNavigationBar: true,
             navigationBar: CupertinoNavigationBar(
               padding: EdgeInsetsDirectional.zero,
-              backgroundColor: CupertinoColors.systemBackground,
+              backgroundColor: readerBarColor(context),
+              border: readerBarBorder(context),
+              automaticBackgroundVisibility: false,
               leading: focus?.enabled == true
                   ? ArticlePaneButton(onPressed: focus!.showList)
                   : null,

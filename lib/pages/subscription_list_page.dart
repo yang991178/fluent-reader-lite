@@ -1,6 +1,7 @@
 import 'package:fluent_reader_lite/components/responsive_action_sheet.dart';
 import 'package:fluent_reader_lite/components/ios_bar_layout.dart';
 import 'package:fluent_reader_lite/components/reader_page_scaffold.dart';
+import 'package:fluent_reader_lite/components/reader_bar.dart';
 import 'package:fluent_reader_lite/components/badge.dart';
 import 'package:fluent_reader_lite/components/mark_all_action_sheet.dart';
 import 'package:fluent_reader_lite/components/my_list_tile.dart';
@@ -191,7 +192,8 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
   @override
   Widget build(BuildContext context) {
     final sharedStatusRow =
-        IosBarLayoutScope.maybeOf(context)?.row(context) != null;
+        IosBarLayoutScope.maybeOf(context)?.row(context)?.sharesStatusArea ==
+        true;
     final titleWidget = GestureDetector(
       onLongPress: _toggleUnreadOnly,
       child: Row(
@@ -224,16 +226,20 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
         largeTitle: titleWidget,
         heroTag: "subscriptions",
         transitionBetweenRoutes: true,
-        backgroundColor: transitioning
-            ? MyColors.tileBackground
-            : CupertinoColors.systemBackground,
+        backgroundColor: readerBarColor(
+          context,
+          transitioning
+              ? MyColors.tileBackground
+              : CupertinoColors.systemBackground,
+        ),
+        border: readerBarBorder(context),
         leading: CupertinoButton(
-          padding: EdgeInsets.symmetric(horizontal: 12),
+          padding: EdgeInsets.zero,
           child: Text(S.of(context).groups),
           onPressed: _openGroups,
           minimumSize: Size(36, 36),
         ),
-        padding: EdgeInsetsDirectional.zero,
+        padding: const EdgeInsetsDirectional.only(start: 16, end: 4),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -331,40 +337,39 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
         );
       },
     );
-    return CupertinoScrollbar(
-      child: CustomScrollView(
-        slivers: [
-          navigationBar,
-          SyncControl(),
-          if (Global.sourcesModel!.showUnreadTip &&
-              IosBarLayoutScope.maybeOf(context)?.row(context) == null)
-            _buildUnreadTip(),
-          if (sids != null && sids!.length > 0)
-            Consumer<SourcesModel>(
-              builder: (context, sourcesModel, child) {
-                var count = sids!
-                    .map((sid) => sourcesModel.getSource(sid))
-                    .fold(0, (dynamic c, s) => c + s!.unreadCount);
-                return SliverToBoxAdapter(
-                  child: MyListTile(
-                    title: Flexible(
-                      child: Text(
-                        S.of(context).allArticles,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+    return ReaderListScrollbar(
+      topInset: navigationBar.persistentHeight(context),
+      slivers: [
+        navigationBar,
+        SyncControl(),
+        if (Global.sourcesModel!.showUnreadTip &&
+            IosBarLayoutScope.maybeOf(context)?.row(context) == null)
+          _buildUnreadTip(),
+        if (sids != null && sids!.length > 0)
+          Consumer<SourcesModel>(
+            builder: (context, sourcesModel, child) {
+              var count = sids!
+                  .map((sid) => sourcesModel.getSource(sid))
+                  .fold(0, (dynamic c, s) => c + s!.unreadCount);
+              return SliverToBoxAdapter(
+                child: MyListTile(
+                  title: Flexible(
+                    child: Text(
+                      S.of(context).allArticles,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    trailing: count > 0 ? Badge(count) : null,
-                    trailingChevron: false,
-                    onTap: () => _openGroupArticles(sids, title),
-                    background: CupertinoColors.systemBackground,
                   ),
-                );
-              },
-            ),
-          sourcesList,
-          syncInfo,
-        ],
-      ),
+                  trailing: count > 0 ? Badge(count) : null,
+                  trailingChevron: false,
+                  onTap: () => _openGroupArticles(sids, title),
+                  background: CupertinoColors.systemBackground,
+                ),
+              );
+            },
+          ),
+        sourcesList,
+        syncInfo,
+      ],
     );
   }
 }

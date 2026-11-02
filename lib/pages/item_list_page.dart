@@ -1,4 +1,5 @@
 import 'package:fluent_reader_lite/components/reader_page_scaffold.dart';
+import 'package:fluent_reader_lite/components/reader_bar.dart';
 import 'package:fluent_reader_lite/components/article_item.dart';
 import 'package:fluent_reader_lite/components/badge.dart';
 import 'package:fluent_reader_lite/components/mark_all_action_sheet.dart';
@@ -401,9 +402,10 @@ class _ItemListPageState extends State<ItemListPage> {
         stretch: false,
         heroTag: title != null ? "source" : "all",
         transitionBetweenRoutes: true,
-        backgroundColor: CupertinoColors.systemBackground,
+        backgroundColor: readerBarColor(context),
+        border: readerBarBorder(context),
         largeTitle: titleWidget,
-        padding: EdgeInsetsDirectional.zero,
+        padding: const EdgeInsetsDirectional.only(start: 16, end: 4),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -500,15 +502,14 @@ class _ItemListPageState extends State<ItemListPage> {
     );
     return NotificationListener<ScrollNotification>(
       onNotification: _onScroll,
-      child: CupertinoScrollbar(
-        child: CustomScrollView(
-          slivers: [
-            navigationBar,
-            SyncControl(),
-            subscriptionList,
-            loadMoreIndicator,
-          ],
-        ),
+      child: ReaderListScrollbar(
+        topInset: navigationBar.persistentHeight(context),
+        slivers: [
+          navigationBar,
+          SyncControl(),
+          subscriptionList,
+          loadMoreIndicator,
+        ],
       ),
     );
   }

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:fluent_reader_lite/components/ios_bar_layout.dart';
+import 'package:fluent_reader_lite/components/reader_bar.dart';
 import 'package:fluent_reader_lite/models/service.dart';
 import 'package:fluent_reader_lite/pages/article_page.dart';
 import 'package:fluent_reader_lite/pages/error_log_page.dart';
@@ -135,9 +136,8 @@ class MyApp extends StatelessWidget {
             "/": (context) => CupertinoScaffold(
               body: CupertinoTheme(
                 // For fixing the bug with modal_bottom_sheet overriding primary color
-                data: CupertinoTheme.of(context).copyWith(
-                  primaryColor: CupertinoColors.activeBlue,
-                ),
+                data: CupertinoTheme.of(context)
+                    .copyWith(primaryColor: CupertinoColors.activeBlue),
                 child: HomePage(),
               ),
             ),
@@ -152,7 +152,9 @@ class MyApp extends StatelessWidget {
             );
             app = Theme(
               data: ThemeData(brightness: CupertinoTheme.brightnessOf(context)),
-              child: IosBarLayoutProvider(child: app),
+              child: IosBarLayoutProvider(
+                child: ReaderTransparencyTheme(child: app),
+              ),
             );
             final mediaQueryData = MediaQuery.of(context);
             final textScale = Global.globalModel!.textScale;

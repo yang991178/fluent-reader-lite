@@ -34,6 +34,7 @@ dependencies:
   http: ^1.6.0
   html: ^0.15.4
   webview_flutter: ^4.4.2
+  webview_flutter_wkwebview: ^3.27.2
   jaguar: ^3.1.4
   jaguar_flutter_asset: ^3.0.0
   url_launcher: ^6.1.11

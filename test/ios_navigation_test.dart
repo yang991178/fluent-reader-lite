@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:fluent_reader_lite/components/ios_bar_layout.dart';
+import 'package:fluent_reader_lite/components/reader_bar.dart';
 import 'package:fluent_reader_lite/components/reader_page_scaffold.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/rendering.dart';
@@ -167,7 +168,7 @@ void main() {
       );
       expect(
         tester.getRect(find.bySemanticsLabel('Save action')).right,
-        lessThan(_corner.left),
+        lessThanOrEqualTo(_corner.left),
       );
       expect(find.bySemanticsLabel('A moderately long title'), findsNothing);
       await tester.tap(find.bySemanticsLabel('Back action'));
@@ -365,77 +366,223 @@ void main() {
     expect(backTaps, 3);
   }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
 
-  testWidgets('Duo headers remain borderless before and after scrolling', (
+  testWidgets('List headers paint a full divider pixel after scrolling under', (
     tester,
   ) async {
     await sizeView(tester, _cover);
     final boundary = GlobalKey();
     final controller = ScrollController();
     addTearDown(controller.dispose);
-    for (final scenario in [
-      (1.0, Brightness.light),
-      (3.0, Brightness.light),
-      (1.0, Brightness.dark),
-      (3.0, Brightness.dark),
-    ]) {
-      final (ratio, brightness) = scenario;
-      tester.view.devicePixelRatio = ratio;
-      tester.view.physicalSize = _cover * ratio;
-      if (controller.hasClients) controller.jumpTo(0);
-      await tester.pumpWidget(
-        RepaintBoundary(
-          key: boundary,
-          child: _host(
-            ReaderPageScaffold(
-              child: CustomScrollView(
-                controller: controller,
-                slivers: [
-                  ReaderSliverNavigationBar(
-                    CupertinoSliverNavigationBar(
-                      backgroundColor: CupertinoColors.systemBackground,
-                      largeTitle: const Text('Feed'),
-                    ),
+    for (final (layout, top) in [(_layout, 82.0), (null, 62.0)]) {
+      for (final scenario in [
+        (1.0, Brightness.light),
+        (3.0, Brightness.light),
+        (1.0, Brightness.dark),
+        (3.0, Brightness.dark),
+      ]) {
+        final (ratio, brightness) = scenario;
+        final collapsedBottom = layout == null ? top + 44 : 82.0;
+        tester.view.devicePixelRatio = ratio;
+        tester.view.physicalSize = _cover * ratio;
+        if (controller.hasClients) controller.jumpTo(0);
+        await tester.pumpWidget(
+          RepaintBoundary(
+            key: boundary,
+            child: _host(
+              ReaderPageScaffold(
+                child: Builder(
+                  builder: (context) => CustomScrollView(
+                    controller: controller,
+                    slivers: [
+                      ReaderSliverNavigationBar(
+                        CupertinoSliverNavigationBar(
+                          backgroundColor: CupertinoColors.systemBackground,
+                          border: readerBarBorder(context),
+                          transitionBetweenRoutes: false,
+                          largeTitle: const Text('Feed'),
+                        ),
+                      ),
+                      SliverToBoxAdapter(
+                        child: ColoredBox(
+                          color: brightness == Brightness.light
+                              ? CupertinoColors.white
+                              : CupertinoColors.black,
+                          child: const SizedBox(height: 2000),
+                        ),
+                      ),
+                    ],
                   ),
-                  SliverToBoxAdapter(
-                    child: ColoredBox(
-                      color: brightness == Brightness.light
-                          ? CupertinoColors.white
-                          : CupertinoColors.black,
-                      child: const SizedBox(height: 2000),
-                    ),
-                  ),
-                ],
+                ),
               ),
+              layout: layout,
+              top: top,
+              pixelRatio: ratio,
+              brightness: brightness,
             ),
-            pixelRatio: ratio,
-            brightness: brightness,
+          ),
+        );
+        await tester.pumpAndSettle();
+        Future<List<int>> pixelAbove(double bottom) async {
+          final render = tester.renderObject<RenderRepaintBoundary>(
+            find.byKey(boundary),
+          );
+          final image = await tester.runAsync(
+            () => render.toImage(pixelRatio: ratio),
+          );
+          final data = await tester.runAsync(
+            () => image!.toByteData(format: ui.ImageByteFormat.rawRgba),
+          );
+          final offset =
+              (((bottom * ratio).round() - 1) * image!.width +
+                  (8 * ratio).round()) *
+              4;
+          final pixel = data!.buffer.asUint8List(offset, 4).toList();
+          image.dispose();
+          return pixel;
+        }
+
+        final background = brightness == Brightness.light
+            ? [255, 255, 255, 255]
+            : [0, 0, 0, 255];
+        expect(await pixelAbove(collapsedBottom + 52), background);
+        controller.jumpTo(200);
+        await tester.pumpAndSettle();
+        final pixel = await pixelAbove(collapsedBottom);
+        final separator = CupertinoDynamicColor.resolve(
+          CupertinoColors.separator,
+          tester.element(find.byType(ReaderSliverNavigationBar)),
+        );
+        final expected = Color.alphaBlend(
+          separator,
+          brightness == Brightness.light
+              ? CupertinoColors.white
+              : CupertinoColors.black,
+        );
+        expect(pixel[0], closeTo((expected.r * 255).round(), 1));
+        expect(pixel[1], closeTo((expected.g * 255).round(), 1));
+        expect(pixel[2], closeTo((expected.b * 255).round(), 1));
+        expect(pixel[3], 255);
+        expect(tester.takeException(), isNull);
+      }
+    }
+  }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
+
+  testWidgets('Duo large title keeps moving while it fades', (tester) async {
+    await sizeView(tester, _cover);
+    final controller = ScrollController();
+    addTearDown(controller.dispose);
+    await tester.pumpWidget(
+      _host(
+        ReaderPageScaffold(
+          child: CustomScrollView(
+            controller: controller,
+            slivers: [
+              const ReaderSliverNavigationBar(
+                CupertinoSliverNavigationBar(
+                  largeTitle: Text('Moving title', key: Key('moving-title')),
+                ),
+              ),
+              const SliverToBoxAdapter(child: SizedBox(height: 2000)),
+            ],
           ),
         ),
-      );
-      await tester.pumpAndSettle();
-      controller.jumpTo(200);
-      await tester.pumpAndSettle();
-      final render = tester.renderObject<RenderRepaintBoundary>(
-        find.byKey(boundary),
-      );
-      final image = await tester.runAsync(
-        () => render.toImage(pixelRatio: ratio),
-      );
-      final data = await tester.runAsync(
-        () => image!.toByteData(format: ui.ImageByteFormat.rawRgba),
-      );
-      final offset =
-          (((82 * ratio).round() - 1) * image!.width + (8 * ratio).round()) * 4;
-      final pixel = data!.buffer.asUint8List(offset, 4).toList();
-      image.dispose();
-      expect(
-        pixel,
-        brightness == Brightness.light ? [255, 255, 255, 255] : [0, 0, 0, 255],
-      );
-      expect(pixel[1], pixel[0]);
-      expect(pixel[2], pixel[0]);
-      expect(tester.takeException(), isNull);
+      ),
+    );
+    await tester.pumpAndSettle();
+    final title = find.descendant(
+      of: find.byType(AnimatedOpacity),
+      matching: find.byKey(const Key('moving-title')),
+    );
+    final initialTop = tester.getTopLeft(title).dy;
+    controller.jumpTo(50);
+    await tester.pump();
+    expect(tester.getTopLeft(title).dy, initialTop - 50);
+    controller.jumpTo(80);
+    await tester.pump(const Duration(milliseconds: 30));
+    expect(tester.getTopLeft(title).dy, initialTop - 80);
+    final fade = tester.widget<FadeTransition>(
+      find.descendant(
+        of: find.byType(AnimatedOpacity),
+        matching: find.byType(FadeTransition),
+      ),
+    );
+    expect(fade.opacity.value, inExclusiveRange(0.0, 1.0));
+    expect(tester.takeException(), isNull);
+    await tester.pumpAndSettle();
+  }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
+
+  testWidgets('Adaptive row reuses edge padding without doubling it', (
+    tester,
+  ) async {
+    await sizeView(tester, _cover);
+    for (final direction in TextDirection.values) {
+      for (final (left, right) in [(16.0, 16.0), (66.0, 9.5), (0.0, 0.0)]) {
+        await tester.pumpWidget(
+          _host(
+            Directionality(
+              textDirection: direction,
+              child: const ReaderPageScaffold(
+                navigationBar: CupertinoNavigationBar(
+                  leading: SizedBox(width: 44, key: Key('edge-leading')),
+                  trailing: SizedBox(width: 44, key: Key('edge-trailing')),
+                ),
+                child: SizedBox.expand(),
+              ),
+            ),
+            layout: IosBarLayout(
+              size: _cover,
+              topInset: 82,
+              toolbar: Rect.fromLTWH(left, 26, _cover.width - left - right, 44),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final leading = tester.getRect(find.byKey(const Key('edge-leading')));
+        final trailing = tester.getRect(find.byKey(const Key('edge-trailing')));
+        final physicalLeft = direction == TextDirection.ltr
+            ? leading
+            : trailing;
+        final physicalRight = direction == TextDirection.ltr
+            ? trailing
+            : leading;
+        expect(physicalLeft.left, left > 16 ? left : 16);
+        expect(physicalRight.right, _cover.width - (right > 16 ? right : 16));
+        expect(leading.center.dy, _alignmentY);
+        expect(trailing.center.dy, _alignmentY);
+        expect(tester.takeException(), isNull);
+      }
     }
+  }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
+
+  testWidgets('Shared row retains the stock back and trailing icon insets', (
+    tester,
+  ) async {
+    await sizeView(tester, _cover);
+    var backTaps = 0;
+    await tester.pumpWidget(
+      _host(
+        ReaderPageScaffold(
+          navigationBar: CupertinoNavigationBar(
+            padding: const EdgeInsetsDirectional.only(end: 4),
+            leading: CupertinoNavigationBarBackButton(
+              onPressed: () => backTaps++,
+            ),
+            trailing: const SizedBox(width: 44, key: Key('trailing-action')),
+          ),
+          child: const SizedBox.expand(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final back = find.byType(CupertinoNavigationBarBackButton);
+    expect(tester.getRect(back).left, 0);
+    expect(
+      tester.getRect(find.byKey(const Key('trailing-action'))).right,
+      _layout.toolbar!.right + 16 - 4,
+    );
+    await tester.tap(back);
+    expect(backTaps, 1);
+    expect(tester.takeException(), isNull);
   }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
 
   testWidgets(
@@ -697,7 +844,10 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(tester.getTopLeft(find.byKey(const Key('body'))).dy, 126);
-    Future<void> send(List<double>? toolbar) async {
+    Future<void> send(
+      List<double>? toolbar, {
+      bool reduceTransparency = false,
+    }) async {
       await messenger.handlePlatformMessage(
         channel,
         codec.encodeSuccessEnvelope({
@@ -705,6 +855,7 @@ void main() {
           'height': 678.0,
           'topInset': 82.0,
           'toolbar': toolbar,
+          'reduceTransparency': reduceTransparency,
         }),
         (_) {},
       );
@@ -713,9 +864,15 @@ void main() {
 
     await send([16, 26, 250, 44]);
     expect(tester.getTopLeft(find.byKey(const Key('body'))).dy, 82);
+    final body = tester.element(find.byKey(const Key('body')));
+    await send([16, 26, 250, 44], reduceTransparency: true);
+    expect(readerReduceTransparency(body), isTrue);
+    expect(tester.getTopLeft(find.byKey(const Key('body'))).dy, 82);
+    expect(tester.element(find.byKey(const Key('body'))), same(body));
     // A Live Activity updates only the toolbar frame, without new window or
     // safe-area metrics. It must not switch the page back to the stock bar.
     await send([2.3333333333333335, 26, 211, 44]);
+    expect(readerReduceTransparency(body), isFalse);
     expect(tester.getTopLeft(find.byKey(const Key('body'))).dy, 82);
     await send(null);
     expect(tester.getTopLeft(find.byKey(const Key('body'))).dy, 126);

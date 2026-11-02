@@ -4,6 +4,7 @@ import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:fluent_reader_lite/components/article_item.dart';
 import 'package:material_ui/material_ui.dart' show Divider, VerticalDivider;
 import 'package:fluent_reader_lite/components/cupertino_toolbar.dart';
+import 'package:fluent_reader_lite/components/reader_bar.dart';
 import 'package:fluent_reader_lite/components/my_action_sheet_action.dart';
 import 'package:fluent_reader_lite/generated/l10n.dart';
 import 'package:fluent_reader_lite/main.dart';
@@ -53,6 +54,195 @@ void main() {
     Global.groupsModel!.dispose();
     Global.syncModel!.dispose();
   });
+
+  testWidgets(
+    'Bottom tabs and article toolbar paint visible dividers in both themes',
+    (tester) async {
+      const channel = MethodChannel(
+        'me.hyliu.fluent_reader_lite/ios_bar_layout',
+      );
+      final messenger =
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+      messenger.setMockMethodCallHandler(channel, (_) async => null);
+      addTearDown(() => messenger.setMockMethodCallHandler(channel, null));
+      const ratio = 3.0;
+      tester.view.devicePixelRatio = ratio;
+      tester.view.physicalSize = const Size(390, 844) * ratio;
+      tester.view.padding = const FakeViewPadding(
+        top: 62 * ratio,
+        bottom: 34 * ratio,
+      );
+      tester.view.viewPadding = const FakeViewPadding(
+        top: 62 * ratio,
+        bottom: 34 * ratio,
+      );
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetPadding);
+      addTearDown(tester.view.resetViewPadding);
+      final boundary = GlobalKey();
+      await tester.pumpWidget(RepaintBoundary(key: boundary, child: MyApp()));
+      await tester.pumpAndSettle();
+      Future<void> checkDivider(Finder bar, bool dark) async {
+        final rect = tester.getRect(bar);
+        final render = tester.renderObject<RenderRepaintBoundary>(
+          find.byKey(boundary),
+        );
+        final image = await tester.runAsync(
+          () => render.toImage(pixelRatio: ratio),
+        );
+        final bytes = await tester.runAsync(
+          () => image!.toByteData(format: ui.ImageByteFormat.rawRgba),
+        );
+        final offset =
+            ((rect.top * ratio).round() * image!.width + (8 * ratio).round()) *
+            4;
+        final pixel = bytes!.buffer.asUint8List(offset, 4).toList();
+        image.dispose();
+        expect(
+          pixel.take(3),
+          everyElement(dark ? greaterThan(32) : lessThan(240)),
+        );
+        expect(pixel[3], 255);
+      }
+
+      for (final (index, theme) in [
+        ThemeSetting.Light,
+        ThemeSetting.Dark,
+      ].indexed) {
+        final dark = theme == ThemeSetting.Dark;
+        Global.globalModel!.theme = theme;
+        await tester.pumpAndSettle();
+        await checkDivider(find.byType(CupertinoTabBar), dark);
+        await tester.tap(find.text('Article 0'));
+        await finishArticle(tester, platform, index + 1);
+        await checkDivider(
+          find.descendant(
+            of: find.byType(CupertinoToolbar),
+            matching: find.byType(ReaderBarBackground),
+          ),
+          dark,
+        );
+        Global.articlePanel.currentState!.pop();
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+      }
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pumpAndSettle();
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.iOS),
+  );
+
+  for (final (size, top, toolbar) in [
+    (const Size(390, 844), 62.0, [18.0, 62.0, 354.0, 44.0]),
+    (const Size(466, 678), 82.0, [16.0, 26.0, 250.0, 44.0]),
+  ]) {
+    testWidgets(
+      'Reduce Transparency preserves the open reader and list at $size',
+      (tester) async {
+        tester.view.devicePixelRatio = 1;
+        tester.view.physicalSize = size;
+        tester.view.padding = FakeViewPadding(top: top, bottom: 34);
+        tester.view.viewPadding = FakeViewPadding(top: top, bottom: 34);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetPadding);
+        addTearDown(tester.view.resetViewPadding);
+        const channel = 'me.hyliu.fluent_reader_lite/ios_bar_layout';
+        final messenger =
+            TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+        messenger.setMockMethodCallHandler(
+          const MethodChannel(channel),
+          (_) async => null,
+        );
+        addTearDown(
+          () => messenger.setMockMethodCallHandler(
+            const MethodChannel(channel),
+            null,
+          ),
+        );
+        Future<void> preference(bool reduced) async {
+          await messenger.handlePlatformMessage(
+            channel,
+            const StandardMethodCodec().encodeSuccessEnvelope({
+              'width': size.width,
+              'height': size.height,
+              'topInset': top,
+              'toolbar': toolbar,
+              'reduceTransparency': reduced,
+            }),
+            (_) {},
+          );
+          await tester.pumpAndSettle();
+        }
+
+        final template = Global.itemsModel!.getItem('0')!;
+        final items = List.generate(
+          30,
+          (index) => template.clone()
+            ..id = '$index'
+            ..title = 'Article $index',
+        );
+        Global.itemsModel!.loadItems(items);
+        Global.feedsModel!.all.iids = items.map((item) => item.id).toList();
+        await tester.pumpWidget(MyApp());
+        await preference(false);
+        final list = PrimaryScrollController.of(
+          tester.element(find.byType(ItemListPage)),
+        );
+        await tester.tap(find.text('Article 0'));
+        await finishArticle(tester, platform, 1);
+        list.jumpTo(500);
+        await tester.pumpAndSettle();
+        final view = find.byType(WebViewWidget);
+        final element = tester.element(view);
+        final frame = tester.getRect(view);
+        final extent = list.position.maxScrollExtent;
+        for (final reduced in [true, false, true]) {
+          await preference(reduced);
+          expect(platform.controllers, hasLength(1));
+          expect(tester.element(view), same(element));
+          expect(tester.getRect(view), frame);
+          expect(list.offset, 500);
+          expect(list.position.maxScrollExtent, extent);
+          final article = find.byType(ArticlePage);
+          final nav = tester.widget<CupertinoNavigationBar>(
+            find.descendant(
+              of: article,
+              matching: find.byType(CupertinoNavigationBar),
+            ),
+          );
+          expect(
+            nav.backgroundColor!.a,
+            top == 82 ? 0 : (reduced ? 1 : closeTo(0.8, 0.001)),
+          );
+          for (final bar
+              in tester
+                  .widgetList<ReaderBarBackground>(
+                    find.descendant(
+                      of: article,
+                      matching: find.byType(ReaderBarBackground),
+                    ),
+                  )
+                  .where((bar) => bar.color.a > 0)) {
+            expect(bar.color.a, reduced ? 1 : closeTo(0.8, 0.001));
+          }
+          final filters = tester.widgetList<BackdropFilter>(
+            find.descendant(of: article, matching: find.byType(BackdropFilter)),
+          );
+          expect(filters.any((filter) => filter.enabled), !reduced);
+          final tab = tester.widget<CupertinoTabBar>(
+            find.byType(CupertinoTabBar),
+          );
+          expect(tab.backgroundColor!.a, reduced ? 1 : closeTo(0.8, 0.001));
+          expect(tester.takeException(), isNull);
+        }
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.pumpAndSettle();
+      },
+      variant: TargetPlatformVariant.only(TargetPlatform.iOS),
+    );
+  }
 
   testWidgets(
     'Article selection and adjacent separators follow its navigation feed',
@@ -801,6 +991,15 @@ void main() {
             lessThanOrEqualTo(size.width - (portraitPane ? 16 : 156)),
           );
         }
+        expect(
+          MediaQuery.paddingOf(tester.element(find.byType(WebViewWidget))).top,
+          greaterThan(0),
+        );
+        expect(
+          MediaQuery.paddingOf(tester.element(find.byType(WebViewWidget)))
+              .bottom,
+          greaterThan(0),
+        );
         expect(tester.takeException(), isNull);
       }
       for (final partiallyOpen in [true, false, true]) {
@@ -828,8 +1027,13 @@ void main() {
       expect(tester.getSize(find.byType(ItemListPage).first).width, 320);
       final selector = find.byType(CupertinoSlidingSegmentedControl<int>);
       expect(tester.getCenter(selector).dy, 104);
+      // The WebView paints under the blurred header, while native content and
+      // indicator insets retain the original unobscured reading origin.
+      final webViewPadding = MediaQuery.paddingOf(
+        tester.element(find.byType(WebViewWidget)),
+      );
       expect(
-        tester.getTopLeft(find.byType(WebViewWidget)).dy,
+        tester.getTopLeft(find.byType(WebViewWidget)).dy + webViewPadding.top,
         greaterThanOrEqualTo(126),
       );
       expect(tester.element(find.byType(WebViewWidget)), same(webView));
