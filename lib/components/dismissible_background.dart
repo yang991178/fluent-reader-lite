@@ -14,12 +14,11 @@ class DismissibleBackground extends StatelessWidget {
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: isToRight
-        ? CrossAxisAlignment.start
-        : CrossAxisAlignment.end,
-      children: [Icon(
-        icon,
-        color: CupertinoColors.secondaryLabel.resolveFrom(context),
-      )],
+          ? CrossAxisAlignment.start
+          : CrossAxisAlignment.end,
+      children: [
+        Icon(icon, color: CupertinoColors.secondaryLabel.resolveFrom(context)),
+      ],
     ),
   );
 }

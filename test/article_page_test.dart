@@ -1,7 +1,8 @@
 import 'dart:ui' as ui;
 
 import 'package:cupertino_ui/cupertino_ui.dart';
-import 'package:material_ui/material_ui.dart' show VerticalDivider;
+import 'package:fluent_reader_lite/components/article_item.dart';
+import 'package:material_ui/material_ui.dart' show Divider, VerticalDivider;
 import 'package:fluent_reader_lite/components/cupertino_toolbar.dart';
 import 'package:fluent_reader_lite/components/my_action_sheet_action.dart';
 import 'package:fluent_reader_lite/generated/l10n.dart';
@@ -52,6 +53,163 @@ void main() {
     Global.groupsModel!.dispose();
     Global.syncModel!.dispose();
   });
+
+  testWidgets(
+    'Article selection and adjacent separators follow its navigation feed',
+    (tester) async {
+      tester.view.physicalSize = const Size(1024, 768);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final thirdItem = Global.itemsModel!.getItem('0')!.clone()
+        ..id = '2'
+        ..title = 'Article 2';
+      Global.itemsModel!.loadItems([thirdItem]);
+      Global.feedsModel!.all.iids.add('2');
+      final semantics = tester.ensureSemantics();
+      await tester.pumpWidget(MyApp());
+      await tester.pumpAndSettle();
+
+      Finder row(String id) => find.byWidgetPredicate(
+        (widget) => widget is ArticleItem && widget.item.id == id,
+      );
+      bool selected(String id) => tester
+          .widget<Semantics>(
+            find.descendant(
+              of: row(id),
+              matching: find.byWidgetPredicate(
+                (widget) =>
+                    widget is Semantics && widget.properties.selected != null,
+              ),
+            ),
+          )
+          .properties
+          .selected!;
+      Finder separator(String id) =>
+          find.descendant(of: row(id), matching: find.byType(Divider));
+
+      expect(selected('0'), isFalse);
+      expect(selected('1'), isFalse);
+      final thirdRowRect = tester.getRect(row('2'));
+      await tester.tap(find.text('Article 0'));
+      await finishArticle(tester, platform, 1);
+      expect(selected('0'), isTrue);
+      expect(selected('1'), isFalse);
+      expect(separator('0'), findsNothing);
+      expect(separator('1'), findsOneWidget);
+
+      await tester.tap(find.bySemanticsLabel(S.current.next));
+      await finishArticle(tester, platform, 2);
+      expect(selected('0'), isFalse);
+      expect(selected('1'), isTrue);
+      expect(separator('0'), findsNothing);
+      expect(separator('1'), findsNothing);
+      expect(separator('2'), findsOneWidget);
+      expect(tester.getRect(row('2')), thirdRowRect);
+
+      // Keep the article open while showing a feed that excludes it. Selection
+      // must not transfer to the row at the same index in the new feed.
+      Global.feedsModel!.source = RSSFeed(sids: {'fixture'})
+        ..iids = ['0']
+        ..initialized = true
+        ..allLoaded = true;
+      await tester.tap(find.text(S.current.subscriptions));
+      await tester.pumpAndSettle();
+      final subscriptions = tester.element(find.byType(SubscriptionListPage));
+      Navigator.of(subscriptions).pushNamed('/feed', arguments: 'Subset');
+      await tester.pumpAndSettle();
+      expect(ArticlePage.state.currentState!.iid, '1');
+      expect(row('1'), findsNothing);
+      expect(selected('0'), isFalse);
+      expect(separator('0'), findsOneWidget);
+
+      // Membership alone must not select an article opened from another feed.
+      Global.feedsModel!.source!.iids = ['1', '0'];
+      Global.feedsModel!.broadcast();
+      await tester.pumpAndSettle();
+      expect(selected('1'), isFalse);
+      expect(separator('1'), findsOneWidget);
+      expect(separator('0'), findsOneWidget);
+
+      // Previous/Next still use the original all-articles feed, which includes
+      // an article that is absent from this source feed.
+      await tester.tap(find.bySemanticsLabel(S.current.next));
+      await finishArticle(tester, platform, 3);
+      expect(ArticlePage.state.currentState!.iid, '2');
+      expect(selected('1'), isFalse);
+      await tester.tap(find.bySemanticsLabel(S.current.prev));
+      await finishArticle(tester, platform, 4);
+      expect(ArticlePage.state.currentState!.iid, '1');
+      expect(selected('1'), isFalse);
+
+      // Reopening the same article from this list transfers its navigation
+      // feed and must publish the new selection even though its ID is unchanged.
+      await tester.tap(find.text('Article 1'));
+      await finishArticle(tester, platform, 5);
+      expect(selected('1'), isTrue);
+      expect(selected('0'), isFalse);
+      expect(separator('1'), findsNothing);
+      expect(separator('0'), findsOneWidget);
+
+      // A new source/group feed must not inherit the previous feed's highlight
+      // or change the reader's Previous/Next order.
+      final previousFeed = Global.feedsModel!.source!;
+      Global.feedsModel!.source = RSSFeed(sids: {'fixture'})
+        ..iids = ['0', '1']
+        ..initialized = true
+        ..allLoaded = true;
+      Global.feedsModel!.broadcast();
+      await tester.pumpAndSettle();
+      expect(ArticlePage.selection.value!.feed, same(previousFeed));
+      expect(selected('1'), isFalse);
+      expect(separator('1'), findsOneWidget);
+      expect(separator('0'), findsOneWidget);
+      await tester.tap(find.bySemanticsLabel(S.current.next));
+      await finishArticle(tester, platform, 6);
+      expect(ArticlePage.state.currentState!.iid, '0');
+      expect(selected('0'), isFalse);
+      await tester.tap(find.text('Article 1'));
+      await finishArticle(tester, platform, 7);
+      expect(selected('1'), isTrue);
+      expect(separator('0'), findsNothing);
+      expect(separator('1'), findsNothing);
+
+      await tester.tap(find.text(S.current.feed));
+      await tester.pumpAndSettle();
+      expect(selected('1'), isFalse);
+      expect(separator('0'), findsOneWidget);
+      expect(separator('1'), findsOneWidget);
+      await tester.tap(find.text(S.current.subscriptions));
+      await tester.pumpAndSettle();
+      expect(selected('1'), isTrue);
+
+      for (final theme in [ThemeSetting.Light, ThemeSetting.Dark]) {
+        Global.globalModel!.theme = theme;
+        await tester.pumpAndSettle();
+        final context = tester.element(row('1'));
+        final selectionColor = CupertinoColors.systemGrey5.resolveFrom(context);
+        final background = find.descendant(
+          of: row('1'),
+          matching: find.byWidgetPredicate(
+            (widget) => widget is ColoredBox && widget.color == selectionColor,
+          ),
+        );
+        expect(tester.getRect(background), tester.getRect(row('1')));
+        expect(selected('1'), isTrue);
+      }
+
+      Global.articlePanel.currentState!.pop();
+      await tester.pumpAndSettle();
+      expect(ArticlePage.selection.value, isNull);
+      expect(selected('1'), isFalse);
+      expect(selected('0'), isFalse);
+      expect(separator('0'), findsOneWidget);
+      expect(separator('1'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      semantics.dispose();
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
 
   testWidgets('Idle article pane does not dim the phone list in light mode', (
     tester,

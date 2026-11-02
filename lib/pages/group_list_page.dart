@@ -12,7 +12,20 @@ import 'package:fluent_reader_lite/utils/global.dart';
 import 'package:fluent_reader_lite/utils/utils.dart';
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/semantics.dart';
 import 'package:provider/provider.dart';
+
+class GroupListSelection {
+  const GroupListSelection({
+    this.title,
+    this.sourceIds,
+    this.openArticles = false,
+  });
+
+  final String? title;
+  final List<String?>? sourceIds;
+  final bool openArticles;
+}
 
 class GroupListPage extends StatefulWidget {
   @override
@@ -20,41 +33,58 @@ class GroupListPage extends StatefulWidget {
 }
 
 class _GroupListPageState extends State<GroupListPage> {
-  static const List<String?> _uncategorizedIndicator = [null, null];
-
   int _unreadCount(Iterable<RSSSource?> sources) {
-    return sources.fold(0, (c, s) => c + (s != null ? s.unreadCount: 0));
+    return sources.fold(0, (c, s) => c + (s != null ? s.unreadCount : 0));
   }
 
   static const _dismissThresholds = {
     DismissDirection.startToEnd: 0.25,
+    DismissDirection.endToStart: 0.25,
   };
 
   @override
   Widget build(BuildContext context) {
-    final navigationBar = ReaderSliverNavigationBar(CupertinoSliverNavigationBar(
-      largeTitle: Text(S.of(context).groups),
-      automaticallyImplyLeading: false,
-      backgroundColor:
-          Global.isTablet(context) ? CupertinoColors.systemBackground : null,
-      leading: CupertinoButton(
-        padding: EdgeInsets.zero,
-        child: Text(S.of(context).cancel),
-        onPressed: () { Navigator.of(context).pop(); }, minimumSize: Size(36, 36),
+    final navigationBar = ReaderSliverNavigationBar(
+      CupertinoSliverNavigationBar(
+        largeTitle: Text(S.of(context).groups),
+        automaticallyImplyLeading: false,
+        backgroundColor: Global.isTablet(context)
+            ? CupertinoColors.systemBackground
+            : null,
+        leading: CupertinoButton(
+          padding: EdgeInsets.zero,
+          child: Text(S.of(context).cancel),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          minimumSize: Size(36, 36),
+        ),
       ),
-    ));
+    );
     final allSources = Consumer<SourcesModel>(
       builder: (context, sourcesModel, child) {
         var count = _unreadCount(sourcesModel.getSources());
-        return SliverToBoxAdapter(child: MyListTile(
-          title: Text(S.of(context).allSubscriptions),
-          trailing: count > 0 ? Badge(count) : null,
-          onTap: () { Navigator.of(context).pop(List<String>.empty()); },
-          background: CupertinoColors.systemBackground,
-        ));
+        return SliverToBoxAdapter(
+          child: MyListTile(
+            title: Flexible(
+              child: Text(
+                S.of(context).allSubscriptions,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            trailing: count > 0 ? Badge(count) : null,
+            onTap: () {
+              Navigator.of(context).pop(const GroupListSelection());
+            },
+            background: CupertinoColors.systemBackground,
+          ),
+        );
       },
     );
-    final dismissBg = DismissibleBackground(CupertinoIcons.checkmark_circle, true);
+    final dismissBg = DismissibleBackground(
+      CupertinoIcons.checkmark_circle,
+      true,
+    );
     final groupList = Consumer2<GroupsModel, SourcesModel>(
       builder: (context, groupsModel, sourcesModel, child) {
         final groupNames = groupsModel.groups.keys.toList();
@@ -75,31 +105,59 @@ class _GroupListPageState extends State<GroupListPage> {
               group = groupsModel.groups[groupName];
             }
             final count = _unreadCount(
-              group!.map((sid) => sourcesModel.getSource(sid))
+              group!.map((sid) => sourcesModel.getSource(sid)),
             );
+            void selectGroup({bool openArticles = false}) {
+              Navigator.of(context).pop(
+                GroupListSelection(
+                  title: groupName,
+                  sourceIds: List<String?>.of(group!),
+                  openArticles: openArticles,
+                ),
+              );
+            }
+
             final tile = MyListTile(
-              title: Flexible(child: Text(groupName!, overflow: TextOverflow.ellipsis)),
+              title: Flexible(
+                child: Text(groupName!, overflow: TextOverflow.ellipsis),
+              ),
               trailing: count > 0 ? Badge(count) : null,
-              onTap: () { 
-                Navigator.of(context).pop(
-                  isUncategorized ? _uncategorizedIndicator : [groupName]
-                );
-              },
+              onTap: selectGroup,
               background: CupertinoColors.systemBackground,
             );
             return Dismissible(
               key: Key("$groupName$index"),
-              child: tile,
+              child: Semantics(
+                customSemanticsActions: group.isNotEmpty
+                    ? {
+                        CustomSemanticsAction(
+                          label: S.of(context).allArticles,
+                        ): () =>
+                            selectGroup(openArticles: true),
+                      }
+                    : null,
+                child: tile,
+              ),
               background: dismissBg,
-              direction: DismissDirection.startToEnd,
+              secondaryBackground: DismissibleBackground(
+                CupertinoIcons.folder_open,
+                false,
+              ),
+              direction: group.isEmpty
+                  ? DismissDirection.startToEnd
+                  : DismissDirection.horizontal,
               dismissThresholds: _dismissThresholds,
-              confirmDismiss: (_) async {
+              confirmDismiss: (direction) async {
                 HapticFeedback.mediumImpact();
-                Set<String> sids = Set.from(group!);
-                showResponsiveActionSheet(
-                  context: context,
-                  builder: (context) => MarkAllActionSheet(sids),
-                );
+                if (direction == DismissDirection.endToStart) {
+                  selectGroup(openArticles: true);
+                } else {
+                  Set<String> sids = Set.from(group!);
+                  showResponsiveActionSheet(
+                    context: context,
+                    builder: (context) => MarkAllActionSheet(sids),
+                  );
+                }
                 return false;
               },
             );
@@ -107,19 +165,16 @@ class _GroupListPageState extends State<GroupListPage> {
         );
       },
     );
-    final padding = SliverToBoxAdapter(child: Padding(
-      padding: EdgeInsets.only(bottom: 80),
-    ),);
+    final padding = SliverToBoxAdapter(
+      child: Padding(padding: EdgeInsets.only(bottom: 80)),
+    );
     return ReaderPageScaffold(
       backgroundColor: CupertinoColors.systemBackground,
-      child: CupertinoScrollbar(child: CustomScrollView(
-        slivers: [
-          navigationBar,
-          allSources,
-          groupList,
-          padding,
-        ],
-      ))
+      child: CupertinoScrollbar(
+        child: CustomScrollView(
+          slivers: [navigationBar, allSources, groupList, padding],
+        ),
+      ),
     );
   }
 }

@@ -20,9 +20,17 @@ class ArticleItem extends StatefulWidget {
   final RSSItem item;
   final RSSSource? source;
   final Function openActionSheet;
+  final bool selected;
+  final bool hideSeparator;
 
-  ArticleItem(this.item, this.source, this.openActionSheet, {Key? key})
-      : super(key: key);
+  ArticleItem(
+    this.item,
+    this.source,
+    this.openActionSheet, {
+    this.selected = false,
+    this.hideSeparator = false,
+    Key? key,
+  }) : super(key: key);
 
   @override
   _ArticleItemState createState() => _ArticleItemState();
@@ -51,8 +59,10 @@ class _ArticleItemState extends State<ArticleItem> {
       } else {
         var navigator = Global.responsiveNavigator(context)!;
         while (navigator.canPop()) navigator.pop();
-        navigator.pushNamed("/article",
-            arguments: Tuple2(widget.item.id, isSource));
+        navigator.pushNamed(
+          "/article",
+          arguments: Tuple2(widget.item.id, isSource),
+        );
       }
     }
   }
@@ -106,13 +116,17 @@ class _ArticleItemState extends State<ArticleItem> {
     switch (option) {
       case ItemSwipeOption.ToggleRead:
         await Future.delayed(Duration(milliseconds: 200));
-        Global.itemsModel!
-            .updateItem(widget.item.id, read: !widget.item.hasRead);
+        Global.itemsModel!.updateItem(
+          widget.item.id,
+          read: !widget.item.hasRead,
+        );
         break;
       case ItemSwipeOption.ToggleStar:
         await Future.delayed(Duration(milliseconds: 200));
-        Global.itemsModel!
-            .updateItem(widget.item.id, starred: !widget.item.starred);
+        Global.itemsModel!.updateItem(
+          widget.item.id,
+          starred: !widget.item.starred,
+        );
         break;
       case ItemSwipeOption.Share:
         SharePlus.instance.share(ShareParams(uri: Uri.parse(widget.item.link)));
@@ -139,9 +153,7 @@ class _ArticleItemState extends State<ArticleItem> {
     return false;
   }
 
-  static const _dismissThresholds = {
-    DismissDirection.horizontal: 0.25,
-  };
+  static const _dismissThresholds = {DismissDirection.horizontal: 0.25};
 
   @override
   Widget build(BuildContext context) {
@@ -166,62 +178,69 @@ class _ArticleItemState extends State<ArticleItem> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
-              child: Text(
-            widget.source!.name,
-            style: _descStyle,
-            overflow: TextOverflow.ellipsis,
-          )),
-          Row(children: [
-            if (!Global.feedsModel!.dimRead && !widget.item.hasRead)
-              _unreadIndicator,
-            if (widget.item.starred) _starredIndicator,
-            TimeText(widget.item.date, style: _descStyle),
-          ]),
+            child: Text(
+              widget.source!.name,
+              style: _descStyle,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          Row(
+            children: [
+              if (!Global.feedsModel!.dimRead && !widget.item.hasRead)
+                _unreadIndicator,
+              if (widget.item.starred) _starredIndicator,
+              TimeText(widget.item.date, style: _descStyle),
+            ],
+          ),
         ],
       ),
     );
     final itemTexts = Expanded(
-        child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          widget.item.title,
-          style: _titleStyle,
-        ),
-        if (Global.feedsModel!.showSnippet && widget.item.snippet.length > 0)
-          Text(
-            widget.item.snippet,
-            style: _snippetStyle,
-            overflow: TextOverflow.ellipsis,
-            maxLines: 1,
-          ),
-      ],
-    ));
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(widget.item.title, style: _titleStyle),
+          if (Global.feedsModel!.showSnippet && widget.item.snippet.length > 0)
+            Text(
+              widget.item.snippet,
+              style: _snippetStyle,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
+        ],
+      ),
+    );
     final body = GestureDetector(
-        onTapDown: (_) {
-          setState(() {
-            pressed = true;
-          });
-        },
-        onTapUp: (_) {
-          setState(() {
-            pressed = false;
-          });
-        },
-        onTapCancel: () {
-          setState(() {
-            pressed = false;
-          });
-        },
-        onLongPress: _openActionSheet,
-        onTap: _openArticle,
-        child: Container(
-            color: pressed
-                ? CupertinoColors.systemGrey4.resolveFrom(context)
-                : CupertinoColors.systemBackground.resolveFrom(context),
-            child: Column(children: [
+      behavior: HitTestBehavior.opaque,
+      onTapDown: (_) {
+        setState(() {
+          pressed = true;
+        });
+      },
+      onTapUp: (_) {
+        setState(() {
+          pressed = false;
+        });
+      },
+      onTapCancel: () {
+        setState(() {
+          pressed = false;
+        });
+      },
+      onLongPress: _openActionSheet,
+      onTap: _openArticle,
+      child: Semantics(
+        selected: widget.selected,
+        child: ColoredBox(
+          color: pressed
+              ? CupertinoColors.systemGrey4.resolveFrom(context)
+              : widget.selected
+              ? CupertinoColors.systemGrey5.resolveFrom(context)
+              : CupertinoColors.systemBackground.resolveFrom(context),
+          child: Column(
+            children: [
               Padding(
-                padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -263,14 +282,21 @@ class _ArticleItemState extends State<ArticleItem> {
                   ],
                 ),
               ),
-              Container(
-                color: CupertinoColors.systemBackground.resolveFrom(context),
-                padding: EdgeInsets.only(left: 16),
-                child: Divider(
-                    color: CupertinoColors.systemGrey4.resolveFrom(context),
-                    height: 1),
-              ),
-            ])));
+              if (widget.hideSeparator)
+                const SizedBox(height: 1)
+              else
+                Padding(
+                  padding: EdgeInsets.only(left: 16),
+                  child: Divider(
+                    color: CupertinoColors.separator.resolveFrom(context),
+                    height: 1,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
     return Dismissible(
       key: Key("D-${widget.item.id}"),
       background: DismissibleBackground(
