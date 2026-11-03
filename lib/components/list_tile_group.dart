@@ -13,7 +13,7 @@ class ListTileGroup extends StatelessWidget {
     Function onSelected,
     {this.title, Key? key}) :
     children = options.map((t) => MyListTile(
-      title: Text(t.item1),
+      title: Flexible(child: Text(t.item1)),
       trailing: t.item2 == selected
         ? Icon(Icons.done)
         : Icon(null),

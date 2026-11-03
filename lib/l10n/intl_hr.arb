@@ -52,6 +52,7 @@
     "edit": "Uredi",
     "name": "Naziv",
     "icon": "Ikona",
+    "hideFromAllArticles": "Sakrij iz „Svi članci”",
     "openTarget": "Zadani cilj otvaranja",
     "rssText": "Puni tekst RSS-a",
     "loadWebpage": "Učitaj web-stranicu",

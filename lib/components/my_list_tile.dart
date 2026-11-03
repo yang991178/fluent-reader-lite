@@ -69,32 +69,35 @@ class _MyListTileState extends State<MyListTile> {
         ),
       ],
     );
-    return GestureDetector(
-      onTapDown: (_) { setState(() { pressed = true; }); },
-      onTapUp: (_) { setState(() { pressed = false; }); },
-      onTapCancel: () { setState(() { pressed = false; }); },
-      onTap: _onTap,
-      child: Column(children: [
-        Container(
-          color: (pressed && widget.onTap != null)
-            ? CupertinoColors.systemGrey4.resolveFrom(context) 
-            : widget.background.resolveFrom(context),
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-          constraints: BoxConstraints(minHeight: 48),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              leftPart,
-              rightPart,
-            ],
+    return IconTheme.merge(
+      data: CupertinoIconThemeData(color: CupertinoTheme.of(context).primaryColor),
+      child: GestureDetector(
+        onTapDown: (_) { setState(() { pressed = true; }); },
+        onTapUp: (_) { setState(() { pressed = false; }); },
+        onTapCancel: () { setState(() { pressed = false; }); },
+        onTap: _onTap,
+        child: Column(children: [
+          Container(
+            color: (pressed && widget.onTap != null)
+              ? CupertinoColors.systemGrey4.resolveFrom(context)
+              : widget.background.resolveFrom(context),
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            constraints: BoxConstraints(minHeight: 48),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                leftPart,
+                rightPart,
+              ],
+            ),
           ),
-        ),
-        if (widget.withDivider) Padding(
-          padding: EdgeInsets.only(left: widget.leading == null ? 16 : 50),
-          child: Divider(color: CupertinoColors.systemGrey4.resolveFrom(context), height: 0),
-        ),
-      ],),
+          if (widget.withDivider) Padding(
+            padding: EdgeInsets.only(left: widget.leading == null ? 16 : 50),
+            child: Divider(color: CupertinoColors.systemGrey4.resolveFrom(context), height: 0),
+          ),
+        ],),
+      ),
     );
   }
 }

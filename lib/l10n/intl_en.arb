@@ -52,6 +52,7 @@
     "edit": "Edit",
     "name": "Name",
     "icon": "Icon",
+    "hideFromAllArticles": "Hide from “All articles”",
     "openTarget": "Default open target",
     "rssText": "RSS full text",
     "loadWebpage": "Load webpage",

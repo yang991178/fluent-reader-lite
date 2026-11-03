@@ -52,6 +52,7 @@
     "edit": "Editieren",
     "name": "Name",
     "icon": "Icon",
+    "hideFromAllArticles": "In „Alle Artikel“ ausblenden",
     "openTarget": "Voreinstellung beim Öffnen",
     "rssText": "Kompletter RSS Text",
     "loadWebpage": "Lade Webseite",
