@@ -199,7 +199,12 @@ class _ArticleItemState extends State<ArticleItem> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(widget.item.title, style: _titleStyle),
+          Text(
+            widget.item.title,
+            style: _titleStyle,
+            maxLines: 5,
+            overflow: TextOverflow.ellipsis,
+          ),
           if (Global.feedsModel!.showSnippet && widget.item.snippet.length > 0)
             Text(
               widget.item.snippet,

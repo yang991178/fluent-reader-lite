@@ -52,6 +52,7 @@
     "edit": "编辑",
     "name": "名称",
     "icon": "图标",
+    "hideFromAllArticles": "从“全部文章”中隐藏",
     "openTarget": "默认打开方式",
     "rssText": "RSS 全文",
     "loadWebpage": "加载网页",

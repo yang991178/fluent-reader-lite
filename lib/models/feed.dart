@@ -16,6 +16,7 @@ class RSSFeed {
   List<String?> iids = [];
   FilterType? filterType;
   String search = "";
+  int _loadGeneration = 0;
 
   RSSFeed({this.sids}) {
     if (sids == null) sids = Set();
@@ -26,6 +27,18 @@ class RSSFeed {
       ? StoreKeys.FEED_FILTER_ALL
       : StoreKeys.FEED_FILTER_SOURCE;
 
+  bool includesSource(String? sid) => sids!.isNotEmpty
+      ? sids!.contains(sid)
+      : Global.sourcesModel!.getSource(sid)?.hidden == false;
+
+  Set<String> get effectiveSourceIds => sids!.isNotEmpty
+      ? Set.of(sids!)
+      : Global.sourcesModel!
+            .getSources()
+            .where((source) => !source.hidden)
+            .map((source) => source.id)
+            .toSet();
+
   Tuple2<String, List<String>> _getPredicates() {
     List<String> where = ["1 = 1"];
     List<String> whereArgs = [];
@@ -33,6 +46,8 @@ class RSSFeed {
       var placeholders = List.filled(sids!.length, "?").join(" , ");
       where.add("source IN ($placeholders)");
       whereArgs.addAll(sids!);
+    } else {
+      where.add("source IN (SELECT sid FROM sources WHERE hidden = 0)");
     }
     if (filterType == FilterType.Unread) {
       where.add("hasRead = 0");
@@ -49,12 +64,12 @@ class RSSFeed {
   }
 
   bool testItem(RSSItem? item) {
-    if (sids!.length > 0 && !sids!.contains(item!.source)) return false;
-    if (filterType == FilterType.Unread && item!.hasRead) return false;
-    if (filterType == FilterType.Starred && !item!.starred) return false;
+    if (item == null || !includesSource(item.source)) return false;
+    if (filterType == FilterType.Unread && item.hasRead) return false;
+    if (filterType == FilterType.Starred && !item.starred) return false;
     if (search != "") {
       var keyword = search.toUpperCase();
-      if (item!.title.toUpperCase().contains(keyword)) return true;
+      if (item.title.toUpperCase().contains(keyword)) return true;
       if (item.snippet.toUpperCase().contains(keyword)) return true;
       return false;
     }
@@ -62,28 +77,34 @@ class RSSFeed {
   }
 
   Future<void> init() async {
-    if (loading) return;
+    // A settings change must supersede an in-flight initial or paginated load.
+    final generation = ++_loadGeneration;
     loading = true;
-    var predicates = _getPredicates();
-    var items = (await Global.db!.query(
-      "items",
-      orderBy: "date DESC",
-      limit: _LOAD_LIMIT,
-      where: predicates.item1,
-      whereArgs: predicates.item2,
-    ))
-        .map((m) => RSSItem.fromMap(m))
-        .toList();
-    allLoaded = items.length < _LOAD_LIMIT;
-    Global.itemsModel!.loadItems(items);
-    iids = items.map((i) => i.id).toList();
-    loading = false;
-    initialized = true;
-    Global.feedsModel!.broadcast();
+    try {
+      var predicates = _getPredicates();
+      var items = (await Global.db!.query(
+        "items",
+        orderBy: "date DESC",
+        limit: _LOAD_LIMIT,
+        where: predicates.item1,
+        whereArgs: predicates.item2,
+      )).map((m) => RSSItem.fromMap(m)).toList();
+      if (generation != _loadGeneration) return;
+      allLoaded = items.length < _LOAD_LIMIT;
+      Global.itemsModel!.loadItems(items);
+      iids = items.map((i) => i.id).toList();
+      initialized = true;
+    } finally {
+      if (generation == _loadGeneration) {
+        loading = false;
+        Global.feedsModel!.broadcast();
+      }
+    }
   }
 
   Future<void> loadMore() async {
     if (loading || allLoaded) return;
+    final generation = _loadGeneration;
     loading = true;
     try {
       var predicates = _getPredicates();
@@ -97,17 +118,18 @@ class RSSFeed {
         offset: offset,
         where: predicates.item1,
         whereArgs: predicates.item2,
-      ))
-          .map((m) => RSSItem.fromMap(m))
-          .toList();
+      )).map((m) => RSSItem.fromMap(m)).toList();
+      if (generation != _loadGeneration) return;
       if (items.length < _LOAD_LIMIT) {
         allLoaded = true;
       }
       Global.itemsModel!.loadItems(items);
       iids.addAll(items.map((i) => i.id).cast<String>());
     } finally {
-      loading = false;
-      Global.feedsModel!.broadcast();
+      if (generation == _loadGeneration) {
+        loading = false;
+        Global.feedsModel!.broadcast();
+      }
     }
   }
 

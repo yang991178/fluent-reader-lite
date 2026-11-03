@@ -93,6 +93,22 @@ class SourceEditPage extends StatelessWidget {
           },
           title: S.of(context).openTarget,
         );
+        final preferences = ListTileGroup([
+          MyListTile(
+            title: Flexible(child: Text(S.of(context).hideFromAllArticles)),
+            trailing: Semantics(
+              label: S.of(context).hideFromAllArticles,
+              child: CupertinoSwitch(
+                value: source.hidden,
+                onChanged: (value) {
+                  Global.sourcesModel!.setHidden(source.id, value);
+                },
+              ),
+            ),
+            trailingChevron: false,
+            withDivider: false,
+          ),
+        ], title: S.of(context).preferences);
         return ReaderPageScaffold(
           backgroundColor: MyColors.background,
           navigationBar: CupertinoNavigationBar(
@@ -102,6 +118,7 @@ class SourceEditPage extends StatelessWidget {
             urlTile,
             editSource,
             openTarget,
+            preferences,
           ],),
         );
       },

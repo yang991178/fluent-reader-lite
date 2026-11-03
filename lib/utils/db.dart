@@ -5,14 +5,19 @@ import 'package:sqflite/sqflite.dart';
 
 abstract class DatabaseHelper {
   static final _dbName = "frlite.db";
-  static final _dbVersion = 1;
+  static final _dbVersion = 2;
 
   static Database? _database;
 
   static Future<Database?> getDatabase() async {
     if (_database != null) return _database;
     String path = join(await getDatabasesPath(), _dbName);
-    _database = await openDatabase(path, version:_dbVersion, onCreate: _onCreate);
+    _database = await openDatabase(
+      path,
+      version: _dbVersion,
+      onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
+    );
     return _database;
   }
 
@@ -24,6 +29,7 @@ abstract class DatabaseHelper {
         iconUrl TEXT,
         name TEXT NOT NULL,
         openTarget INTEGER NOT NULL,
+        hidden INTEGER NOT NULL DEFAULT 0,
         latest INTEGER NOT NULL,
         lastTitle INTEGER NOT NULL
       );
@@ -44,5 +50,17 @@ abstract class DatabaseHelper {
       );
     ''');
     await db.execute("CREATE INDEX itemsDate ON items (date DESC);");
+  }
+
+  static Future<void> _onUpgrade(
+    Database db,
+    int oldVersion,
+    int newVersion,
+  ) async {
+    if (oldVersion < 2) {
+      await db.execute(
+        "ALTER TABLE sources ADD COLUMN hidden INTEGER NOT NULL DEFAULT 0;",
+      );
+    }
   }
 }

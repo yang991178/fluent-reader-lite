@@ -50,11 +50,13 @@ class ItemsModel with ChangeNotifier {
   }
 
   Future<void> markAllRead(Set<String?> sids, {DateTime? date, before = true}) async {
+    // Callers pass an explicit scope; an empty feed must never mark everything.
+    if (sids.isEmpty) return;
     Global.service!.markAllRead(sids, date, before);
-    List<String> predicates = ["hasRead = 0"];
-    if (sids.length > 0) {
-      predicates.add("source IN (${List.filled(sids.length, "?").join(" , ")})");
-    }
+    List<String> predicates = [
+      "hasRead = 0",
+      "source IN (${List.filled(sids.length, "?").join(" , ")})",
+    ];
     if (date != null) {
       predicates.add("date ${before ? "<=" : ">="} ${date.millisecondsSinceEpoch}");
     }
@@ -65,14 +67,14 @@ class ItemsModel with ChangeNotifier {
       whereArgs: sids.toList(),
     );
     for (var item in _items.values.toList()) {
-      if (sids.length > 0 && !sids.contains(item.source)) continue;
+      if (!sids.contains(item.source)) continue;
       if (date != null && 
         (before ? item.date.compareTo(date) > 0 : item.date.compareTo(date) < 0))
         continue;
       item.hasRead = true;
     }
     notifyListeners();
-    Global.sourcesModel!.updateUnreadCounts();
+    await Global.sourcesModel!.updateUnreadCounts();
   }
 
   Future<void> fetchItems() async {

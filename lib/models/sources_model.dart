@@ -100,6 +100,13 @@ class SourcesModel with ChangeNotifier {
     );
   }
 
+  Future<void> setHidden(String sid, bool hidden) async {
+    final source = _sources[sid];
+    if (source == null || source.hidden == hidden) return;
+    await put(source.clone()..hidden = hidden);
+    await Global.feedsModel!.all.init();
+  }
+
   Future<void> putAll(Iterable<RSSSource> sources, {force = false}) async {
     Batch batch = Global.db!.batch();
     for (var source in sources) {

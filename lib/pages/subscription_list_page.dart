@@ -110,8 +110,12 @@ class _SubscriptionListPageState extends State<SubscriptionListPage> {
   void _openMarkAllModal() {
     showResponsiveActionSheet(
       context: context,
-      builder: (context) =>
-          MarkAllActionSheet(sids == null ? {} : Set.from(sids!)),
+      builder: (context) => MarkAllActionSheet(
+        sids == null
+            ? Global.sourcesModel!.getSources()
+                .map((source) => source.id).toSet()
+            : Set.from(sids!),
+      ),
     );
   }
 

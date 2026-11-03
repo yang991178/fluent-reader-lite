@@ -86,7 +86,7 @@ class _ItemListPageState extends State<ItemListPage> {
   void _openMarkAllModal() {
     showResponsiveActionSheet(
       context: context,
-      builder: (context) => MarkAllActionSheet(getFeed()!.sids),
+      builder: (context) => MarkAllActionSheet(getFeed()!.effectiveSourceIds),
     );
   }
 
@@ -281,7 +281,7 @@ class _ItemListPageState extends State<ItemListPage> {
               onPressed: () {
                 Navigator.of(context, rootNavigator: true).pop();
                 Global.itemsModel!.markAllRead(
-                  getFeed()!.sids!,
+                  getFeed()!.effectiveSourceIds,
                   date: item.date,
                   before: false,
                 );
@@ -299,7 +299,7 @@ class _ItemListPageState extends State<ItemListPage> {
               onPressed: () {
                 Navigator.of(context, rootNavigator: true).pop();
                 Global.itemsModel!.markAllRead(
-                  getFeed()!.sids!,
+                  getFeed()!.effectiveSourceIds,
                   date: item.date,
                 );
               },
@@ -380,11 +380,9 @@ class _ItemListPageState extends State<ItemListPage> {
         ),
         Consumer<SourcesModel>(
           builder: (context, sourcesModel, child) {
-            var sources = sourcesModel.getSources();
-            if (title != null) {
-              var feed = getFeed();
-              sources = sources.where((s) => feed!.sids!.contains(s.id));
-            }
+            var sources = sourcesModel
+                .getSources()
+                .where((source) => getFeed()!.includesSource(source.id));
             var count = sources.fold(0, (dynamic c, s) => c + s.unreadCount);
             if (count > 0) {
               return Padding(

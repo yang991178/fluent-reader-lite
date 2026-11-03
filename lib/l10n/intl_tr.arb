@@ -52,6 +52,7 @@
     "edit": "Düzenle",
     "name": "İsim",
     "icon": "Simge",
+    "hideFromAllArticles": "“Tüm Yazılar” içinde gizle",
     "openTarget": "Varsayılan açık hedef",
     "rssText": "RSS tam metin",
     "loadWebpage": "Web sayfasını yükle",

@@ -6,6 +6,7 @@ class RSSSource {
   String? iconUrl;
   String name;
   SourceOpenTarget openTarget = SourceOpenTarget.Local;
+  bool hidden = false;
   int unreadCount = 0;
   DateTime latest = DateTime.now();
   String lastTitle = "";
@@ -18,6 +19,7 @@ class RSSSource {
     this.iconUrl,
     this.name,
     this.openTarget,
+    this.hidden,
     this.unreadCount,
     this.latest,
     this.lastTitle,
@@ -30,6 +32,7 @@ class RSSSource {
       this.iconUrl,
       this.name,
       this.openTarget,
+      this.hidden,
       this.unreadCount,
       this.latest,
       this.lastTitle,
@@ -43,6 +46,7 @@ class RSSSource {
       "iconUrl": iconUrl,
       "name": name,
       "openTarget": openTarget.index,
+      "hidden": hidden ? 1 : 0,
       "latest": latest.millisecondsSinceEpoch,
       "lastTitle": lastTitle,
     };
@@ -55,6 +59,7 @@ class RSSSource {
       map["iconUrl"],
       map["name"],
       SourceOpenTarget.values[map["openTarget"]],
+      map["hidden"] == 1,
       0, // Default unreadCount
       DateTime.fromMillisecondsSinceEpoch(map["latest"]),
       map["lastTitle"],
